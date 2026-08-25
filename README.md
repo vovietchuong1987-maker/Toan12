@@ -1,33 +1,47 @@
-# Math12 Hub V21 — Data Safety Vault
+# Math12 Hub V22 — Smart Class Analytics
 
-V21 nâng trực tiếp từ V20, giữ nguyên Secure Exam V18, Low Reads V19 và kiến trúc module V20.
+V22 nâng trực tiếp từ V21, giữ nguyên Secure Exam V18, Low Reads V19, kiến trúc module V20 và Data Safety Vault V21.
 
 ## Nâng cấp chính
-- Dữ liệu cục bộ có `schemaVersion: 21`, `revision`, `deviceId`, `updatedAt`.
-- Mỗi lần lưu vẫn dùng `localStorage` để khởi động nhanh và đồng thời mirror sang IndexedDB.
-- Nếu `localStorage` đầy, V21 chuyển dữ liệu lớn sang IndexedDB fallback thay vì lỗi im lặng.
-- Có điểm khôi phục tự động xoay vòng và điểm khôi phục thủ công.
-- Có sao lưu/khôi phục **toàn bộ dữ liệu**: tiến độ, lịch sử, ngân hàng câu hỏi và đề đã lưu.
-- Trước khi khóa dữ liệu giáo viên khi đăng xuất/chuyển quyền, V21 tạo bản cứu hộ rồi mới đưa `state` về ngân hàng mẫu.
-- `Conflict Guard`: nếu nội dung giáo viên thay đổi đồng thời ở local và cloud, V21 tạm dừng tự ghi đè và cho chọn bản local, bản cloud hoặc gộp an toàn.
-- Firestore thêm `users/{uid}/syncMeta/v21` chỉ để lưu manifest đồng bộ; các collection Secure Exam/Low Reads cũ giữ nguyên.
+
+- Dashboard giáo viên có **xu hướng 8 tuần / 6 tháng**.
+- Học sinh đồng bộ thêm `skillSnapshot` và `recentAttempts` trong document `progress` đã có sẵn; không tạo N+1 reads mới.
+- **Heatmap mã kiến thức** tổng hợp độ chính xác, số học sinh và mức độ bằng chính progress documents dashboard vốn đã đọc.
+- **So sánh các lớp** dùng `analyticsV22` nhỏ lưu ngay trên document lớp. Mở Dashboard một lớp một lần để tạo/cập nhật snapshot; xem so sánh không tải members/submissions lớp khác.
+- **Gợi ý bài giao tự động**: chọn mã lớp yếu, ghép tối đa 10 câu từ ngân hàng, tạo đề nháp và mở sẵn màn hình giao cho nhóm cần hỗ trợ/đang củng cố. Giáo viên vẫn là người bấm nút Giao bài.
+- Khi học sinh mở kết quả Secure Exam đã chấm, V22 nhập **điểm và credit theo mã kiến thức** vào phân tích cá nhân mà không tải đáp án; sau đó progress V22 được đồng bộ lên lớp.
+- Sửa luồng thông báo dùng trực tiếp `analyticsSkillStats()` thay cho lời gọi cũ không tồn tại.
+
+## Firestore Reads
+
+V22 được thiết kế không đảo ngược Low Reads V19:
+
+- Heatmap/xu hướng dùng `progress` đã đọc sẵn.
+- So sánh lớp dùng summary nhỏ trên document `classes/{classId}` đã được query khi giáo viên đăng nhập.
+- Không tải toàn bộ submissions để dựng biểu đồ.
+- Chi tiết bài/học sinh vẫn lazy-load như V19.
 
 ## Cấu trúc
-- `index.html`: khung giao diện.
-- `assets/css/app.css`: CSS chính.
-- `assets/js/core.js`: chương trình học, state và version dữ liệu V21.
-- `assets/js/authoring.js`: phân quyền, ngân hàng câu hỏi, LaTeX/TikZ, tạo đề, phân tích.
-- `assets/js/data-vault.js`: IndexedDB, backup/restore, rescue và Data Safety Center.
-- `assets/js/exam.js`: phòng thi.
-- `assets/js/firebase.js`: Firebase Auth, Secure Exam, Low Reads và Conflict Guard.
-- `assets/js/bootstrap.js`: khởi tạo bất đồng bộ sau khi kiểm tra Data Safety Vault.
-- `firestore.rules`: Rules V21, bổ sung quyền cho `syncMeta`.
 
-## Cập nhật GitHub Pages
-1. Sao lưu bản V20 hiện tại.
-2. Upload **toàn bộ** `index.html` và thư mục `assets/` của V21.
-3. Cập nhật `firestore.rules` V21 vì V21 dùng thêm `users/{uid}/syncMeta/v21`.
-4. Mở website, đăng nhập giáo viên và bấm **Dữ liệu & sao lưu** để kiểm tra trạng thái.
+- `index.html`
+- `assets/css/app.css`
+- `assets/js/core.js`
+- `assets/js/authoring.js`
+- `assets/js/data-vault.js`
+- `assets/js/exam.js`
+- `assets/js/firebase.js`
+- `assets/js/dashboard-v22.js` — dashboard analytics mới
+- `assets/js/bootstrap.js`
+- `assets/vendor/mathjax.js`
+- `firestore.rules`
+
+## Cập nhật từ V21
+
+1. Upload **toàn bộ** gói V22 (`index.html` + `assets/`) lên GitHub Pages.
+2. `firestore.rules` V22 tương thích với Rules V21 và **không bắt buộc đổi Rules** nếu V21 đang chạy ổn, vì V22 chỉ ghi thêm field vào các document mà Rules hiện tại đã cho phép.
+3. Đăng nhập giáo viên, mở Dashboard từng lớp một lần để tạo `analyticsV22` phục vụ so sánh lớp.
+4. Học sinh sau lần đồng bộ V22 tiếp theo sẽ bổ sung `skillSnapshot`/`recentAttempts`; heatmap sẽ tự đầy dần.
 
 ## Lưu ý
-IndexedDB là kho cứu hộ trên chính trình duyệt/thiết bị, không thay thế bản backup tải ra file. Với dữ liệu quan trọng, nên định kỳ dùng nút **Xuất bản sao lưu** trong Data Safety Center.
+
+Các hàm/kho mang tên `v21...` và `syncMeta/v21` được giữ để bảo toàn tương thích dữ liệu Data Safety V21; đây không phải lỗi phiên bản.
