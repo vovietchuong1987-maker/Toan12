@@ -1,4 +1,4 @@
-/* ========================= V20 • EXAM BUILDER ========================= */
+/* ========================= V21 • EXAM BUILDER ========================= */
 let examBuilderDraft=null;
 const EB_LEVELS=['NB','TH','VD'];
 const EB_TYPES=['mcq','tf','tf4','short'];
@@ -86,10 +86,16 @@ function currentSecureRole(){return firebaseUser&&firebaseProfile?.role==='teach
 function isTeacherRole(){return currentSecureRole()==='teacher'}
 function canAccessPage(page,role=currentSecureRole()){return (ROLE_ACCESS[role]||ROLE_ACCESS.student).has(page)}
 function clearTeacherPrivateLocal(){
+  // V21: trước khi khóa nội dung giáo viên khỏi state đang hoạt động, luôn tạo bản cứu hộ.
+  // Học sinh vẫn dùng ngân hàng mẫu cho luyện tập, còn câu/đề riêng của giáo viên được cất trong Data Safety Vault.
+  state._meta=state._meta||{};
+  // Chỉ cất khi nội dung giáo viên đang thực sự mở. Nếu đã khóa rồi, không ghi đè bản cứu hộ bằng ngân hàng mẫu.
+  if(!state._meta.teacherContentInVault&&typeof v21StashTeacherContent==='function')v21StashTeacherContent('role-lock').catch(()=>{});
+  state._meta.teacherContentInVault=true;state._meta.teacherLockedAt=new Date().toISOString();
   state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));
   state.customExams=[];
   if(typeof examBuilderDraft!=='undefined')examBuilderDraft=null;
-  try{localStorage.setItem('math12hub2026',JSON.stringify(state))}catch(_){}
+  try{localStorage.setItem(LOCAL_STATE_KEY||'math12hub2026',JSON.stringify(state))}catch(_){}
   const tb=document.getElementById('questionBankTable');if(tb)tb.innerHTML='';
   const sv=document.getElementById('examBuilderSaved');if(sv)sv.innerHTML='';
 }
@@ -760,7 +766,7 @@ function latexCompatibilityTestCases(){
 function runLatexCompatibilityTests(){
   const lid=document.getElementById('bulkLesson')?.value||chapters[0].lessons[0].id,defaults={lessonId:lid,knowledgeCode:document.getElementById('bulkKnowledge')?.value||getLessonMeta(lid).knowledge[0].code,level:'TH',form:'Self-test'};const cases=latexCompatibilityTestCases();let passed=0,details=[];
   cases.forEach((tc,i)=>{const r=parseBulkLatexSource(tc.src,defaults),q=r.items[0],ok=!!q&&q.valid===tc.valid&&(!tc.type||q.item.type===tc.type)&&(!tc.layout||q.item.figureLayout===tc.layout)&&(!tc.figure||q.item.figureMode===tc.figure);if(ok)passed++;else details.push(`${i+1}. ${tc.name}`)});
-  const el=document.getElementById('bulkImportStatus');if(el)el.innerHTML=`<div class="bulk-test-report"><b>Self-test LaTeX V20: ${passed}/${cases.length} ca đạt.</b>${details.length?`<br><span style="color:var(--bad)">Cần kiểm tra: ${esc(details.join(' • '))}</span>`:'<br><span style="color:var(--good)">Các luồng chuẩn choice, choiceTF, shortans, immini và tkz-tab đều đạt.</span>'}</div>`;return {passed,total:cases.length,failed:details};
+  const el=document.getElementById('bulkImportStatus');if(el)el.innerHTML=`<div class="bulk-test-report"><b>Self-test LaTeX V21: ${passed}/${cases.length} ca đạt.</b>${details.length?`<br><span style="color:var(--bad)">Cần kiểm tra: ${esc(details.join(' • '))}</span>`:'<br><span style="color:var(--good)">Các luồng chuẩn choice, choiceTF, shortans, immini và tkz-tab đều đạt.</span>'}</div>`;return {passed,total:cases.length,failed:details};
 }
 function openBulkLatexImport(){if(!requireTeacher('Import LaTeX'))return;
   const lessonId=chapters[0].lessons[0].id,knowledgeCode=getLessonMeta(lessonId).knowledge[0].code;const sample=`% lesson: F1-01
@@ -786,7 +792,7 @@ Cho hàm số $y=x^3-3x+2$.
 \\end{ex}`;
   const body=`<div class="bulk-import-grid"><div class="field"><label>Bài mặc định</label><select id="bulkLesson" onchange="updateBulkKnowledge()">${bankEditorLessonOptions(lessonId)}</select></div><div class="field"><label>Mã kiến thức mặc định</label><select id="bulkKnowledge">${bankEditorKnowledgeOptions(lessonId,knowledgeCode)}</select></div><div class="field"><label>Mức độ mặc định</label><select id="bulkLevel"><option value="NB">Nhận biết</option><option value="TH" selected>Thông hiểu</option><option value="VD">Vận dụng</option></select></div><div class="field full"><label>Dạng toán mặc định (tùy chọn)</label><input id="bulkForm" placeholder="Ví dụ: Xét cực trị bằng đạo hàm"></div>
   <div class="field full"><label>Nhập trực tiếp từ file .tex</label><div class="file-drop-zone" id="bulkTexDropZone"><div><strong>Chọn hoặc kéo thả file .tex vào đây</strong><small>Hỗ trợ nhiều file cùng lúc • đọc UTF-8 • không làm thay đổi file gốc</small></div><div><input id="bulkTexFile" type="file" accept=".tex,.latex,.txt,text/plain" multiple hidden onchange="loadBulkTexFiles(this.files)"><button type="button" class="btn btn-soft" onclick="document.getElementById('bulkTexFile').click()">Chọn file .tex</button></div></div><div id="bulkFileStatus" style="margin-top:8px"></div></div>
-  <div class="field full"><label>Mã LaTeX hàng loạt</label><textarea id="bulkLatexSource" class="bulk-source" spellcheck="false">${esc(sample)}</textarea><div class="math-help"><b>Hỗ trợ:</b> <code>\\choice</code>, <code>\\choiceTF</code>, <code>\\shortans{...}</code>, <code>\\loigiai{...}</code>, <code>\\dapso{...}</code>, <code>\\True</code> và TikZ. Metadata từng câu: <code>% id:</code>, <code>% lesson:</code>, <code>% knowledge:</code>, <code>% level:</code>, <code>% form:</code>.</div></div><div class="field"><label>Xử lý mã câu bị trùng</label><select id="bulkDuplicate"><option value="rename">Tự đổi mã mới</option><option value="skip">Bỏ qua câu trùng</option><option value="replace">Ghi đè câu cũ</option></select></div><div class="field"><label>Chỉ nhập câu hợp lệ</label><select id="bulkValidOnly"><option value="yes">Có</option><option value="no">Không</option></select></div><div class="field full"><div class="bulk-import-actions"><button class="btn btn-blue" onclick="previewBulkLatexImport()">Phân tích & xem trước</button><button class="btn btn-soft" onclick="runLatexCompatibilityTests()">✓ Self-test V20</button><button class="btn btn-soft" onclick="document.getElementById('bulkLatexSource').value='';document.getElementById('bulkImportPreview').innerHTML='';bulkLatexParsed=[];document.getElementById('bulkCommitBtn').disabled=true">Xóa nội dung</button></div><div id="bulkImportStatus"></div><div id="bulkImportPreview" class="bulk-preview"></div></div></div>`;
+  <div class="field full"><label>Mã LaTeX hàng loạt</label><textarea id="bulkLatexSource" class="bulk-source" spellcheck="false">${esc(sample)}</textarea><div class="math-help"><b>Hỗ trợ:</b> <code>\\choice</code>, <code>\\choiceTF</code>, <code>\\shortans{...}</code>, <code>\\loigiai{...}</code>, <code>\\dapso{...}</code>, <code>\\True</code> và TikZ. Metadata từng câu: <code>% id:</code>, <code>% lesson:</code>, <code>% knowledge:</code>, <code>% level:</code>, <code>% form:</code>.</div></div><div class="field"><label>Xử lý mã câu bị trùng</label><select id="bulkDuplicate"><option value="rename">Tự đổi mã mới</option><option value="skip">Bỏ qua câu trùng</option><option value="replace">Ghi đè câu cũ</option></select></div><div class="field"><label>Chỉ nhập câu hợp lệ</label><select id="bulkValidOnly"><option value="yes">Có</option><option value="no">Không</option></select></div><div class="field full"><div class="bulk-import-actions"><button class="btn btn-blue" onclick="previewBulkLatexImport()">Phân tích & xem trước</button><button class="btn btn-soft" onclick="runLatexCompatibilityTests()">✓ Self-test V21</button><button class="btn btn-soft" onclick="document.getElementById('bulkLatexSource').value='';document.getElementById('bulkImportPreview').innerHTML='';bulkLatexParsed=[];document.getElementById('bulkCommitBtn').disabled=true">Xóa nội dung</button></div><div id="bulkImportStatus"></div><div id="bulkImportPreview" class="bulk-preview"></div></div></div>`;
   openModal('Import câu hỏi LaTeX hàng loạt','Chọn file .tex hoặc dán nhiều môi trường ex; hệ thống luôn cho xem trước trước khi nhập',body,`<button class="btn btn-soft" onclick="closeModal()">Đóng</button><button class="btn btn-blue" id="bulkCommitBtn" onclick="commitBulkLatexImport()" disabled>Nhập vào ngân hàng</button>`);
   setupBulkTexDropZone();
 }
@@ -882,7 +888,7 @@ function undoLastBankRestore(){
   try{const raw=localStorage.getItem('math12hub2026_bank_before_restore');if(!raw){alert('Chưa có bản hoàn tác khôi phục.');return}const data=JSON.parse(raw);if(!Array.isArray(data.questionBank))throw new Error('Bản hoàn tác không hợp lệ');if(!confirm(`Hoàn tác về ngân hàng trước lần khôi phục gần nhất (${data.questionBank.length} câu)?`))return;state.questionBank=data.questionBank;save();renderQuestionBank(true);localStorage.removeItem('math12hub2026_bank_before_restore');alert('Đã hoàn tác lần khôi phục gần nhất.')}catch(err){alert('Không thể hoàn tác: '+(err?.message||err))}
 }
 function resetQuestionBank(){if(!requireTeacher('Khôi phục ngân hàng'))return;if(!confirm('Khôi phục ngân hàng mẫu? Các câu đã thêm/sửa trong ngân hàng hiện tại sẽ bị thay thế.'))return;state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));save();renderQuestionBank(true)}
-function exportQuestionBank(){if(!requireTeacher('Xuất ngân hàng'))return;let blob=new Blob([JSON.stringify(state.questionBank,null,2)],{type:'application/json;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='math12-question-bank-v17.json';a.click();URL.revokeObjectURL(a.href)}
+function exportQuestionBank(){if(!requireTeacher('Xuất ngân hàng'))return;let blob=new Blob([JSON.stringify(state.questionBank,null,2)],{type:'application/json;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`math12-question-bank-v${APP_VERSION}.json`;a.click();URL.revokeObjectURL(a.href)}
 function equalShort(a,b){let x=normAns(a),y=normAns(b);return x===y||(!isNaN(Number(x))&&!isNaN(Number(y))&&Math.abs(Number(x)-Number(y))<.011)}
 const fullExam={
  mcq:[
