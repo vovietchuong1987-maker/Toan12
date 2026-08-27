@@ -179,3 +179,17 @@ button,input,select{font:inherit}.hidden{display:none!important}.app{min-height:
 .v22-class-compare{display:grid;gap:7px}.v22-class-row{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px;display:grid;grid-template-columns:minmax(140px,1.6fr) repeat(3,.7fr);gap:9px;align-items:center;text-align:left;color:inherit;cursor:pointer}.v22-class-row:hover{background:#fbfcff}.v22-class-row.current{border-color:#9fb4eb;background:#f7f9ff}.v22-class-row.missing{opacity:.7}.v22-class-row>div b{font-size:11px}.v22-class-row small{display:block;color:var(--muted);font-size:8px;margin-top:2px}.v22-class-row>span{text-align:center}.v22-class-row>span b{display:block;font-size:12px}
 .v22-suggestions{display:grid;gap:8px}.v22-suggestion{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px}.v22-suggestion-rank{width:26px;height:26px;border-radius:8px;background:#eef2ff;color:#435aa6;display:grid;place-items:center;font-weight:900;font-size:11px}.v22-suggestion b{font-size:11px}.v22-suggestion small{display:block;color:var(--muted);font-size:9px;margin-top:3px;line-height:1.45}.v22-suggestion .btn{white-space:nowrap}
 @media(max-width:900px){.v22-class-row{grid-template-columns:1fr 1fr 1fr}.v22-class-row>div{grid-column:1/-1}.v22-suggestion{grid-template-columns:28px 1fr}.v22-suggestion .btn{grid-column:1/-1}.v22-trend-summary{grid-template-columns:1fr 1fr 1fr}}@media(max-width:520px){.v22-trend-summary{grid-template-columns:1fr}.v22-heatmap{grid-template-columns:repeat(3,1fr)}.v22-class-row{grid-template-columns:1fr 1fr}.v22-class-row>div{grid-column:1/-1}}
+
+/* =========================================================
+   V24 — Account Security / Recycle Bin / Audit Log
+   ========================================================= */
+.security-good{color:var(--good,#198754)}
+.security-warn{color:var(--warn,#b7791f)}
+.audit-list,.trash-list{display:grid;gap:10px}
+.audit-row,.trash-class-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card,#fff)}
+.audit-row>div,.trash-class-card>div:first-child{min-width:0}
+.audit-row b,.trash-class-card b{display:block}
+.audit-row small,.trash-class-card small{display:block;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.audit-row>span{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+.trash-class-card .online-actions{justify-content:flex-end}
+@media(max-width:700px){.audit-row,.trash-class-card{align-items:flex-start;flex-direction:column}.audit-row>span{text-align:left}.trash-class-card .online-actions{width:100%;justify-content:flex-start}}
