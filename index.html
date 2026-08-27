@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V24 2026–2027 - Ôn tập Toán 12</title>
+<title>Math12 Hub V25 2026–2027 - Ôn tập Toán 12</title>
 <meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
-<meta name="app-version" content="22" />
+<meta name="app-version" content="25" />
 <meta name="app-architecture" content="modular-static-github-pages" />
 <script src="assets/js/mathjax-config.js"></script>
 <script src="assets/vendor/mathjax.js"></script>
@@ -31,10 +31,11 @@
       <button class="teacher-only" data-page="question-bank"><span class="ico">▦</span> Ngân hàng câu hỏi</button>
 <button class="teacher-only" data-page="exam-builder"><span class="ico">▧</span> Tạo đề kiểm tra</button>
       <button class="teacher-only" data-page="teacher"><span class="ico">♙</span> Theo dõi lớp</button>
+      <button class="admin-only" data-page="admin"><span class="ico">🛡</span> Quản trị hệ thống</button>
     </div>
     <div class="sidebar-foot">
       <div style="font-weight:800;margin-bottom:6px">Chương trình Toán 12</div>
-      <div class="tiny">Chương trình Toán 12 • GDPT 2018<br>Ôn tập theo bài, chương và kỳ thi THPT.<br>V24 • Account Security • Recycle Bin • Audit • Secure Exam.</div>
+      <div class="tiny">Chương trình Toán 12 • GDPT 2018<br>Ôn tập theo bài, chương và kỳ thi THPT.<br>V25 • Admin Console • User Control • System Alerts • Secure Exam.</div>
     </div>
   </aside>
   <main class="main">
@@ -62,8 +63,8 @@
         </div>
 
         <div class="teacher-only hero">
-          <div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Bảng điều khiển giáo viên • V24</div><h2>Theo dõi lớp bằng dữ liệu Firestore thật</h2><p>Xem tỷ lệ nộp bài, điểm trung bình, học sinh trễ hạn, mã kiến thức yếu và lịch sử làm bài của từng em. Dữ liệu được tổng hợp trực tiếp từ các lớp online do thầy/cô sở hữu.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('teacher')">Mở dashboard lớp</button><button class="btn btn-ghost" onclick="goPage('online')">Quản lý lớp & giao bài</button></div></div>
-          <div class="hero-progress"><small>V24 • Verified + Practice Analytics</small><br><strong>Class Intelligence</strong><div style="font-size:12px;color:#d9e3ff">Thành viên • Tiến độ • Bài giao • Lượt nộp</div><div class="progress" style="margin-top:14px"><span style="width:100%"></span></div><div style="margin-top:10px;font-size:12px">Có cảnh báo học sinh cần hỗ trợ và bảng xếp hạng theo kết quả thật.</div></div>
+          <div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Bảng điều khiển giáo viên • V25</div><h2>Theo dõi lớp bằng dữ liệu Firestore thật</h2><p>Xem tỷ lệ nộp bài, điểm trung bình, học sinh trễ hạn, mã kiến thức yếu và lịch sử làm bài của từng em. Dữ liệu được tổng hợp trực tiếp từ các lớp online do thầy/cô sở hữu.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('teacher')">Mở dashboard lớp</button><button class="btn btn-ghost" onclick="goPage('online')">Quản lý lớp & giao bài</button></div></div>
+          <div class="hero-progress"><small>V25 • Verified + Practice Analytics</small><br><strong>Class Intelligence</strong><div style="font-size:12px;color:#d9e3ff">Thành viên • Tiến độ • Bài giao • Lượt nộp</div><div class="progress" style="margin-top:14px"><span style="width:100%"></span></div><div style="margin-top:10px;font-size:12px">Có cảnh báo học sinh cần hỗ trợ và bảng xếp hạng theo kết quả thật.</div></div>
         </div>
 
         <div class="grid grid-4 mt student-only">
@@ -120,7 +121,7 @@
       <section class="section student-only" id="page-progress">
         <div class="section-head" style="margin-top:0"><div><h3>Tiến độ và năng lực cá nhân</h3><p>Dữ liệu lưu trên máy và tự đồng bộ Firestore khi đã đăng nhập.</p></div><button class="btn btn-danger" onclick="resetProgress()">Đặt lại dữ liệu mẫu</button></div>
         <div class="grid grid-4"><div class="card metric"><div><strong id="pDone">4</strong><small>Bài hoàn thành</small></div><div class="icon">✓</div></div><div class="card metric"><div><strong id="pQuiz">0</strong><small>Lượt kiểm tra</small></div><div class="icon">▤</div></div><div class="card metric"><div><strong id="pBest">—</strong><small>Điểm cao nhất</small></div><div class="icon">★</div></div><div class="card metric"><div><strong id="pLast">—</strong><small>Điểm gần nhất</small></div><div class="icon">◷</div></div></div>
-        <div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Tiến độ theo chương</h3><div id="chapterProgress"></div></div><div class="card"><h3 style="margin-top:0">Khuyến nghị học tiếp</h3><div class="notice"><b>V24:</b> Khuyến nghị được ưu tiên theo các mã kiến thức có độ chính xác thấp trong lịch sử làm bài. <button class="link-btn" onclick="goPage('analytics')">Mở phân tích chi tiết →</button></div><div id="recommendations" class="lesson-list mt"></div></div></div>
+        <div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Tiến độ theo chương</h3><div id="chapterProgress"></div></div><div class="card"><h3 style="margin-top:0">Khuyến nghị học tiếp</h3><div class="notice"><b>V25:</b> Khuyến nghị được ưu tiên theo các mã kiến thức có độ chính xác thấp trong lịch sử làm bài. <button class="link-btn" onclick="goPage('analytics')">Mở phân tích chi tiết →</button></div><div id="recommendations" class="lesson-list mt"></div></div></div>
       </section>
 
 
@@ -130,7 +131,7 @@
           <div><h3>Phân tích năng lực & luyện thích ứng</h3><p>Phân tích trực tiếp từ từng câu em đã làm, theo Chương → Mức độ → Mã kiến thức.</p></div>
           <div class="toolbar"><button class="btn btn-soft" onclick="renderAnalytics()">↻ Cập nhật</button><button class="btn btn-blue" onclick="startAdaptivePractice(10)">⚡ Luyện điểm yếu</button></div>
         </div>
-        <div id="analyticsNoData" class="analytics-empty hidden">Chưa có đủ dữ liệu câu hỏi để phân tích. Hãy làm ít nhất một bài kiểm tra sau bài hoặc đề tổng hợp; V24 sẽ bắt đầu ghi nhận kết quả theo từng mã kiến thức.</div>
+        <div id="analyticsNoData" class="analytics-empty hidden">Chưa có đủ dữ liệu câu hỏi để phân tích. Hãy làm ít nhất một bài kiểm tra sau bài hoặc đề tổng hợp; V25 sẽ bắt đầu ghi nhận kết quả theo từng mã kiến thức.</div>
         <div id="analyticsContent">
           <div class="analytics-hero">
             <div class="analytics-score-card">
@@ -150,7 +151,7 @@
               <div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Chi tiết theo mã kiến thức</h3><p>Ưu tiên mã có ít nhất 2 lượt làm để kết luận yếu/mạnh.</p></div></div><div class="table-wrap"><table class="skill-table"><thead><tr><th>Mã</th><th>Nội dung</th><th>Bài</th><th>Lượt</th><th>Chính xác</th><th>Trạng thái</th><th></th></tr></thead><tbody id="analyticsSkills"></tbody></table></div></div>
             </div>
             <div class="analytics-stack">
-              <div class="adaptive-card"><h3>⚡ Luyện thích ứng</h3><p>V24 tự chọn câu từ các mã kiến thức yếu nhất, ưu tiên câu chưa làm hoặc từng làm sai. Sau khi nộp, thứ hạng điểm yếu được tính lại.</p><div id="adaptiveWeakList"></div><div class="adaptive-actions"><button class="btn btn-blue" onclick="startAdaptivePractice(10)">Luyện 10 câu</button><button class="btn btn-soft" onclick="startAdaptivePractice(15)">Luyện 15 câu</button></div></div>
+              <div class="adaptive-card"><h3>⚡ Luyện thích ứng</h3><p>V25 tự chọn câu từ các mã kiến thức yếu nhất, ưu tiên câu chưa làm hoặc từng làm sai. Sau khi nộp, thứ hạng điểm yếu được tính lại.</p><div id="adaptiveWeakList"></div><div class="adaptive-actions"><button class="btn btn-blue" onclick="startAdaptivePractice(10)">Luyện 10 câu</button><button class="btn btn-soft" onclick="startAdaptivePractice(15)">Luyện 15 câu</button></div></div>
               <div class="card"><h3 style="margin-top:0">Xu hướng điểm gần đây</h3><div id="analyticsTrend" class="analytics-trend"></div></div>
               <div class="card"><h3 style="margin-top:0">Lịch sử gần nhất</h3><div id="analyticsRecent" class="analytics-recent"></div></div>
             </div>
@@ -244,7 +245,7 @@
 
 <section class="section" id="page-notifications">
   <div class="section-head" style="margin-top:0">
-    <div><h3>Trung tâm thông báo • V24</h3><p>Tự tổng hợp việc cần xử lý từ hạn nộp, lượt nộp và kết quả học tập. Không tạo thêm dữ liệu thông báo dư thừa trên Firestore.</p></div>
+    <div><h3>Trung tâm thông báo • V25</h3><p>Tự tổng hợp việc cần xử lý từ hạn nộp, lượt nộp và kết quả học tập. Không tạo thêm dữ liệu thông báo dư thừa trên Firestore.</p></div>
     <div class="notification-toolbar"><select id="notificationClassSelect" class="teacher-only" onchange="firebaseNotificationSelectClass(this.value)"><option value="">Chọn lớp</option></select><button class="btn btn-soft" onclick="firebaseRefreshNotifications(true)">↻ Làm mới</button></div>
   </div>
   <div id="notificationBanner" class="firebase-banner warn">Đăng nhập Firebase để tải thông báo.</div>
@@ -255,7 +256,7 @@
     <div class="card metric"><div><strong id="notifyMetricTotal">—</strong><small>Tổng thông báo</small></div><div class="icon">🔔</div></div>
   </div>
   <div class="grid grid-2 mt teacher-only">
-    <div class="card"><h3 style="margin-top:0">Giao việc nhanh theo nhóm</h3><p style="font-size:12px;color:var(--muted);line-height:1.6">V24 ưu tiên điểm Secure Exam đã xác minh khi chia nhóm từ điểm bài giao, độ chính xác và trạng thái trễ bài. Chọn nhóm để chuyển sang màn hình giao bài với đối tượng đã đặt sẵn.</p><div id="notificationSmartGroups" class="teacher-live-empty">Chọn lớp để phân nhóm.</div></div>
+    <div class="card"><h3 style="margin-top:0">Giao việc nhanh theo nhóm</h3><p style="font-size:12px;color:var(--muted);line-height:1.6">V25 ưu tiên điểm Secure Exam đã xác minh khi chia nhóm từ điểm bài giao, độ chính xác và trạng thái trễ bài. Chọn nhóm để chuyển sang màn hình giao bài với đối tượng đã đặt sẵn.</p><div id="notificationSmartGroups" class="teacher-live-empty">Chọn lớp để phân nhóm.</div></div>
     <div class="card"><h3 style="margin-top:0">Chủ đề nên can thiệp</h3><p style="font-size:12px;color:var(--muted);line-height:1.6">Ưu tiên mã kiến thức đang yếu ở nhiều học sinh nhất.</p><div id="notificationWeakSkills" class="teacher-live-empty">Chưa có dữ liệu.</div></div>
   </div>
   <div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3 id="notificationListTitle">Thông báo ưu tiên</h3><p id="notificationListHint">Các việc được sắp theo mức độ cần xử lý.</p></div></div><div id="notificationList"><div class="notification-empty">Chưa có thông báo.</div></div></div>
@@ -269,11 +270,11 @@
       <div class="card">
         <h3 style="margin-top:0">Tài khoản & đồng bộ</h3>
         <div id="firebaseProfileBox" class="online-empty">Chưa đăng nhập.</div>
-        <div class="cloud-sync-note mt">V24 vẫn lưu một bản dữ liệu trên máy bằng localStorage. Khi đã đăng nhập, tiến độ, lịch sử làm bài, kết quả phân tích và nội dung giáo viên sẽ được đồng bộ Firestore. Nếu mất mạng, thầy/cô và học sinh vẫn có thể tiếp tục dùng dữ liệu trên máy rồi đồng bộ lại sau.</div>
+        <div class="cloud-sync-note mt">V25 vẫn lưu một bản dữ liệu trên máy bằng localStorage. Khi đã đăng nhập, tiến độ, lịch sử làm bài, kết quả phân tích và nội dung giáo viên sẽ được đồng bộ Firestore. Nếu mất mạng, thầy/cô và học sinh vẫn có thể tiếp tục dùng dữ liệu trên máy rồi đồng bộ lại sau.</div>
       </div>
       <div class="card mt">
-        <div class="section-head" style="margin:0 0 8px"><div><h3>🛡 Data Safety V24</h3><p>Kho cứu hộ IndexedDB, điểm khôi phục và bảo vệ xung đột local/cloud.</p></div><button class="btn btn-soft" onclick="v21OpenDataSafetyCenter()">Mở trung tâm dữ liệu</button></div>
-        <div class="cloud-sync-note">V24 tiếp tục dùng Data Safety Vault để tự tạo bản mirror trên thiết bị. Trước khi khóa dữ liệu giáo viên, khôi phục hoặc xử lý xung đột, hệ thống tạo/cất bản cứu hộ để giảm nguy cơ mất ngân hàng câu hỏi và đề đã lưu.</div>
+        <div class="section-head" style="margin:0 0 8px"><div><h3>🛡 Data Safety V25</h3><p>Kho cứu hộ IndexedDB, điểm khôi phục và bảo vệ xung đột local/cloud.</p></div><button class="btn btn-soft" onclick="v21OpenDataSafetyCenter()">Mở trung tâm dữ liệu</button></div>
+        <div class="cloud-sync-note">V25 tiếp tục dùng Data Safety Vault để tự tạo bản mirror trên thiết bị. Trước khi khóa dữ liệu giáo viên, khôi phục hoặc xử lý xung đột, hệ thống tạo/cất bản cứu hộ để giảm nguy cơ mất ngân hàng câu hỏi và đề đã lưu.</div>
       </div>
       <div class="card mt">
         <div class="section-head" style="margin:0 0 10px"><div><h3>Lớp của tôi</h3><p id="onlineClassHint">Đăng nhập để xem lớp.</p></div></div>
@@ -291,6 +292,59 @@
         <div id="onlineAssignments" class="assignment-list"><div class="online-empty">Đăng nhập để tải bài được giao.</div></div>
       </div>
     </div>
+  </div>
+</section>
+
+
+<section class="section admin-only" id="page-admin">
+  <div class="section-head" style="margin-top:0">
+    <div><h2 style="margin:0">Quản trị hệ thống • V25</h2><p>Quản lý tài khoản, quyền truy cập lớp, cảnh báo vận hành và nhật ký quản trị tập trung.</p></div>
+    <div class="online-actions"><span class="pill">Cập nhật: <b id="v25AdminUpdatedAt">—</b></span><button class="btn btn-blue" onclick="v25AdminRefresh(true)">↻ Làm mới</button></div>
+  </div>
+  <div id="v25AdminBanner" class="firebase-banner warn">Đăng nhập tài khoản Quản trị viên để tải dữ liệu hệ thống.</div>
+
+  <div class="grid grid-5 mt v25-admin-metrics">
+    <div class="card"><small>Tổng tài khoản</small><h2 id="v25MetricUsers">—</h2></div>
+    <div class="card"><small>Giáo viên</small><h2 id="v25MetricTeachers">—</h2></div>
+    <div class="card"><small>Học sinh</small><h2 id="v25MetricStudents">—</h2></div>
+    <div class="card"><small>Tài khoản khóa</small><h2 id="v25MetricLocked">—</h2></div>
+    <div class="card"><small>Lớp hoạt động</small><h2 id="v25MetricClasses">—</h2></div>
+  </div>
+
+  <div class="grid grid-2 mt">
+    <div class="card">
+      <div class="section-head" style="margin:0 0 10px"><div><h3>Cảnh báo hệ thống</h3><p>Kiểm tra nhanh các trạng thái cần quản trị viên chú ý.</p></div></div>
+      <div id="v25AdminAlerts"><div class="online-empty">Đang chờ dữ liệu.</div></div>
+    </div>
+    <div class="card">
+      <div class="section-head" style="margin:0 0 10px"><div><h3>Giới hạn bảo mật</h3><p>V25 khóa tài khoản bằng Firestore Rules.</p></div></div>
+      <div class="firebase-banner warn"><b>Khóa ở cấp ứng dụng:</b> tài khoản bị khóa vẫn tồn tại trong Firebase Authentication nhưng không được đọc/ghi dữ liệu Math12 Hub. Muốn vô hiệu hóa Auth hoàn toàn cần Firebase Admin SDK hoặc backend tin cậy.</div>
+      <div class="cloud-sync-note mt">Không cho phép một admin tự nâng người dùng khác thành admin trên trình duyệt. Admin gốc phải được thiết lập trực tiếp trong Firebase Console.</div>
+    </div>
+  </div>
+
+  <div class="card mt">
+    <div class="section-head" style="margin:0 0 10px">
+      <div><h3>Quản lý tài khoản</h3><p>Đổi quyền Học sinh ↔ Giáo viên, khóa/mở truy cập và gửi yêu cầu đặt lại mật khẩu.</p></div>
+      <span id="v25UserResultCount" class="pill">0 tài khoản</span>
+    </div>
+    <div class="v25-admin-toolbar">
+      <input id="v25UserSearch" placeholder="Tìm tên, email hoặc UID…" oninput="v25AdminApplyFilters()">
+      <select id="v25UserRoleFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả vai trò</option><option value="student">Học sinh</option><option value="teacher">Giáo viên</option><option value="admin">Quản trị viên</option></select>
+      <select id="v25UserStatusFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả trạng thái</option><option value="active">Hoạt động</option><option value="locked">Đã khóa</option></select>
+    </div>
+    <div class="table-wrap mt"><table class="table"><thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Trạng thái</th><th>Email</th><th>Đăng nhập gần nhất</th><th>Quản lý</th></tr></thead><tbody id="v25UserTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
+  </div>
+
+  <div class="card mt">
+    <div class="section-head" style="margin:0 0 10px"><div><h3>Quản trị lớp</h3><p>Quan sát toàn hệ thống và tạm khóa/mở quyền học sinh truy cập một lớp khi cần.</p></div></div>
+    <div class="v25-admin-toolbar"><input id="v25ClassSearch" placeholder="Tìm tên lớp, giáo viên hoặc owner UID…" oninput="v25AdminRenderClasses()"></div>
+    <div class="table-wrap mt"><table class="table"><thead><tr><th>Lớp</th><th>Chủ lớp</th><th>Trạng thái</th><th>HS snapshot</th><th>Điểm TB</th><th>Quản lý</th></tr></thead><tbody id="v25ClassTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
+  </div>
+
+  <div class="card mt">
+    <div class="section-head" style="margin:0 0 10px"><div><h3>Nhật ký quản trị</h3><p>Chỉ ghi các thao tác quyền cao của V25; client không được sửa hoặc xóa lịch sử này.</p></div></div>
+    <div id="v25AdminAudit"><div class="online-empty">Chưa có nhật ký.</div></div>
   </div>
 </section>
 
@@ -316,13 +370,13 @@
       <div id="v22ClassTrend"><div class="teacher-live-empty">Chưa có dữ liệu xu hướng.</div></div>
     </div>
     <div class="card v22-analytics-card">
-      <div class="section-head" style="margin:0 0 8px"><div><h3>Heatmap mã kiến thức • Tự luyện</h3><p>Dữ liệu progress do học sinh đồng bộ; dùng để gợi ý học tập, không coi là điểm xác minh.</p></div><span class="v22-chip">V24</span></div>
+      <div class="section-head" style="margin:0 0 8px"><div><h3>Heatmap mã kiến thức • Tự luyện</h3><p>Dữ liệu progress do học sinh đồng bộ; dùng để gợi ý học tập, không coi là điểm xác minh.</p></div><span class="v22-chip">V25</span></div>
       <div id="v22SkillHeatmap"><div class="teacher-live-empty">Đang chờ skillSnapshot từ học sinh.</div></div>
     </div>
   </div>
   <div class="grid grid-2 mt">
     <div class="card v22-analytics-card">
-      <div class="section-head" style="margin:0 0 8px"><div><h3>So sánh các lớp</h3><p>Đọc snapshot V24 đã lưu ngay trên document lớp; không tải toàn bộ học sinh lớp khác.</p></div></div>
+      <div class="section-head" style="margin:0 0 8px"><div><h3>So sánh các lớp</h3><p>Đọc snapshot V25 đã lưu ngay trên document lớp; không tải toàn bộ học sinh lớp khác.</p></div></div>
       <div id="v22ClassComparison"><div class="teacher-live-empty">Mở Dashboard từng lớp một lần để tạo snapshot so sánh.</div></div>
     </div>
     <div class="card v22-analytics-card">
@@ -355,7 +409,7 @@
 <div id="mobileOverlay" class="mobile-overlay hidden"></div>
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><div><h3 id="modalTitle">Bài kiểm tra</h3><small id="modalSub" style="color:var(--muted)"></small></div><button class="close" onclick="closeModal()">×</button></div><div class="modal-body" id="modalBody"></div><div class="quiz-footer" id="modalFooter"></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
-<!-- V24 App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
+<!-- V25 App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
      Để trống = App Check chưa kích hoạt; KHÔNG bật enforcement trước khi đã kiểm tra request metrics. -->
 <script>window.MATH12_APP_CHECK_SITE_KEY = window.MATH12_APP_CHECK_SITE_KEY || '';</script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
@@ -367,6 +421,7 @@
 <script src="assets/js/exam.js"></script>
 <script src="assets/js/firebase.js"></script>
 <script src="assets/js/dashboard-v22.js"></script>
+<script src="assets/js/admin-v25.js"></script>
 <script src="assets/js/bootstrap.js"></script>
 </body>
 </html>

@@ -80,10 +80,15 @@ function exportCustomExam(id){let e=(state.customExams||[]).find(x=>x.id===id);i
 
 const ROLE_ACCESS={
   student:new Set(['dashboard','lessons','lesson-detail','chapters','periodic','thpt','progress','analytics','notifications','online']),
-  teacher:new Set(['dashboard','lessons','lesson-detail','chapters','periodic','thpt','notifications','online','question-bank','exam-builder','teacher'])
+  teacher:new Set(['dashboard','lessons','lesson-detail','chapters','periodic','thpt','notifications','online','question-bank','exam-builder','teacher']),
+  admin:new Set(['dashboard','lessons','lesson-detail','chapters','periodic','thpt','notifications','online','question-bank','exam-builder','teacher','admin'])
 };
-function currentSecureRole(){return firebaseUser&&firebaseProfile?.role==='teacher'?'teacher':'student'}
-function isTeacherRole(){return currentSecureRole()==='teacher'}
+function currentSecureRole(){
+  if(!firebaseUser||!firebaseProfile)return 'student';
+  return firebaseProfile.role==='admin'?'admin':firebaseProfile.role==='teacher'?'teacher':'student';
+}
+function isTeacherRole(){return ['teacher','admin'].includes(currentSecureRole())}
+function isAdminRole(){return currentSecureRole()==='admin'}
 function canAccessPage(page,role=currentSecureRole()){return (ROLE_ACCESS[role]||ROLE_ACCESS.student).has(page)}
 function clearTeacherPrivateLocal(){
   // V21: trước khi khóa nội dung giáo viên khỏi state đang hoạt động, luôn tạo bản cứu hộ.
@@ -100,13 +105,19 @@ function clearTeacherPrivateLocal(){
   const sv=document.getElementById('examBuilderSaved');if(sv)sv.innerHTML='';
 }
 function applyRoleAccess(role='student',navigate=false){
-  role=role==='teacher'?'teacher':'student';
+  role=role==='admin'?'admin':role==='teacher'?'teacher':'student';
   state.role=role;
   try{localStorage.setItem('math12hub2026',JSON.stringify(state))}catch(_){}
-  document.getElementById('app')?.classList.toggle('teacher-mode',role==='teacher');
+  const app=document.getElementById('app');
+  app?.classList.toggle('teacher-mode',role==='teacher'||role==='admin');
+  app?.classList.toggle('admin-mode',role==='admin');
   const badge=document.getElementById('secureRoleBadge');
-  if(badge){badge.className=`secure-role-badge ${firebaseUser?role:'guest'}`;badge.textContent=firebaseUser?(role==='teacher'?'♙ Giáo viên':'👤 Học sinh'):'○ Khách';badge.title=firebaseUser?'Vai trò được xác thực từ Firestore':'Chưa đăng nhập • quyền học sinh';}
-  if(role!=='teacher')clearTeacherPrivateLocal();
+  if(badge){
+    badge.className=`secure-role-badge ${firebaseUser?role:'guest'}`;
+    badge.textContent=firebaseUser?(role==='admin'?'🛡 Quản trị viên':role==='teacher'?'♙ Giáo viên':'👤 Học sinh'):'○ Khách';
+    badge.title=firebaseUser?'Vai trò được xác thực từ Firestore':'Chưa đăng nhập • quyền học sinh';
+  }
+  if(role!=='teacher'&&role!=='admin')clearTeacherPrivateLocal();
   if(typeof firebaseNotificationItems!=='undefined'){firebaseNotificationItems=[];firebaseSetNotificationBadge(0)}
   const active=document.querySelector('.section.active')?.id?.replace(/^page-/,'')||'dashboard';
   if(!canAccessPage(active,role)||navigate)goPage('dashboard',true);
@@ -120,10 +131,10 @@ function requireTeacher(action='Chức năng này'){
 function goPage(page,internal=false){
   const role=currentSecureRole();
   if(!canAccessPage(page,role)){
-    if(!internal)alert(`Mục “${page==='question-bank'?'Ngân hàng câu hỏi':page==='exam-builder'?'Tạo đề kiểm tra':page==='teacher'?'Theo dõi lớp':'này'}” chỉ dành cho ${['question-bank','exam-builder','teacher'].includes(page)?'giáo viên':'học sinh'}.`);
+    if(!internal){let who=page==='admin'?'quản trị viên':['question-bank','exam-builder','teacher'].includes(page)?'giáo viên':'học sinh',label=page==='question-bank'?'Ngân hàng câu hỏi':page==='exam-builder'?'Tạo đề kiểm tra':page==='teacher'?'Theo dõi lớp':page==='admin'?'Quản trị hệ thống':'này';alert(`Mục “${label}” chỉ dành cho ${who}.`);}
     page='dashboard';
   }
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));let p=document.getElementById('page-'+page);if(p)p.classList.add('active');document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));let titles={dashboard:'Tổng quan học tập',lessons:'Học theo bài',chapters:'Ôn theo chương',periodic:'Kiểm tra định kỳ',thpt:'Ôn thi tốt nghiệp THPT',progress:'Tiến độ của em',analytics:'Phân tích năng lực','lesson-detail':'Chi tiết bài học','question-bank':'Ngân hàng câu hỏi','exam-builder':'Tạo đề kiểm tra',notifications:'Thông báo',online:'Lớp học online',teacher:'Theo dõi lớp'};document.getElementById('pageTitle').textContent=titles[page]||'Math12 Hub';if(page==='progress')renderProgress();if(page==='analytics')renderAnalytics();if(page==='lesson-detail')renderLessonDetail();if(page==='question-bank'&&isTeacherRole())renderQuestionBank(true);if(page==='exam-builder'&&isTeacherRole()){renderExamBuilder(!document.getElementById('examBuilderMatrix')?.children.length);toggleExamBuilderTypes(false)}if(page==='notifications'){renderNotificationsPage();setTimeout(()=>firebaseRefreshNotifications(false),0)}if(page==='online')renderFirebaseOnlinePage();if(page==='teacher'&&isTeacherRole()){renderTeacher();setTimeout(()=>firebaseRefreshTeacherDashboard(false),0)}closeSidebar()
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));let p=document.getElementById('page-'+page);if(p)p.classList.add('active');document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));let titles={dashboard:'Tổng quan học tập',lessons:'Học theo bài',chapters:'Ôn theo chương',periodic:'Kiểm tra định kỳ',thpt:'Ôn thi tốt nghiệp THPT',progress:'Tiến độ của em',analytics:'Phân tích năng lực','lesson-detail':'Chi tiết bài học','question-bank':'Ngân hàng câu hỏi','exam-builder':'Tạo đề kiểm tra',notifications:'Thông báo',online:'Lớp học online',teacher:'Theo dõi lớp',admin:'Quản trị hệ thống'};document.getElementById('pageTitle').textContent=titles[page]||'Math12 Hub';if(page==='progress')renderProgress();if(page==='analytics')renderAnalytics();if(page==='lesson-detail')renderLessonDetail();if(page==='question-bank'&&isTeacherRole())renderQuestionBank(true);if(page==='exam-builder'&&isTeacherRole()){renderExamBuilder(!document.getElementById('examBuilderMatrix')?.children.length);toggleExamBuilderTypes(false)}if(page==='notifications'){renderNotificationsPage();setTimeout(()=>firebaseRefreshNotifications(false),0)}if(page==='online')renderFirebaseOnlinePage();if(page==='teacher'&&isTeacherRole()){renderTeacher();setTimeout(()=>firebaseRefreshTeacherDashboard(false),0)}if(page==='admin'&&isAdminRole()){renderAdminV25?.();setTimeout(()=>v25AdminRefresh?.(false),0)}closeSidebar()
 }
 function setRole(){applyRoleAccess(currentSecureRole(),true)}
 
