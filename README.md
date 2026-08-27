@@ -1,25 +1,25 @@
-# Math12 Hub V22 — Smart Class Analytics
+# Math12 Hub V23 — Production Hardening & Data Integrity
 
-V22 nâng trực tiếp từ V21, giữ nguyên Secure Exam V18, Low Reads V19, kiến trúc module V20 và Data Safety Vault V21.
+V23 nâng trực tiếp từ V22, giữ nguyên Secure Exam V18, Low Reads V19, kiến trúc module V20, Data Safety Vault V21 và Smart Analytics V22. Mục tiêu của V23 là làm chắc dữ liệu trước khi dùng rộng cho nhiều lớp học sinh.
 
-## Nâng cấp chính
+## Nâng cấp chính V23
 
-- Dashboard giáo viên có **xu hướng 8 tuần / 6 tháng**.
-- Học sinh đồng bộ thêm `skillSnapshot` và `recentAttempts` trong document `progress` đã có sẵn; không tạo N+1 reads mới.
-- **Heatmap mã kiến thức** tổng hợp độ chính xác, số học sinh và mức độ bằng chính progress documents dashboard vốn đã đọc.
-- **So sánh các lớp** dùng `analyticsV22` nhỏ lưu ngay trên document lớp. Mở Dashboard một lớp một lần để tạo/cập nhật snapshot; xem so sánh không tải members/submissions lớp khác.
-- **Gợi ý bài giao tự động**: chọn mã lớp yếu, ghép tối đa 10 câu từ ngân hàng, tạo đề nháp và mở sẵn màn hình giao cho nhóm cần hỗ trợ/đang củng cố. Giáo viên vẫn là người bấm nút Giao bài.
-- Khi học sinh mở kết quả Secure Exam đã chấm, V22 nhập **điểm và credit theo mã kiến thức** vào phân tích cá nhân mà không tải đáp án; sau đó progress V22 được đồng bộ lên lớp.
-- Sửa luồng thông báo dùng trực tiếp `analyticsSkillStats()` thay cho lời gọi cũ không tồn tại.
+- **Tiến độ mới bắt đầu sạch:** tài khoản/thiết bị mới bắt đầu `0/19` bài, chuỗi học được tính từ lịch sử thật thay vì hard-code 5 ngày.
+- **Dọn seed demo V22 an toàn:** chỉ xóa bộ 4 bài mẫu cũ khi thiết bị chưa có attempt, examAttempt, questionHistory hoặc lessonScores thật.
+- **Tạo lớp bằng batch:** document lớp và join code được tạo trong cùng một atomic batch.
+- **Tham gia/rời lớp bằng batch:** member, membership và progress được cập nhật/xóa cùng một thao tác để giảm trạng thái lệch.
+- **Xóa lớp an toàn theo 3 giai đoạn:** khóa join code + đánh dấu `deleting`, thu hồi quyền học sinh trước, sau đó mới xóa bài/lượt nộp/tổng hợp rồi xóa document lớp. Nếu mạng lỗi, có thể bấm Xóa lại để tiếp tục.
+- **Rules V23 cho phép chủ lớp xóa membership** của học sinh trong đúng quy trình xóa lớp.
+- **Bài giao theo nhóm được bảo vệ ở cả UI và Firestore Rules:** học sinh chỉ được đọc bài `targetMode == all` hoặc bài có UID của mình trong `targetUids`.
+- **Low Reads vẫn được giữ:** học sinh tải bài bằng 2 query nhỏ (`all` + `array-contains uid`) thay vì tải toàn bộ bài của lớp rồi lọc trên client.
+- **Tách dữ liệu xác minh và tự luyện:** điểm trung bình Secure Exam lấy từ `studentStatsV19`/assignment aggregate (giáo viên ghi) được ưu tiên cho trạng thái và xu hướng lớp; `progress`/`skillSnapshot` được gắn nhãn dữ liệu tự luyện, dùng cho heatmap/gợi ý chứ không coi là điểm xác minh.
+- **Snapshot so sánh lớp:** V23 ghi `analyticsV23`, vẫn đọc fallback `analyticsV22` để không mất dữ liệu cũ.
 
-## Firestore Reads
+## Firestore Rules — bắt buộc cập nhật
 
-V22 được thiết kế không đảo ngược Low Reads V19:
+V23 **cần publish file `firestore.rules` mới**. Nếu giữ Rules V22, quy trình xóa lớp mới sẽ không thể xóa membership của học sinh và học sinh vẫn có quyền đọc toàn bộ assignment document trong lớp.
 
-- Heatmap/xu hướng dùng `progress` đã đọc sẵn.
-- So sánh lớp dùng summary nhỏ trên document `classes/{classId}` đã được query khi giáo viên đăng nhập.
-- Không tải toàn bộ submissions để dựng biểu đồ.
-- Chi tiết bài/học sinh vẫn lazy-load như V19.
+Sau khi publish Rules V23, giáo viên nên mở màn hình quản lý từng lớp một lần. V23 sẽ tự chuẩn hóa các assignment Secure cũ thiếu `targetMode/targetUids` thành `targetMode: "all"` để tương thích Rules mới.
 
 ## Cấu trúc
 
@@ -30,18 +30,19 @@ V22 được thiết kế không đảo ngược Low Reads V19:
 - `assets/js/data-vault.js`
 - `assets/js/exam.js`
 - `assets/js/firebase.js`
-- `assets/js/dashboard-v22.js` — dashboard analytics mới
+- `assets/js/dashboard-v22.js` — giữ tên file để tương thích, bên trong đã nâng logic V23
 - `assets/js/bootstrap.js`
 - `assets/vendor/mathjax.js`
 - `firestore.rules`
 
-## Cập nhật từ V21
+## Thứ tự triển khai từ V22
 
-1. Upload **toàn bộ** gói V22 (`index.html` + `assets/`) lên GitHub Pages.
-2. `firestore.rules` V22 tương thích với Rules V21 và **không bắt buộc đổi Rules** nếu V21 đang chạy ổn, vì V22 chỉ ghi thêm field vào các document mà Rules hiện tại đã cho phép.
-3. Đăng nhập giáo viên, mở Dashboard từng lớp một lần để tạo `analyticsV22` phục vụ so sánh lớp.
-4. Học sinh sau lần đồng bộ V22 tiếp theo sẽ bổ sung `skillSnapshot`/`recentAttempts`; heatmap sẽ tự đầy dần.
+1. Publish `firestore.rules` V23 trước.
+2. Upload toàn bộ gói V23 (`index.html` + `assets/`) lên GitHub Pages.
+3. Đăng nhập bằng tài khoản giáo viên và mở từng lớp một lần để V23 chuẩn hóa assignment cũ.
+4. Kiểm tra thử bằng 1 tài khoản học sinh: bài cả lớp hiển thị, bài nhóm khác không hiển thị, bài đúng nhóm vẫn hiển thị và nộp được.
+5. Chỉ sau khi kiểm tra bước 4 mới dùng chức năng xóa lớp trên dữ liệu thật.
 
-## Lưu ý
+## Tương thích
 
-Các hàm/kho mang tên `v21...` và `syncMeta/v21` được giữ để bảo toàn tương thích dữ liệu Data Safety V21; đây không phải lỗi phiên bản.
+Các hàm/kho mang tên `v21...`, `v22...`, `syncMeta/v21`, `studentStatsV19`, `assignmentsV18` được giữ có chủ đích để bảo toàn dữ liệu và tránh migration lớn. Tên cũ không có nghĩa là tính năng đang ở phiên bản cũ.
