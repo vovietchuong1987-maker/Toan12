@@ -6,6 +6,9 @@ const V29_MAX_VERSIONS=5;
 let v29DuplicateCache={signature:'',pairs:[],byId:new Map()};
 let v29BankPage=1,v29LastFilterSignature='';
 
+let v34BankInputTimer=null;
+function v34ScheduleBankRender(force=false){clearTimeout(v34BankInputTimer);v34BankInputTimer=setTimeout(()=>renderQuestionBank(force),180)}
+
 function v29Clone(x){return JSON.parse(JSON.stringify(x))}
 function v29IsoNow(){return new Date().toISOString()}
 function v29NormalizeTags(tags){
@@ -194,5 +197,5 @@ deleteBankQuestion=async function(id){await v29BaseDeleteBankQuestion(id);v29Dup
 renderQuestionBank=v29RenderQuestionBank;
 
 function v29BankChangePage(delta=0){v29BankPage=Math.max(1,v29BankPage+Number(delta||0));renderQuestionBank()}
-function v29BindBankControls(){['bankReviewStatus','bankDifficulty','bankSource','bankSort','bankPageSize'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>renderQuestionBank()));const dup=document.getElementById('bankDuplicateFilter');dup?.addEventListener('change',()=>{if(dup.value)v29ScanDuplicates(true);renderQuestionBank()});document.getElementById('bankTag')?.addEventListener('input',()=>renderQuestionBank())}
+function v29BindBankControls(){['bankReviewStatus','bankDifficulty','bankSource','bankSort','bankPageSize'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>renderQuestionBank()));const dup=document.getElementById('bankDuplicateFilter');dup?.addEventListener('change',()=>{if(dup.value)v29ScanDuplicates(true);renderQuestionBank()});document.getElementById('bankTag')?.addEventListener('input',()=>v34ScheduleBankRender(false))}
 v29EnsureQuestionBankMetadata(true);v29BindBankControls();

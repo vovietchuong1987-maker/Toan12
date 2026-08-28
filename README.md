@@ -1,266 +1,42 @@
-# Math12 Hub V32 – AI Teacher Assistant
+# Math12 Hub V34 — Performance & Scale
 
-V32 được nâng trực tiếp từ V31. Toàn bộ Secure Exam V18, Low Reads V19, Data Safety V21, Dashboard V22, Account/Admin V24–V25, Data Integrity V26, Teacher Operations V27, Student Learning UX V28, Question Bank Pro V29, Exam Engine Pro V30 và Analytics & Competency Pro V31 được giữ nguyên.
+V34 nâng trực tiếp từ V33, giữ nguyên Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32 và Reports V33.
 
-## Mục tiêu V32
+## Nâng cấp chính
 
-V32 thêm một lớp **AI hỗ trợ biên tập cho giáo viên** nhưng không cho AI tự xuất bản nội dung. Quy trình bắt buộc là:
+- **Dashboard + chi tiết lớp phân trang 60 học sinh/lần**; lần mở đầu chỉ đọc progress/studentStats của các em đang hiển thị.
+- **Analytics toàn lớp lazy-load**: heatmap/bản đồ năng lực chi tiết chỉ quét đầy đủ khi giáo viên bấm “Tải phân tích đầy đủ”; snapshot tổng quan cũ vẫn được dùng để hiển thị nhanh và V34 không ghi đè snapshot bằng dữ liệu một phần.
+- **Quản lý bài giao phân trang 60 bài/lần** thay vì ép tải toàn bộ danh sách mỗi lần mở.
+- **Danh sách bài của học sinh giới hạn 80 bài mới nhất mỗi truy vấn target**, dùng `opensAt DESC`.
+- **Migration marker V34**: sau lần chuẩn hóa đầu tiên, V18/V27 migration không quét lặp toàn bộ assignment ở các lần mở lớp sau.
+- **Cache thích ứng 60–180 giây**, vẫn bị vô hiệu ngay khi có ghi mới.
+- **Admin directory 100 document/trang** với cursor pagination; dùng aggregation `count()` khi SDK hỗ trợ để lấy tổng mà không tải toàn bộ document.
+- **Performance Center**: reads ước tính, số query, cache hit, query chậm, storage estimate, cảnh báo và file diagnostics không chứa UID/email/đáp án.
+- **Debounce tìm kiếm ngân hàng câu hỏi** để không render lại toàn bảng ở từng phím gõ.
+- CSS `content-visibility` cho các danh sách dài để giảm chi phí layout/paint.
 
-`Nguồn giáo viên → AI tạo/kiểm tra bản nháp → Hàng chờ AI → Giáo viên xem/chỉnh/duyệt → Question Bank Pro → Tạo đề/Giao bài`
+## Firestore indexes V34
 
-AI không tự ghi câu vào ngân hàng, không tự thay đáp án câu đang dùng, không tự đánh dấu câu là đã duyệt chuyên môn và không tự giao bài cho học sinh.
+V34 giữ 2 index ASC cũ và thêm 2 index DESC cho truy vấn 80 bài mới nhất của học sinh:
 
-## 1. Trợ lý AI riêng cho giáo viên
+1. `targetMode ASC + opensAt DESC`
+2. `targetUids ARRAY_CONTAINS + opensAt DESC`
 
-Menu mới: **Trợ lý AI**.
+Hãy deploy `firestore.indexes.json` và chờ hai index mới ở trạng thái **Enabled/Ready** trước khi dùng V34 cho học sinh.
 
-Trang này chỉ mở cho vai trò `teacher` và `admin`, dùng cùng cơ chế `ROLE_ACCESS` hiện có.
+## Thứ tự triển khai
 
-Các nhóm chức năng:
+1. Sao lưu V33.
+2. Publish `firestore.rules` V34 (quyền dữ liệu không mở rộng so với V33).
+3. Deploy `firestore.indexes.json` V34 và chờ 2 index DESC mới sẵn sàng.
+4. Upload `index.html` + `assets/` lên GitHub Pages.
+5. Giáo viên mở từng lớp một lần; V34 sẽ ghi marker migration để các lần sau không quét lặp.
+6. Admin mở **Quản trị hệ thống → Hiệu năng & quy mô** để theo dõi reads/cache/query chậm.
 
-- cấu hình Gemini;
-- ảnh/PDF/LaTeX → bản nháp câu hỏi;
-- kiểm định câu hiện có;
-- tạo biến thể;
-- hàng chờ AI;
-- provenance/nguồn AI.
+## Lưu ý
 
-## 2. Gemini adapter V32
-
-Mặc định:
-
-`gemini-3.7-flash`
-
-Model là trường cấu hình nên có thể đổi mà không sửa code. V32 cũng gợi ý một số model khác trong `datalist`, nhưng giáo viên có thể nhập model ID hợp lệ khác.
-
-V32 gọi Gemini qua REST `models.generateContent` để phù hợp website tĩnh GitHub Pages và hỗ trợ input ảnh/PDF trực tiếp. Adapter dùng structured JSON output và có fallback cho dạng cấu hình JSON cũ nếu endpoint trả lỗi tương thích.
-
-### API key
-
-API key **không** được lưu trong:
-
-- `state`;
-- Firestore;
-- full backup;
-- audit log;
-- source code của package.
-
-Giáo viên chọn một trong hai cách:
-
-- **Chỉ phiên này** → `sessionStorage`;
-- **Trên thiết bị này** → `localStorage`.
-
-V32 có nút xóa key khỏi trình duyệt.
-
-> Đây vẫn là frontend tĩnh. Client-side API key không có mức bảo vệ như backend. Khi triển khai quy mô lớn, lộ trình V35 nên chuyển gọi AI sang Cloud Functions/backend để quản lý quota và bí mật tốt hơn.
-
-## 3. Ảnh/PDF/LaTeX → câu hỏi
-
-Nguồn hỗ trợ:
-
-- văn bản;
-- LaTeX;
-- PNG;
-- JPEG/JPG;
-- WEBP;
-- PDF.
-
-Giới hạn chủ động của V32:
-
-- ảnh: 8 MB;
-- PDF: 12 MB.
-
-Tệp chỉ được đọc và gửi Gemini khi giáo viên bấm **Tạo bản nháp AI**. Nội dung file không được lưu vào Firestore.
-
-Giáo viên có thể chọn:
-
-- AI tự phân loại bài;
-- khóa về một bài cụ thể;
-- MCQ;
-- Đúng/Sai 4 ý;
-- trả lời ngắn;
-- phối hợp tự động;
-- tối đa 1/3/5/8/10 câu mỗi lần.
-
-AI nhận danh mục 57 mã kiến thức đang có trong chương trình Math12 Hub để phân loại.
-
-## 4. Quy tắc câu hỏi AI
-
-Prompt hệ thống V32 yêu cầu:
-
-- công thức dùng LaTeX;
-- MCQ có đúng 4 phương án A–D và duy nhất một đáp án đúng;
-- TF4 đúng 4 ý liên quan logic;
-- ưu tiên ý sau dựa trên dữ kiện/kết quả ý trước khi hợp lý;
-- Short Answer có đáp án ngắn chấm được;
-- nếu ảnh/PDF không đọc rõ phải ghi `warnings`, không được tự bịa;
-- tự kiểm tra phép tính và đáp án trước khi trả JSON;
-- không được tự đánh dấu “đã duyệt chuyên môn”.
-
-## 5. Hàng chờ AI
-
-AI không ghi thẳng vào `state.questionBank`.
-
-Bản nháp được lưu cục bộ trong:
-
-`math12hub.ai.v32.drafts`
-
-Giới hạn:
-
-- tối đa 40 bản nháp;
-- tự giảm số lượng nếu tổng JSON quá lớn;
-- không lưu ảnh/PDF nguồn.
-
-Mỗi bản nháp hiển thị:
-
-- mã tạm;
-- mã kiến thức;
-- loại câu;
-- confidence AI;
-- Quality Score V29;
-- cảnh báo local;
-- nghi trùng với ngân hàng hiện có;
-- model đã sinh câu.
-
-Giáo viên có bốn lựa chọn:
-
-1. **Xem**;
-2. **Mở trình soạn**;
-3. **Đưa vào kho (nháp)**;
-4. **Đã kiểm tra & duyệt**.
-
-Chỉ hai thao tác 3–4 mới đưa câu vào Question Bank Pro.
-
-## 6. Provenance AI
-
-Câu được duyệt trực tiếp từ hàng chờ giữ metadata:
-
-```js
-aiV32: {
-  schemaVersion: 32,
-  model,
-  task,
-  sourceKind,
-  generatedAt,
-  confidence,
-  warnings,
-  sourceNote,
-  teacherReviewed,
-  teacherDecision,
-  approvedAt
-}
-```
-
-Question Bank Pro V29 vẫn là nơi quản lý chính. Field `aiV32` chỉ là provenance bổ sung và được đồng bộ cùng document câu hỏi hiện có.
-
-## 7. Local QC + AI QC
-
-Trước khi duyệt, V32 chạy kiểm tra local độc lập:
-
-- câu quá ngắn;
-- mã kiến thức không hợp lệ;
-- MCQ thiếu 4 phương án;
-- phương án trùng;
-- đáp án MCQ sai cấu trúc;
-- TF4 thiếu 4 ý;
-- short thiếu đáp án;
-- thiếu lời giải;
-- near-duplicate theo thuật toán V29.
-
-Local QC không dùng API và không phát sinh Firestore Reads.
-
-## 8. AI phản biện câu đang có
-
-Giáo viên nhập/chọn mã câu trong ngân hàng rồi bấm:
-
-**Kiểm tra đáp án & metadata**
-
-AI trả về:
-
-- trạng thái `ok / needs_review / critical`;
-- confidence;
-- summary;
-- danh sách vấn đề;
-- đánh giá đáp án;
-- metadata đề xuất;
-- tags đề xuất.
-
-V32 chỉ cho **áp dụng metadata** tự động. Đáp án và lời giải đang dùng không bị AI tự sửa.
-
-Khi áp dụng metadata, V32 dùng version history V29 nên bản cũ vẫn được giữ lại.
-
-## 9. Tạo biến thể
-
-Từ một câu đang có, giáo viên có thể tạo 1/3/5 biến thể.
-
-Prompt V32 yêu cầu:
-
-- cùng mã kiến thức;
-- cùng loại câu;
-- gần cùng độ khó;
-- thay dữ kiện/ngữ cảnh thật sự;
-- không chỉ đổi tên biến;
-- ưu tiên nghiệm/đáp án đẹp;
-- tự giải lại từng biến thể;
-- có đáp án duy nhất.
-
-Biến thể cũng chỉ vào **Hàng chờ AI**, không tự đi vào ngân hàng.
-
-## 10. Không thêm Firestore collection
-
-V32 không thêm collection/subcollection AI.
-
-AI draft + settings + usage counter nằm cục bộ. Câu đã duyệt tiếp tục dùng:
-
-`users/{uid}/questionBank/{questionId}`
-
-Do đó:
-
-- không cần Firestore composite index mới;
-- không tăng Reads nền;
-- Data Safety/Conflict Guard cũ vẫn hoạt động;
-- Secure Exam không đổi.
-
-## 11. Firestore Rules V32
-
-Rules V32 không mở thêm quyền cho AI hoặc học sinh.
-
-Question Bank vẫn chỉ cho chính tài khoản giáo viên đang active đọc/ghi. API key không đi qua Firestore nên Rules không cần collection mới.
-
-## 12. Schema/app version
-
-- `APP_VERSION = 32`
-- local state `_meta.schemaVersion = 32`
-- full backup schema = 32
-- learning/profile/syncMeta writes mới = 32
-- Question Bank schema vẫn là V29 vì đó là schema riêng của module Question Bank;
-- Verified Competency vẫn là schema V31 vì đó là schema riêng của module Analytics.
-
-## 13. Nâng từ V31
-
-1. Sao lưu V31.
-2. Có thể publish `firestore-v32.rules` để đồng bộ version comment/config; V32 không thêm quyền mới.
-3. Hai composite index cũ vẫn giữ nguyên; nếu đã Enabled thì không cần tạo lại.
-4. Upload toàn bộ package V32 lên GitHub Pages.
-5. Đăng nhập giáo viên.
-6. Mở **Trợ lý AI**.
-7. Nhập Gemini API key, ưu tiên **Chỉ phiên này** khi dùng máy dùng chung.
-8. Bấm **Kiểm tra kết nối**.
-9. Thử một ảnh/đoạn LaTeX → tạo 1–3 câu.
-10. Xem bản nháp → kiểm tra đáp án → chỉ sau đó đưa vào ngân hàng.
-
-## 14. Kiểm thử nên làm sau deploy
-
-- API key session không xuất hiện trong Firestore;
-- refresh trang vẫn giữ key nếu cùng session;
-- chọn “Trên thiết bị này” rồi mở lại trình duyệt vẫn đọc key;
-- xóa key hoạt động;
-- ảnh/PDF lớn bị chặn trước request;
-- AI draft không tự xuất hiện trong Question Bank;
-- duyệt draft mới tạo câu trong Question Bank;
-- provenance `aiV32` được giữ sau sync;
-- audit AI không tự đổi answer;
-- apply metadata tạo version history;
-- tạo biến thể chỉ sinh draft;
-- học sinh không thấy menu AI.
-
+- Metrics V34 là **ước tính phía client**, không thay thế Firebase Usage/Billing dashboard.
+- Dashboard mặc định là **preview 60 học sinh/lần**. Khi cần ma trận năng lực/heatmap chính xác cho toàn lớp, bấm **Tải phân tích đầy đủ**; thao tác này có thể đọc toàn bộ dữ liệu aggregate của lớp và được thực hiện theo yêu cầu, không chạy nền.
+- Admin tìm kiếm/lọc áp dụng trên **trang 100 document đang mở**; dùng nút Trang trước/Trang sau để duyệt hệ thống lớn.
+- Không có collection Firestore mới.
+- `reportsV33` và các chính sách link phụ huynh giữ nguyên.

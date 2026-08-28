@@ -1,6 +1,9 @@
-// Math12 Hub V32 — Firestore Security Rules
+// Math12 Hub V34 — Performance & Scale. No new public data paths; V33 report protections remain unchanged.
+// Math12 Hub V33 — Firestore Security Rules
 // V27 Teacher Operations, V26 Integrity/Recovery, V25 Admin, V24 Account Security, Secure Exam V18 and Low Reads V19 remain compatible.
-// V32 adds no Firestore collection for AI. Gemini API keys and AI draft queues remain browser-local; approved AI questions reuse the teacher-owned questionBank collection. V31 verified competency, V30 cloud drafts and all earlier security invariants remain unchanged.
+// V33 adds expiring parent-report snapshots under classes/{classId}/reportsV33/{reportId}.
+// Public access is GET-only, token-addressed, time-limited and restricted to sanitized snapshots. Listing remains teacher/admin only.
+// V32 AI remains browser-local; V31 verified competency, V30 cloud drafts and earlier security invariants remain compatible.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -700,6 +703,71 @@ service cloud.firestore {
               && pairedSubmissionAfter(classId, resource.data.assignmentId, request.auth.uid).attemptId == request.resource.data.attemptId
               && pairedSubmissionAfter(classId, resource.data.assignmentId, request.auth.uid).attemptNumber == request.resource.data.attemptNumber);
         allow delete: if isClassOwner(classId);
+      }
+
+      /* ---------- V33 EXPIRING PARENT REPORT SNAPSHOTS ----------
+         A parent link is a direct document GET using an unguessable report id.
+         Public clients cannot LIST reports. Snapshot fields are deliberately
+         sanitized: no UID, email, answers, responses or answer keys.
+      */
+      match /reportsV33/{reportId} {
+        allow get: if isAdmin()
+          || isClassOwner(classId)
+          || (resource.data.schemaVersion == 33
+              && resource.data.public == true
+              && resource.data.status == 'active'
+              && resource.data.expiresAt is timestamp
+              && request.time < resource.data.expiresAt);
+
+        allow list: if isAdmin() || isClassOwner(classId);
+
+        allow create: if (isAdmin() || isClassOwner(classId))
+          && request.resource.data.schemaVersion == 33
+          && request.resource.data.reportType == 'parent'
+          && request.resource.data.public == true
+          && request.resource.data.status == 'active'
+          && request.resource.data.studentName is string
+          && request.resource.data.className is string
+          && request.resource.data.periodLabel is string
+          && request.resource.data.metrics is map
+          && request.resource.data.verifiedLevels is list
+          && request.resource.data.strengths is list
+          && request.resource.data.needsWork is list
+          && request.resource.data.recentScores is list
+          && request.resource.data.recommendations is list
+          && request.resource.data.teacherNote is string
+          && request.resource.data.teacherName is string
+          && request.resource.data.sourceNote is string
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.keys().hasOnly([
+            'schemaVersion', 'reportType', 'public', 'status',
+            'studentName', 'className', 'periodLabel', 'metrics',
+            'verifiedLevels', 'strengths', 'needsWork', 'recentScores',
+            'recommendations', 'teacherNote', 'teacherName', 'sourceNote',
+            'createdAt', 'updatedAt', 'expiresAt'
+          ]);
+
+        allow update: if (isAdmin() || isClassOwner(classId))
+          && request.resource.data.schemaVersion == 33
+          && request.resource.data.reportType == resource.data.reportType
+          && request.resource.data.public == resource.data.public
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.expiresAt == resource.data.expiresAt
+          && request.resource.data.status in ['active', 'revoked']
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.keys().hasOnly([
+            'schemaVersion', 'reportType', 'public', 'status',
+            'studentName', 'className', 'periodLabel', 'metrics',
+            'verifiedLevels', 'strengths', 'needsWork', 'recentScores',
+            'recommendations', 'teacherNote', 'teacherName', 'sourceNote',
+            'createdAt', 'updatedAt', 'expiresAt'
+          ]);
+
+        allow delete: if isAdmin() || isClassOwner(classId);
       }
 
       /* ---------- V19/V31 PER-STUDENT GRADED AGGREGATE ----------

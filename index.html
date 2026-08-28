@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V32 2026–2027 - Ôn tập Toán 12</title>
+<title>Math12 Hub V34 2026–2027 - Ôn tập Toán 12</title>
 <meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
-<meta name="app-version" content="32" />
+<meta name="app-version" content="33" />
 <meta name="app-architecture" content="modular-static-github-pages" />
 <script src="assets/js/mathjax-config.js"></script>
 <script src="assets/vendor/mathjax.js"></script>
 <link rel="stylesheet" href="assets/css/app.css">
 </head>
 <body>
+<div id="v33PublicReportShell" class="v33-public-shell hidden"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập V33</small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
 <div class="app" id="app">
   <aside class="sidebar" id="sidebar">
     <div class="brand">
@@ -27,6 +28,7 @@
       <button class="student-only" data-page="learning-plan"><span class="ico">✦</span> Lộ trình của em</button>
       <button class="student-only" data-page="progress"><span class="ico">↗</span> Tiến độ của em</button>
       <button class="student-only" data-page="analytics"><span class="ico">◎</span> Phân tích năng lực</button>
+      <button data-page="reports"><span class="ico">▣</span> Báo cáo học tập</button>
       <button data-page="notifications"><span class="ico">🔔</span> Thông báo <span id="notificationBadge" class="nav-notify-badge">0</span></button>
       <button data-page="online"><span class="ico">☁</span> Lớp học online</button>
       <button class="teacher-only" data-page="question-bank"><span class="ico">▦</span> Ngân hàng câu hỏi</button>
@@ -37,7 +39,7 @@
     </div>
     <div class="sidebar-foot">
       <div style="font-weight:800;margin-bottom:6px">Chương trình Toán 12</div>
-      <div class="tiny">Chương trình Toán 12 • GDPT 2018<br>Ôn tập theo bài, chương và kỳ thi THPT.<br>V32 • AI Teacher Assistant • Analytics & Competency • Exam Engine • Question Bank • Student UX • Teacher Ops • Secure Exam.</div>
+      <div class="tiny">Chương trình Toán 12 • GDPT 2018<br>Ôn tập theo bài, chương và kỳ thi THPT.<br>V34 • Performance & Scale • Reports • AI Teacher Assistant • Analytics & Competency • Exam Engine • Question Bank • Student UX • Teacher Ops • Secure Exam.</div>
     </div>
   </aside>
   <main class="main">
@@ -56,16 +58,16 @@
       <section class="section active" id="page-dashboard">
         <div class="student-only hero">
           <div>
-            <div class="badge" style="background:rgba(255,255,255,.16);color:white">Lộ trình cá nhân hóa • V32</div>
+            <div class="badge" style="background:rgba(255,255,255,.16);color:white">Lộ trình cá nhân hóa • V34</div>
             <h2>Học chắc từng bài, tiến dần tới 8+ môn Toán</h2>
             <p>Mỗi bài học có kiểm tra nhanh, mỗi chương có bài tổng hợp, giữa kỳ – học kỳ có đề chuẩn hóa, và cuối lộ trình là đề mô phỏng tốt nghiệp THPT theo định dạng hiện hành.</p>
-            <div class="hero-actions"><button class="btn btn-primary" onclick="v28StartNextAction()">Làm việc ưu tiên tiếp theo</button><button class="btn btn-ghost" onclick="goPage('learning-plan')">Xem lộ trình của em</button></div>
+            <div class="hero-actions"><button class="btn btn-primary" onclick="v28StartNextAction()">Làm việc ưu tiên tiếp theo</button><button class="btn btn-ghost" onclick="goPage('learning-plan')">Xem lộ trình của em</button><button class="btn btn-ghost" onclick="goPage('reports')">Báo cáo của em</button></div>
           </div>
           <div class="hero-progress"><div style="display:flex;justify-content:space-between;align-items:end"><div><small>Tiến độ chương trình</small><br><strong id="heroPercent">0%</strong></div><div style="text-align:right"><small>Mục tiêu</small><br><b id="v28GoalScoreHero">8.0+</b></div></div><div class="progress" style="margin-top:14px"><span id="heroBar" style="width:0%"></span></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#d9e3ff"><span id="doneLessonText">0/19 bài đã hoàn thành</span><span id="learningStreakText">Chuỗi học: 0 ngày</span></div></div>
         </div>
 
         <div class="teacher-only hero">
-          <div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Bảng điều khiển giáo viên • V32</div><h2>Theo dõi lớp bằng dữ liệu Firestore thật</h2><p>Xem tỷ lệ nộp bài, điểm trung bình, học sinh trễ hạn, mã kiến thức yếu và lịch sử làm bài của từng em. Dữ liệu được tổng hợp trực tiếp từ các lớp online do thầy/cô sở hữu.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('teacher')">Mở dashboard lớp</button><button class="btn btn-ghost" onclick="goPage('online')">Quản lý lớp & giao bài</button></div></div>
+          <div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Bảng điều khiển giáo viên • V34</div><h2>Theo dõi lớp bằng dữ liệu Firestore thật</h2><p>Xem tỷ lệ nộp bài, điểm trung bình, học sinh trễ hạn, mã kiến thức yếu và lịch sử làm bài của từng em. Dữ liệu được tổng hợp trực tiếp từ các lớp online do thầy/cô sở hữu.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('teacher')">Mở dashboard lớp</button><button class="btn btn-ghost" onclick="goPage('online')">Quản lý lớp & giao bài</button><button class="btn btn-ghost" onclick="goPage('reports')">Báo cáo phụ huynh</button></div></div>
           <div class="hero-progress"><small>V31 • Verified Competency + Practice Analytics</small><br><strong>Class Intelligence</strong><div style="font-size:12px;color:#d9e3ff">Thành viên • Tiến độ • Bài giao • Lượt nộp</div><div class="progress" style="margin-top:14px"><span style="width:100%"></span></div><div style="margin-top:10px;font-size:12px">Có cảnh báo học sinh cần hỗ trợ và bảng xếp hạng theo kết quả thật.</div></div>
         </div>
 
@@ -81,7 +83,7 @@
             <div class="v28-kicker">VIỆC NÊN LÀM TIẾP</div>
             <h3 id="v28NextActionTitle">Đang xác định ưu tiên…</h3>
             <p id="v28NextActionMeta">Dựa trên bài giáo viên giao, câu sai và tiến độ hiện tại.</p>
-            <div class="v28-reason" id="v28NextActionReason">V32 tiếp tục ưu tiên dữ liệu hiện có và aggregate nhẹ; không quét bài làm nền.</div>
+            <div class="v28-reason" id="v28NextActionReason">V34 tiếp tục ưu tiên dữ liệu hiện có, cache thích ứng và aggregate nhẹ; báo cáo chỉ tải sâu khi người dùng chủ động mở.</div>
             <button class="btn btn-blue" id="v28NextActionBtn" onclick="v28StartNextAction()">Bắt đầu</button>
           </div>
           <div class="card v28-goal-card">
@@ -101,9 +103,9 @@
 
         <div class="grid grid-2 mt student-only">
           <div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Chủ đề cần củng cố</h3><p>Dựa trên các bài em đã làm.</p></div></div><div id="weakList"></div></div>
-          <div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Lộ trình 7 ngày • V32</h3><p>Tự điều chỉnh theo hạn bài, điểm yếu, câu sai và mục tiêu cá nhân.</p></div><button class="link-btn" onclick="goPage('learning-plan')">Mở đầy đủ →</button></div><div id="v28WeeklyPlan"></div></div>
+          <div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Lộ trình 7 ngày • V34</h3><p>Tự điều chỉnh theo hạn bài, điểm yếu, câu sai và mục tiêu cá nhân.</p></div><button class="link-btn" onclick="goPage('learning-plan')">Mở đầy đủ →</button></div><div id="v28WeeklyPlan"></div></div>
         </div>
-        <div class="card mt student-only"><div class="section-head" style="margin:0 0 10px"><div><h3>Sổ câu sai • V32</h3><p>Chỉ giữ các câu mà lần làm gần nhất vẫn chưa đúng hoàn toàn.</p></div><button class="btn btn-soft" onclick="goPage('learning-plan')">Xem lộ trình</button></div><div id="v28MistakeBook"></div></div>
+        <div class="card mt student-only"><div class="section-head" style="margin:0 0 10px"><div><h3>Sổ câu sai • V34</h3><p>Chỉ giữ các câu mà lần làm gần nhất vẫn chưa đúng hoàn toàn.</p></div><button class="btn btn-soft" onclick="goPage('learning-plan')">Xem lộ trình</button></div><div id="v28MistakeBook"></div></div>
       </section>
 
       <section class="section" id="page-lessons">
@@ -142,7 +144,7 @@
       </section>
 
       <section class="section student-only" id="page-learning-plan">
-        <div class="section-head" style="margin-top:0"><div><h3>Lộ trình học cá nhân • V32</h3><p>Từ dữ liệu hiện có, V31 ưu tiên việc cần làm, câu sai và mã kiến thức yếu; kế hoạch này mang tính gợi ý và tự cập nhật sau mỗi lần học.</p></div><button class="btn btn-blue" onclick="v28OpenPlanSettings()">⚙ Mục tiêu học tập</button></div>
+        <div class="section-head" style="margin-top:0"><div><h3>Lộ trình học cá nhân • V34</h3><p>Từ dữ liệu hiện có, V31 ưu tiên việc cần làm, câu sai và mã kiến thức yếu; kế hoạch này mang tính gợi ý và tự cập nhật sau mỗi lần học.</p></div><button class="btn btn-blue" onclick="v28OpenPlanSettings()">⚙ Mục tiêu học tập</button></div>
         <div class="v28-plan-hero">
           <div><div class="v28-kicker">NEXT BEST ACTION</div><h2 id="v28NextActionTitlePlan">Lộ trình được tạo từ dữ liệu thật của em</h2><p>Ưu tiên bài giáo viên giao trước, sau đó đến lỗi sai, kiến thức yếu và bài chưa hoàn thành.</p><button class="btn btn-primary" onclick="v28StartNextAction()">Bắt đầu việc ưu tiên</button></div>
           <div id="v28ProgressPlanSummary"></div>
@@ -157,7 +159,7 @@
       <section class="section student-only" id="page-progress">
         <div class="section-head" style="margin-top:0"><div><h3>Tiến độ và năng lực cá nhân</h3><p>Dữ liệu lưu trên máy và tự đồng bộ Firestore khi đã đăng nhập.</p></div><button class="btn btn-danger" onclick="resetProgress()">Đặt lại dữ liệu mẫu</button></div>
         <div class="grid grid-4"><div class="card metric"><div><strong id="pDone">0</strong><small>Bài hoàn thành</small></div><div class="icon">✓</div></div><div class="card metric"><div><strong id="pQuiz">0</strong><small>Lượt kiểm tra</small></div><div class="icon">▤</div></div><div class="card metric"><div><strong id="pBest">—</strong><small>Điểm cao nhất</small></div><div class="icon">★</div></div><div class="card metric"><div><strong id="pLast">—</strong><small>Điểm gần nhất</small></div><div class="icon">◷</div></div></div>
-        <div id="v28ProgressSummary" class="mt"></div><div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Tiến độ theo chương</h3><div id="chapterProgress"></div></div><div class="card"><h3 style="margin-top:0">Khuyến nghị học tiếp</h3><div class="notice"><b>V32:</b> Khuyến nghị được ưu tiên theo các mã kiến thức có độ chính xác thấp trong lịch sử làm bài. <button class="link-btn" onclick="goPage('analytics')">Mở phân tích chi tiết →</button></div><div id="recommendations" class="lesson-list mt"></div></div></div>
+        <div id="v28ProgressSummary" class="mt"></div><div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Tiến độ theo chương</h3><div id="chapterProgress"></div></div><div class="card"><h3 style="margin-top:0">Khuyến nghị học tiếp</h3><div class="notice"><b>V34:</b> Khuyến nghị được ưu tiên theo các mã kiến thức có độ chính xác thấp trong lịch sử làm bài. <button class="link-btn" onclick="goPage('analytics')">Mở phân tích chi tiết →</button></div><div id="recommendations" class="lesson-list mt"></div></div></div>
       </section>
 
 
@@ -193,6 +195,50 @@
               <div class="card"><h3 style="margin-top:0">Lịch sử gần nhất</h3><div id="analyticsRecent" class="analytics-recent"></div></div>
             </div>
           </div>
+        </div>
+      </section>
+
+
+      <section class="section" id="page-reports">
+        <div class="section-head" style="margin-top:0">
+          <div><h3>Báo cáo học tập & phụ huynh • V33</h3><p>Tổng hợp điểm Secure Exam, năng lực xác minh, tiến độ tự học và khuyến nghị. Báo cáo phụ huynh chỉ được tạo khi giáo viên chủ động xuất bản snapshot đã làm sạch.</p></div>
+          <div class="toolbar"><span class="pill tag-green">Không chứa đáp án</span><span class="pill">Low Reads</span></div>
+        </div>
+
+        <div class="student-only">
+          <div class="v33-report-toolbar card">
+            <div><label>Khoảng thời gian</label><select id="v33StudentPeriod" onchange="v33RenderStudentReport()"><option value="30">30 ngày gần nhất</option><option value="90">90 ngày gần nhất</option><option value="all" selected>Toàn bộ dữ liệu</option></select></div>
+            <div class="v33-report-actions"><button class="btn btn-soft" onclick="v33RefreshStudentReport()">↻ Cập nhật online</button><button class="btn btn-soft" onclick="v33CopyCurrentReportSummary()">Sao chép tóm tắt</button><button class="btn btn-blue" onclick="v33PrintCurrentReport()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ExportCurrentReportHTML()">Xuất HTML</button></div>
+          </div>
+          <div class="firebase-banner mt"><b>Báo cáo cá nhân:</b> Secure Exam đã chấm được tách riêng với tự luyện. Nếu chưa đăng nhập hoặc chưa có điểm xác minh, V33 vẫn tạo báo cáo từ dữ liệu học trên thiết bị và ghi rõ nguồn.</div>
+          <div id="v33StudentReportPreview" class="v33-report-preview mt"><div class="online-empty">Đang chuẩn bị báo cáo…</div></div>
+        </div>
+
+        <div class="teacher-only">
+          <div class="card v33-report-toolbar">
+            <div><label>Lớp</label><select id="v33ReportClass" onchange="v33ReportClassChanged()"></select></div>
+            <div><label>Học sinh</label><select id="v33ReportStudent" onchange="v33LoadTeacherReport()"><option value="">Chọn học sinh</option></select></div>
+            <div><label>Khoảng thời gian</label><select id="v33TeacherPeriod" onchange="v33LoadTeacherReport()"><option value="30">30 ngày gần nhất</option><option value="90">90 ngày gần nhất</option><option value="all" selected>Toàn bộ</option></select></div>
+            <div><label>Link phụ huynh</label><select id="v33ReportExpiry"><option value="7">7 ngày</option><option value="14" selected>14 ngày</option><option value="30">30 ngày</option></select></div>
+          </div>
+          <div class="grid grid-2 mt v33-report-workspace">
+            <div class="card">
+              <div class="section-head" style="margin:0 0 10px"><div><h3>Ghi chú giáo viên</h3><p>Chỉ ghi nội dung phù hợp để chia sẻ với học sinh/phụ huynh.</p></div></div>
+              <textarea id="v33TeacherNote" rows="5" maxlength="1000" placeholder="Ví dụ: Em đã tiến bộ ở phần đạo hàm; tuần tới cần củng cố nguyên hàm và hoàn thành bài còn thiếu."></textarea>
+              <div class="v33-report-actions mt"><button class="btn btn-soft" onclick="v33LoadTeacherReport()">↻ Tạo lại báo cáo</button><button class="btn btn-soft" onclick="v33CopyCurrentReportSummary()">Sao chép tóm tắt</button><button class="btn btn-blue" onclick="v33PrintCurrentReport()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ExportCurrentReportHTML()">Xuất HTML</button><button class="btn btn-blue" onclick="v33PublishParentReport()">🔗 Tạo link phụ huynh</button></div>
+              <div class="math-help mt"><b>Quyền riêng tư V33:</b> link phụ huynh không chứa email, UID, đáp án, câu trả lời hay bài nộp chi tiết. Link tự hết hạn và giáo viên có thể thu hồi bất cứ lúc nào.</div>
+            </div>
+            <div class="card">
+              <div class="section-head" style="margin:0 0 8px"><div><h3>Link đã chia sẻ</h3><p>Tối đa 50 snapshot gần nhất của lớp đang chọn.</p></div><button class="btn btn-soft" onclick="v33LoadSharedReports()">↻</button></div>
+              <div id="v33SharedReports"><div class="online-empty">Chọn lớp để xem link đã chia sẻ.</div></div>
+            </div>
+          </div>
+          <div id="v33TeacherReportPreview" class="v33-report-preview mt"><div class="online-empty">Chọn lớp và học sinh để tạo báo cáo.</div></div>
+        </div>
+
+        <div class="card mt">
+          <div class="section-head" style="margin:0 0 8px"><div><h3>Nguyên tắc báo cáo V33</h3><p>Báo cáo giải thích nguồn dữ liệu thay vì trộn điểm chính thức và tự luyện thành một con số duy nhất.</p></div></div>
+          <div class="v33-principles"><div><b>✓ Điểm xác minh</b><span>Secure Exam đã được giáo viên chấm.</span></div><div><b>◎ Tự luyện</b><span>Dùng để gợi ý học tập, không thay điểm chính thức.</span></div><div><b>▣ Năng lực</b><span>Chương → mã kiến thức → NB/TH/VD từ aggregate V31.</span></div><div><b>🔒 Phụ huynh</b><span>Chỉ đọc snapshot làm sạch, có hạn và có thể thu hồi.</span></div></div>
         </div>
       </section>
 
@@ -378,7 +424,7 @@
 
 <section class="section" id="page-notifications">
   <div class="section-head" style="margin-top:0">
-    <div><h3>Trung tâm thông báo • V32</h3><p>Tự tổng hợp việc cần xử lý từ hạn nộp, lượt nộp và kết quả học tập. Không tạo thêm dữ liệu thông báo dư thừa trên Firestore.</p></div>
+    <div><h3>Trung tâm thông báo • V34</h3><p>Tự tổng hợp việc cần xử lý từ hạn nộp, lượt nộp và kết quả học tập. Không tạo thêm dữ liệu thông báo dư thừa trên Firestore.</p></div>
     <div class="notification-toolbar"><select id="notificationClassSelect" class="teacher-only" onchange="firebaseNotificationSelectClass(this.value)"><option value="">Chọn lớp</option></select><button class="btn btn-soft" onclick="firebaseRefreshNotifications(true)">↻ Làm mới</button></div>
   </div>
   <div id="notificationBanner" class="firebase-banner warn">Đăng nhập Firebase để tải thông báo.</div>
@@ -403,11 +449,11 @@
       <div class="card">
         <h3 style="margin-top:0">Tài khoản & đồng bộ</h3>
         <div id="firebaseProfileBox" class="online-empty">Chưa đăng nhập.</div>
-        <div class="cloud-sync-note mt">V32 vẫn lưu một bản dữ liệu trên máy bằng localStorage. Khi đã đăng nhập, tiến độ, lịch sử làm bài, kết quả phân tích và nội dung giáo viên sẽ được đồng bộ Firestore. Nếu mất mạng, thầy/cô và học sinh vẫn có thể tiếp tục dùng dữ liệu trên máy rồi đồng bộ lại sau.</div>
+        <div class="cloud-sync-note mt">V34 vẫn lưu một bản dữ liệu trên máy bằng localStorage. Khi đã đăng nhập, tiến độ, lịch sử làm bài, kết quả phân tích và nội dung giáo viên sẽ được đồng bộ Firestore. Nếu mất mạng, thầy/cô và học sinh vẫn có thể tiếp tục dùng dữ liệu trên máy rồi đồng bộ lại sau.</div>
       </div>
       <div class="card mt">
-        <div class="section-head" style="margin:0 0 8px"><div><h3>🛡 Data Safety V32</h3><p>Kho cứu hộ IndexedDB, điểm khôi phục và bảo vệ xung đột local/cloud.</p></div><button class="btn btn-soft" onclick="v21OpenDataSafetyCenter()">Mở trung tâm dữ liệu</button></div>
-        <div class="cloud-sync-note">V32 tiếp tục dùng Data Safety Vault để tự tạo bản mirror trên thiết bị. Trước khi khóa dữ liệu giáo viên, khôi phục hoặc xử lý xung đột, hệ thống tạo/cất bản cứu hộ để giảm nguy cơ mất ngân hàng câu hỏi và đề đã lưu.</div>
+        <div class="section-head" style="margin:0 0 8px"><div><h3>🛡 Data Safety V34</h3><p>Kho cứu hộ IndexedDB, điểm khôi phục và bảo vệ xung đột local/cloud.</p></div><button class="btn btn-soft" onclick="v21OpenDataSafetyCenter()">Mở trung tâm dữ liệu</button></div>
+        <div class="cloud-sync-note">V34 tiếp tục dùng Data Safety Vault để tự tạo bản mirror trên thiết bị. Trước khi khóa dữ liệu giáo viên, khôi phục hoặc xử lý xung đột, hệ thống tạo/cất bản cứu hộ để giảm nguy cơ mất ngân hàng câu hỏi và đề đã lưu.</div>
       </div>
       <div class="card mt">
         <div class="section-head" style="margin:0 0 10px"><div><h3>Lớp của tôi</h3><p id="onlineClassHint">Đăng nhập để xem lớp.</p></div></div>
@@ -431,7 +477,7 @@
 
 <section class="section admin-only" id="page-admin">
   <div class="section-head" style="margin-top:0">
-    <div><h2 style="margin:0">Quản trị hệ thống • V32</h2><p>Quản lý tài khoản, quyền truy cập lớp, cảnh báo vận hành và nhật ký quản trị tập trung.</p></div>
+    <div><h2 style="margin:0">Quản trị hệ thống • V34</h2><p>Quản lý tài khoản, quyền truy cập lớp, cảnh báo vận hành và nhật ký quản trị tập trung.</p></div>
     <div class="online-actions"><span class="pill">Cập nhật: <b id="v25AdminUpdatedAt">—</b></span><button class="btn btn-blue" onclick="v25AdminRefresh(true)">↻ Làm mới</button></div>
   </div>
   <div id="v25AdminBanner" class="firebase-banner warn">Đăng nhập tài khoản Quản trị viên để tải dữ liệu hệ thống.</div>
@@ -450,7 +496,7 @@
       <div id="v25AdminAlerts"><div class="online-empty">Đang chờ dữ liệu.</div></div>
     </div>
     <div class="card">
-      <div class="section-head" style="margin:0 0 10px"><div><h3>Giới hạn bảo mật</h3><p>V32 khóa tài khoản bằng Firestore Rules.</p></div></div>
+      <div class="section-head" style="margin:0 0 10px"><div><h3>Giới hạn bảo mật</h3><p>V34 tiếp tục khóa tài khoản bằng Firestore Rules; lớp hiệu năng không mở thêm quyền dữ liệu.</p></div></div>
       <div class="firebase-banner warn"><b>Khóa ở cấp ứng dụng:</b> tài khoản bị khóa vẫn tồn tại trong Firebase Authentication nhưng không được đọc/ghi dữ liệu Math12 Hub. Muốn vô hiệu hóa Auth hoàn toàn cần Firebase Admin SDK hoặc backend tin cậy.</div>
       <div class="cloud-sync-note mt">Không cho phép một admin tự nâng người dùng khác thành admin trên trình duyệt. Admin gốc phải được thiết lập trực tiếp trong Firebase Console.</div>
     </div>
@@ -458,7 +504,7 @@
 
   <div class="card mt v26-health-card">
     <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Sức khỏe & toàn vẹn dữ liệu • V32</h3><p>Quét theo yêu cầu để phát hiện lớp mất chủ, mã tham gia lệch, member/membership không khớp, bài Secure thiếu khóa đáp án và chỉ mục mồ côi.</p></div>
+      <div><h3>Sức khỏe & toàn vẹn dữ liệu • V34</h3><p>Quét theo yêu cầu để phát hiện lớp mất chủ, mã tham gia lệch, member/membership không khớp, bài Secure thiếu khóa đáp án và chỉ mục mồ côi.</p></div>
       <div class="online-actions"><span id="v26HealthStatus" class="pill">Chưa quét</span><button class="btn btn-soft" onclick="v26SystemHealthScan()">⌕ Quét hệ thống</button><button class="btn btn-blue" onclick="v26RepairSafeIssues()">⚕ Sửa lỗi an toàn</button></div>
     </div>
     <div class="grid grid-4 v26-health-metrics">
@@ -467,8 +513,25 @@
       <div class="card"><small>Có thể sửa an toàn</small><h2 id="v26HealthRepairable">0</h2></div>
       <div class="card"><small>Document đã kiểm tra</small><h2 id="v26HealthDocs">0</h2></div>
     </div>
-    <div id="v26HealthIssueList" class="v26-health-list mt"><div class="online-empty">Bấm “Quét hệ thống” khi cần kiểm tra. V32 không tự chạy nền để tránh tăng Firestore Reads.</div></div>
-    <div id="v26HealthLimitNote" class="cloud-sync-note mt">V32 chỉ quét khi admin bấm nút để tránh phát sinh Reads nền.</div>
+    <div id="v26HealthIssueList" class="v26-health-list mt"><div class="online-empty">Bấm “Quét hệ thống” khi cần kiểm tra. V34 không tự chạy quét toàn vẹn nền để tránh tăng Firestore Reads.</div></div>
+    <div id="v26HealthLimitNote" class="cloud-sync-note mt">V34 chỉ quét khi admin bấm nút để tránh phát sinh Reads nền.</div>
+  </div>
+
+
+  <div class="card mt v34-scale-card">
+    <div class="section-head" style="margin:0 0 10px">
+      <div><h3>Hiệu năng & quy mô • V34</h3><p>Theo dõi tải trong phiên, cache, truy vấn chậm và các giới hạn phân trang. Không gửi telemetry ra ngoài.</p></div>
+      <div class="online-actions"><span id="v34ScaleStatus" class="pill tag-green">Scale mode: Auto</span><button class="btn btn-soft" onclick="v34RenderScaleCenter(true)">↻ Cập nhật</button><button class="btn btn-soft" onclick="v34ClearRuntimeCaches()">Xóa cache</button><button class="btn btn-blue" onclick="v34ExportDiagnostics()">Xuất chẩn đoán</button></div>
+    </div>
+    <div class="grid grid-5 v34-scale-metrics">
+      <div class="card"><small>Reads ước tính / phiên</small><h2 id="v34MetricReads">0</h2></div>
+      <div class="card"><small>Truy vấn</small><h2 id="v34MetricQueries">0</h2></div>
+      <div class="card"><small>Cache hit</small><h2 id="v34MetricCache">—</h2></div>
+      <div class="card"><small>Truy vấn chậm</small><h2 id="v34MetricSlow">0</h2></div>
+      <div class="card"><small>Bộ nhớ trình duyệt</small><h2 id="v34MetricStorage">—</h2></div>
+    </div>
+    <div id="v34ScaleAdvice" class="v34-scale-advice mt"><div class="online-empty">V34 sẽ cập nhật khi trang phát sinh truy vấn.</div></div>
+    <div class="cloud-sync-note mt">V34 áp dụng: cache thích ứng 60–180 giây, marker migration để không quét lặp, 60 học sinh/lần khi mở chi tiết lớp, 60 bài/lần khi quản lý bài, tối đa 80 bài gần nhất/lớp cho học sinh, và phân trang Admin 100 document/trang.</div>
   </div>
 
   <div class="card mt">
@@ -482,16 +545,18 @@
       <select id="v25UserStatusFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả trạng thái</option><option value="active">Hoạt động</option><option value="locked">Đã khóa</option></select>
     </div>
     <div class="table-wrap mt"><table class="table"><thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Trạng thái</th><th>Email</th><th>Đăng nhập gần nhất</th><th>Quản lý</th></tr></thead><tbody id="v25UserTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
+    <div id="v34UserPager" class="v34-pager mt"><span>Trang 1</span></div>
   </div>
 
   <div class="card mt">
     <div class="section-head" style="margin:0 0 10px"><div><h3>Quản trị lớp</h3><p>Quan sát toàn hệ thống và tạm khóa/mở quyền học sinh truy cập một lớp khi cần.</p></div></div>
     <div class="v25-admin-toolbar"><input id="v25ClassSearch" placeholder="Tìm tên lớp, giáo viên hoặc owner UID…" oninput="v25AdminRenderClasses()"></div>
     <div class="table-wrap mt"><table class="table"><thead><tr><th>Lớp</th><th>Chủ lớp</th><th>Trạng thái</th><th>HS snapshot</th><th>Điểm TB</th><th>Quản lý</th></tr></thead><tbody id="v25ClassTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
+    <div id="v34ClassPager" class="v34-pager mt"><span>Trang 1</span></div>
   </div>
 
   <div class="card mt">
-    <div class="section-head" style="margin:0 0 10px"><div><h3>Nhật ký quản trị</h3><p>Chỉ ghi các thao tác quyền cao của V32; client không được sửa hoặc xóa lịch sử này.</p></div></div>
+    <div class="section-head" style="margin:0 0 10px"><div><h3>Nhật ký quản trị</h3><p>Chỉ ghi các thao tác quyền cao của V34; client không được sửa hoặc xóa lịch sử này.</p></div></div>
     <div id="v25AdminAudit"><div class="online-empty">Chưa có nhật ký.</div></div>
   </div>
 </section>
@@ -507,7 +572,7 @@
   </div>
   <div id="teacherLiveNotice" class="firebase-banner warn">Đăng nhập tài khoản giáo viên Firebase và chọn một lớp để tải dashboard.</div>
   <div class="card mt v27-today-card">
-    <div class="section-head" style="margin:0 0 8px"><div><h3>Việc cần xử lý hôm nay • V32</h3><p>Tổng hợp theo lớp đang chọn: bài sắp mở/hết hạn, bài chờ chấm, học sinh cần hỗ trợ và danh sách dự kiến chưa vào lớp.</p></div><div class="online-actions"><span class="pill">Cần xử lý: <b id="v27TodayCount">0</b></span><button class="btn btn-soft" onclick="v27RenderTeacherToday(firebaseSelectedClassId,true)">↻ Cập nhật</button></div></div>
+    <div class="section-head" style="margin:0 0 8px"><div><h3>Việc cần xử lý hôm nay • V34</h3><p>Tổng hợp theo lớp đang chọn: bài sắp mở/hết hạn, bài chờ chấm, học sinh cần hỗ trợ và danh sách dự kiến chưa vào lớp.</p></div><div class="online-actions"><span class="pill">Cần xử lý: <b id="v27TodayCount">0</b></span><button class="btn btn-soft" onclick="v27RenderTeacherToday(firebaseSelectedClassId,true)">↻ Cập nhật</button></div></div>
     <div id="v27TeacherToday"><div class="teacher-live-empty">Chọn một lớp để tổng hợp công việc.</div></div>
   </div>
   <div class="grid grid-4 mt">
@@ -568,6 +633,7 @@
   <div class="card mt">
     <div class="section-head" style="margin:0 0 8px"><div><h3>Danh sách học sinh</h3><p>Bấm “Chi tiết” để xem lịch sử nộp bài của từng em.</p></div></div>
     <div class="table-wrap"><table class="table teacher-live-table"><thead><tr><th>#</th><th>Học sinh</th><th>Bài đã nộp</th><th>Điểm TB xác minh</th><th>Tự luyện</th><th>Mã yếu tự luyện</th><th>Cập nhật</th><th>Trạng thái</th><th></th></tr></thead><tbody id="studentTable"><tr><td colspan="9">Chưa có dữ liệu lớp.</td></tr></tbody></table></div>
+    <div id="v34TeacherStudentPager"></div>
   </div>
 </section>
     </div>
@@ -576,7 +642,7 @@
 <div id="mobileOverlay" class="mobile-overlay hidden"></div>
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><div><h3 id="modalTitle">Bài kiểm tra</h3><small id="modalSub" style="color:var(--muted)"></small></div><button class="close" onclick="closeModal()">×</button></div><div class="modal-body" id="modalBody"></div><div class="quiz-footer" id="modalFooter"></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
-<!-- V32 App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
+<!-- V34 App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
      Để trống = App Check chưa kích hoạt; KHÔNG bật enforcement trước khi đã kiểm tra request metrics. -->
 <script>window.MATH12_APP_CHECK_SITE_KEY = window.MATH12_APP_CHECK_SITE_KEY || '';</script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
@@ -597,6 +663,8 @@
 <script src="assets/js/exam-pro-v30.js"></script>
 <script src="assets/js/analytics-pro-v31.js"></script>
 <script src="assets/js/ai-teacher-v32.js"></script>
+<script src="assets/js/reports-v33.js"></script>
+<script src="assets/js/scale-v34.js"></script>
 <script src="assets/js/bootstrap.js"></script>
 </body>
 </html>
