@@ -1,42 +1,60 @@
-# Math12 Hub V34 — Performance & Scale
+# Math12 Hub V35 — Production Hardening & Smart Loading
 
-V34 nâng trực tiếp từ V33, giữ nguyên Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32 và Reports V33.
+V35 nâng trực tiếp từ V34 và **giữ nguyên kiến trúc/dữ liệu cũ**: Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32, Reports V33 và Performance & Scale V34.
 
-## Nâng cấp chính
+## Nâng cấp chính của V35
 
-- **Dashboard + chi tiết lớp phân trang 60 học sinh/lần**; lần mở đầu chỉ đọc progress/studentStats của các em đang hiển thị.
-- **Analytics toàn lớp lazy-load**: heatmap/bản đồ năng lực chi tiết chỉ quét đầy đủ khi giáo viên bấm “Tải phân tích đầy đủ”; snapshot tổng quan cũ vẫn được dùng để hiển thị nhanh và V34 không ghi đè snapshot bằng dữ liệu một phần.
-- **Quản lý bài giao phân trang 60 bài/lần** thay vì ép tải toàn bộ danh sách mỗi lần mở.
-- **Danh sách bài của học sinh giới hạn 80 bài mới nhất mỗi truy vấn target**, dùng `opensAt DESC`.
-- **Migration marker V34**: sau lần chuẩn hóa đầu tiên, V18/V27 migration không quét lặp toàn bộ assignment ở các lần mở lớp sau.
-- **Cache thích ứng 60–180 giây**, vẫn bị vô hiệu ngay khi có ghi mới.
-- **Admin directory 100 document/trang** với cursor pagination; dùng aggregation `count()` khi SDK hỗ trợ để lấy tổng mà không tải toàn bộ document.
-- **Performance Center**: reads ước tính, số query, cache hit, query chậm, storage estimate, cảnh báo và file diagnostics không chứa UID/email/đáp án.
-- **Debounce tìm kiếm ngân hàng câu hỏi** để không render lại toàn bảng ở từng phím gõ.
-- CSS `content-visibility` cho các danh sách dài để giảm chi phí layout/paint.
+- **Sửa đồng bộ phiên bản**: `APP_VERSION`, `meta app-version`, tiêu đề và giao diện đều là V35.
+- **Smart Loading**:
+  - Không tải thư viện XLSX ở lần mở trang đầu; chỉ tải khi giáo viên thực sự chọn file `.xlsx/.xls` để import.
+  - Không tải `ai-teacher-v32.js` cho tới khi mở trang **Trợ lý AI**.
+  - Không tải `reports-v33.js` cho tới khi mở **Báo cáo học tập** hoặc truy cập trực tiếp link báo cáo phụ huynh.
+- **MathJax không còn chặn quá trình parse HTML**: config và runtime chuyển sang `defer` nhưng vẫn tự typeset khi trang tải xong.
+- **PWA / Offline shell**:
+  - thêm `manifest.webmanifest`, icon 192/512 và `sw-v35.js`;
+  - cache các tài nguyên same-origin cốt lõi, không can thiệp request Firestore/Firebase cross-origin;
+  - navigation có fallback về `index.html` khi offline.
+- **Production Center V35 trong trang Admin**:
+  - Regression check ngay trên trình duyệt;
+  - kiểm tra version, ID trùng, cấu trúc đề THPT 12/4/6, 90 phút, thang Đ/S 0.1/0.25/0.5/1, phân quyền, Data Safety, Firebase core, Scale engine, PWA, App Check và Smart Loading;
+  - ghi nhận lỗi JavaScript trong phiên với nội dung đã làm mờ email/ID dài;
+  - xuất diagnostics V35 không chủ động thu thập UID/email/đáp án.
+- **Accessibility**:
+  - focus ring `:focus-visible`;
+  - bổ sung ARIA cơ bản cho modal/nav/form theo runtime;
+  - hỗ trợ `prefers-reduced-motion`.
+- **Offline UX**: có thông báo nhỏ khi mất mạng, dữ liệu local vẫn dùng được và Firebase sẽ đồng bộ lại khi có kết nối.
 
-## Firestore indexes V34
+## Firestore / dữ liệu
 
-V34 giữ 2 index ASC cũ và thêm 2 index DESC cho truy vấn 80 bài mới nhất của học sinh:
+V35 **không tạo collection Firestore mới và không yêu cầu migration dữ liệu mới**. `firestore.rules` và `firestore.indexes.json` kế thừa V34.
 
-1. `targetMode ASC + opensAt DESC`
-2. `targetUids ARRAY_CONTAINS + opensAt DESC`
+Các marker `scaleV34` và tên hàm `v34*` được giữ nguyên có chủ đích để tránh phá tương thích dữ liệu/code cũ. V35 chỉ bọc thêm lớp hardening phía trên.
 
-Hãy deploy `firestore.indexes.json` và chờ hai index mới ở trạng thái **Enabled/Ready** trước khi dùng V34 cho học sinh.
+## App Check
 
-## Thứ tự triển khai
+Gói vẫn để:
 
-1. Sao lưu V33.
-2. Publish `firestore.rules` V34 (quyền dữ liệu không mở rộng so với V33).
-3. Deploy `firestore.indexes.json` V34 và chờ 2 index DESC mới sẵn sàng.
-4. Upload `index.html` + `assets/` lên GitHub Pages.
-5. Giáo viên mở từng lớp một lần; V34 sẽ ghi marker migration để các lần sau không quét lặp.
-6. Admin mở **Quản trị hệ thống → Hiệu năng & quy mô** để theo dõi reads/cache/query chậm.
+```html
+<script>window.MATH12_APP_CHECK_SITE_KEY = window.MATH12_APP_CHECK_SITE_KEY || '';</script>
+```
 
-## Lưu ý
+Điều này có nghĩa **App Check chưa được bật thực sự** cho tới khi nhập reCAPTCHA v3 site key. Sau khi nhập key, nên kiểm tra request metrics trong Firebase App Check trước rồi mới bật Enforcement.
 
-- Metrics V34 là **ước tính phía client**, không thay thế Firebase Usage/Billing dashboard.
-- Dashboard mặc định là **preview 60 học sinh/lần**. Khi cần ma trận năng lực/heatmap chính xác cho toàn lớp, bấm **Tải phân tích đầy đủ**; thao tác này có thể đọc toàn bộ dữ liệu aggregate của lớp và được thực hiện theo yêu cầu, không chạy nền.
-- Admin tìm kiếm/lọc áp dụng trên **trang 100 document đang mở**; dùng nút Trang trước/Trang sau để duyệt hệ thống lớn.
-- Không có collection Firestore mới.
-- `reportsV33` và các chính sách link phụ huynh giữ nguyên.
+## Cách triển khai
+
+1. Sao lưu bản V34 đang chạy.
+2. Giữ `firestore.rules` và `firestore.indexes.json` hiện tại nếu V34 đã deploy thành công.
+3. Upload toàn bộ V35 (`index.html`, `assets/`, `manifest.webmanifest`, `sw-v35.js`) lên cùng thư mục GitHub Pages.
+4. Tải lại trang bằng `Ctrl+F5` một lần để nhận service worker/cache V35 mới.
+5. Đăng nhập Admin → **Quản trị hệ thống → Production Center V35** → bấm **Chạy kiểm tra**.
+6. Nếu dùng import Excel, lần đầu mở file `.xlsx` cần Internet để tải XLSX từ jsDelivr; CSV không cần thư viện này.
+7. Nếu muốn bật App Check, cấu hình site key rồi kiểm tra trạng thái **Đang bảo vệ** trước khi bật Enforcement.
+
+## Kiểm tra tối thiểu trước khi dùng thật
+
+- Học sinh: đăng nhập, học theo bài, làm đề THPT, xem tiến độ, lớp online.
+- Giáo viên: ngân hàng câu hỏi, tạo đề, giao bài, dashboard lớp, import CSV/XLSX, AI, báo cáo.
+- Admin: quản lý tài khoản/lớp, Scale Center, Production Center.
+- Mở lại trang khi offline để xác nhận shell PWA hiển thị; các tác vụ cloud đương nhiên cần mạng.
+

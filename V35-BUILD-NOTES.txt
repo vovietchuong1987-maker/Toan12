@@ -1,0 +1,29 @@
+Math12 Hub V35 — Build verification
+Date: 2026-08-28
+
+Static / source checks completed:
+- All JavaScript files: node --check PASS
+- manifest.webmanifest: valid JSON
+- firestore.indexes.json: valid JSON
+- HTML IDs: 264 IDs, 0 duplicates
+- app-version meta: 35
+- APP_VERSION: 35
+- Eager XLSX: removed
+- Eager AI V32: removed
+- Eager Reports V33: removed
+- Hardening V35: loaded after Scale V34 and before bootstrap
+- Service worker cache list: all referenced same-origin files exist
+- Inline handler scan: no missing application handlers (only browser methods focus/getElementById/print)
+
+VM regression checks completed:
+- 19 curriculum lessons
+- THPT config: 22 questions / 90 minutes
+- THPT sections: 12 MCQ / 4 TF4 / 6 short-answer
+- TF4 scoring: 0.1 / 0.25 / 0.5 / 1
+- Role access: student->question bank false; teacher true; teacher->admin false; admin true
+- Initial smart loading: AI false / Reports false / XLSX false
+- Lazy scripts: AI V32 and Reports V33 initialize successfully after eager core
+
+Important production note:
+- Firebase App Check remains READY-BUT-NOT-ENABLED because MATH12_APP_CHECK_SITE_KEY is blank.
+- No Firestore collection/schema migration is introduced by V35; V34 scale markers remain intentionally compatible.

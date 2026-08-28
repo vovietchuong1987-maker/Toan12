@@ -1,4 +1,4 @@
-const APP_VERSION='34'; // V34 Performance & Scale; V33 Reports, V32 AI, V31 Analytics and all earlier data layers remain compatible.
+const APP_VERSION='35'; // V35 Production Hardening & Smart Loading; V34 Scale and all earlier data layers remain compatible.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Tính đơn điệu và cực trị của hàm số'},
@@ -80,7 +80,7 @@ let firebaseReady=false,firebaseHydrating=false,firebaseSyncTimer=null,firebaseM
 function save(options={}){
   state._meta=state._meta||{};state._meta.schemaVersion=34;state._meta.deviceId=state._meta.deviceId||v21DeviceId();state._meta.revision=(Number(state._meta.revision)||0)+1;state._meta.updatedAt=new Date().toISOString();state._meta.lastSaveReason=options.reason||'save';
   let serialized=JSON.stringify(state);
-  try{localStorage.setItem(LOCAL_STATE_KEY,serialized);state._meta.storageMode='localStorage+IndexedDB'}catch(err){state._meta.storageWarning='localStorage không đủ chỗ; V34 đang dùng kho cứu hộ IndexedDB.';if(typeof v21HandleStorageQuota==='function')v21HandleStorageQuota(serialized,err);else console.error(err)}
+  try{localStorage.setItem(LOCAL_STATE_KEY,serialized);state._meta.storageMode='localStorage+IndexedDB'}catch(err){state._meta.storageWarning='localStorage không đủ chỗ; V35 đang dùng kho cứu hộ IndexedDB.';if(typeof v21HandleStorageQuota==='function')v21HandleStorageQuota(serialized,err);else console.error(err)}
   if(typeof v21MirrorState==='function')v21MirrorState();
   if(options.sync!==false&&typeof scheduleFirebaseSync==='function')scheduleFirebaseSync();
 }

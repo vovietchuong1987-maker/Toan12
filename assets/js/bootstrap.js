@@ -1,11 +1,11 @@
 function renderAll(){renderDashboard();renderLessons();if(!isTeacherRole()){renderProgress();v28RenderStudentUX?.()}if(isTeacherRole())renderTeacher();if(isAdminRole?.()){renderAdminV25?.();v34RenderScaleCenter?.();}if(!isTeacherRole()&&document.getElementById('page-analytics')?.classList.contains('active'))renderAnalytics();if(document.getElementById('page-learning-plan')?.classList.contains('active'))v28RenderStudentUX?.();if(document.getElementById('page-notifications')?.classList.contains('active'))renderNotificationsPage();if(document.getElementById('page-online')?.classList.contains('active'))renderFirebaseOnlinePage();if(isTeacherRole()&&document.getElementById('questionBankTable'))renderQuestionBank();if(isTeacherRole()&&document.getElementById('page-ai-teacher')?.classList.contains('active'))v32RenderAIAssistant?.();if(document.getElementById('page-reports')?.classList.contains('active'))v33RenderReportsPage?.()}
 document.getElementById('lessonSearch').addEventListener('input',renderLessons);['bankSearch','bankLevel','bankType','bankKnowledge'].forEach(id=>document.getElementById(id)?.addEventListener(id==='bankSearch'?'input':'change',()=>id==='bankSearch'&&typeof v34ScheduleBankRender==='function'?v34ScheduleBankRender(false):renderQuestionBank()));document.getElementById('bankChapter')?.addEventListener('change',()=>{document.getElementById('bankLesson').value='';document.getElementById('bankKnowledge').value='';renderQuestionBank(true)});document.getElementById('bankLesson')?.addEventListener('change',()=>{document.getElementById('bankKnowledge').value='';renderQuestionBank(true)});document.getElementById('nav').addEventListener('click',e=>{let b=e.target.closest('button[data-page]');if(b)goPage(b.dataset.page)});document.getElementById('modalBackdrop').addEventListener('click',e=>{if(e.target.id==='modalBackdrop')closeModal()});
 function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('mobileOverlay').classList.remove('hidden')}function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobileOverlay').classList.add('hidden')}document.getElementById('menuBtn').onclick=openSidebar;document.getElementById('mobileOverlay').onclick=closeSidebar;
-async function initMath12HubV34(){
-  try{if(typeof v21HydrateFromVault==='function')await v21HydrateFromVault()}catch(err){console.warn('V34 vault hydrate',err)}
+async function initMath12HubV35(){
+  try{if(typeof v21HydrateFromVault==='function')await v21HydrateFromVault()}catch(err){console.warn('V35 vault hydrate',err)}
   v28EnsurePlan?.();applyRoleAccess('student',false);renderAll();
   try{if(typeof v21MirrorStateNow==='function')await v21MirrorStateNow()}catch(_){}
   initFirebaseV21();
-  setTimeout(()=>v33TryOpenPublicReport?.(),350);
+  setTimeout(()=>v35TryOpenPublicReport?.(),350);
 }
-initMath12HubV34();
+initMath12HubV35();

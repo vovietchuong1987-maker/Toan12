@@ -1,0 +1,15 @@
+{
+  "name": "Math12 Hub V35",
+  "short_name": "Math12 Hub",
+  "description": "Nền tảng ôn tập và kiểm tra Toán 12 theo Chương trình GDPT 2018.",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#172033",
+  "icons": [
+    {"src":"assets/icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"assets/icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

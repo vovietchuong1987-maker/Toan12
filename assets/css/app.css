@@ -288,3 +288,22 @@ button,input,select{font:inherit}.hidden{display:none!important}.app{min-height:
 /* ===== V34 Performance & Scale ===== */
 .v34-scale-card{overflow:hidden}.v34-scale-metrics .card{min-width:0}.v34-scale-metrics h2{font-variant-numeric:tabular-nums}.v34-scale-advice{display:grid;gap:8px}.v34-advice{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2,#f8fafc)}.v34-advice span{font-size:13px;color:var(--muted);text-align:right}.v34-advice.good{border-left:4px solid var(--good)}.v34-advice.warn{border-left:4px solid var(--warn)}.v34-advice.danger{border-left:4px solid var(--bad)}.v34-advice.info{border-left:4px solid var(--blue)}.v34-pager{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:10px 0}.v34-pager>span{font-size:13px;color:var(--muted);font-weight:700}.assignment-card,.online-class-card,.teacher-history-row,.v27-today-task{content-visibility:auto;contain-intrinsic-size:1px 110px}
 @media(max-width:760px){.v34-advice{flex-direction:column}.v34-advice span{text-align:left}.v34-scale-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* =========================================================
+   V35 — Production Hardening & Smart Loading
+   ========================================================= */
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid rgba(37,99,235,.38);outline-offset:2px}
+.v35-feature-loader{position:fixed;right:18px;bottom:18px;z-index:10050;background:#172033;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.24);font-size:12px;font-weight:800;letter-spacing:.01em}
+.v35-feature-loader.hidden,.v35-connectivity.hidden{display:none!important}
+.v35-connectivity{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:10040;max-width:min(92vw,720px);background:#fff7ed;color:#9a3412;border:1px solid #fdba74;box-shadow:0 10px 28px rgba(15,23,42,.18);padding:10px 14px;border-radius:12px;font-size:12px;font-weight:750;text-align:center}
+.v35-production-card{border:1px solid rgba(37,99,235,.18);background:linear-gradient(180deg,#fff,#fbfdff)}
+.v35-production-metrics .card h2{font-size:20px;line-height:1.15;margin-top:5px}
+.v35-check-list{display:grid;gap:8px}
+.v35-check-row{display:grid;grid-template-columns:minmax(210px,.7fr) 1fr;gap:14px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.v35-check-row>div{display:flex;align-items:center;gap:8px;min-width:0}.v35-check-row span:last-child{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.v35-status{display:inline-flex;align-items:center;justify-content:center;min-width:64px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.04em}
+.v35-status.pass{background:#ecfdf5;color:#047857}.v35-status.warn{background:#fff7ed;color:#c2410c}.v35-status.fail{background:#fef2f2;color:#b91c1c}
+.v35-runtime-details{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}.v35-runtime-details summary{cursor:pointer;padding:11px 13px;font-weight:800}.v35-runtime-details>div{padding:0 12px 12px}
+.v35-issue-row{display:grid;grid-template-columns:150px 1fr auto;gap:10px;padding:8px 0;border-top:1px solid var(--line);align-items:start}.v35-issue-row b{font-size:11px}.v35-issue-row span,.v35-issue-row small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+@media(max-width:760px){.v35-check-row{grid-template-columns:1fr}.v35-issue-row{grid-template-columns:1fr}.v35-feature-loader{left:12px;right:12px;text-align:center}.v35-connectivity{bottom:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
