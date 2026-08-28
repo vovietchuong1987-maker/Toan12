@@ -9,9 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
+const V35_BUILD='35.1-hotfix';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=35.1',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=35.1',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -85,15 +86,15 @@ function v35CaptureIssue(kind,error){
   try{sessionStorage.setItem('math12hub-v35-runtime-issues',JSON.stringify(v35RuntimeIssues))}catch(_){}
   v35RenderProductionCenter()
 }
-window.addEventListener('error',e=>v35CaptureIssue('window-error',e.error||e.message));
+window.addEventListener('error',e=>{let src=String(e.filename||'');if(/^(chrome|edge|moz)-extension:/i.test(src))return;v35CaptureIssue('window-error',e.error||e.message)});
 window.addEventListener('unhandledrejection',e=>v35CaptureIssue('unhandled-rejection',e.reason));
 try{let old=JSON.parse(sessionStorage.getItem('math12hub-v35-runtime-issues')||'[]');if(Array.isArray(old))v35RuntimeIssues.push(...old.slice(0,20))}catch(_){}
 
 function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:String(detail||''),level:ok?'pass':level}}
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
-  let meta=document.querySelector('meta[name="app-version"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='35'&&meta==='35',`APP_VERSION=${APP_VERSION}; meta=${meta}`));
+  let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='35'&&meta==='35',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));
@@ -107,7 +108,7 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
     let roleOk=canAccessPage('question-bank','student')===false&&canAccessPage('question-bank','teacher')===true&&canAccessPage('admin','teacher')===false&&canAccessPage('admin','admin')===true;
     checks.push(v35Check('Phân quyền giao diện',roleOk,'Student / Teacher / Admin'))
   }catch(err){checks.push(v35Check('Phân quyền giao diện',false,v35SanitizeErrorText(err?.message)))}
-  checks.push(v35Check('Data Safety',typeof v21HydrateFromVault==='function'&&typeof saveState==='function','Local + IndexedDB vault'));
+  checks.push(v35Check('Data Safety',typeof v21HydrateFromVault==='function'&&typeof save==='function','Local + IndexedDB vault'));
   checks.push(v35Check('Firebase core',typeof initFirebaseV21==='function'&&typeof firebaseLearningSnapshot==='function','Auth + Firestore'));
   checks.push(v35Check('Scale engine V34',typeof v34Diagnostics==='function'&&typeof v34RenderScaleCenter==='function','Phân trang + cache'));
   checks.push(v35Check('PWA shell','serviceWorker' in navigator&&!!document.querySelector('link[rel="manifest"]'),'Service Worker + manifest', 'warn'));
@@ -130,9 +131,16 @@ function v35RenderProductionCenter(){
   let errBox=document.getElementById('v35RuntimeIssues');if(errBox){errBox.innerHTML=v35RuntimeIssues.length?v35RuntimeIssues.slice(0,8).map(x=>`<div class="v35-issue-row"><b>${esc(x.kind)}</b><span>${esc(x.message)}</span><small>${new Date(x.at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</small></div>`).join(''):'<div class="online-empty">Chưa ghi nhận lỗi JavaScript trong phiên.</div>'}
 }
 
+function v35ClearRuntimeIssues(){
+  v35RuntimeIssues.length=0;
+  try{sessionStorage.removeItem('math12hub-v35-runtime-issues')}catch(_){}
+  v35RenderProductionCenter();
+  examToast?.('Đã xóa lỗi runtime đã ghi nhận trong phiên.');
+}
+
 function v35Diagnostics(){
   let base=typeof v34Diagnostics==='function'?v34Diagnostics():{};
-  return {...base,appVersion:APP_VERSION,hardeningSchema:V35_HARDENING_SCHEMA,v35:{createdAt:v35Now(),serviceWorker:v35ServiceWorkerState,features:{xlsx:v35FeatureReady('xlsx'),ai:v35FeatureReady('ai'),reports:v35FeatureReady('reports')},regression:v35RegressionLast,runtimeIssues:v35RuntimeIssues.slice(0,20)}}
+  return {...base,appVersion:APP_VERSION,hardeningSchema:V35_HARDENING_SCHEMA,build:V35_BUILD,v35:{createdAt:v35Now(),serviceWorker:v35ServiceWorkerState,features:{xlsx:v35FeatureReady('xlsx'),ai:v35FeatureReady('ai'),reports:v35FeatureReady('reports')},regression:v35RegressionLast,runtimeIssues:v35RuntimeIssues.slice(0,20)}}
 }
 function v35ExportDiagnostics(){
   let payload=v35Diagnostics(),name=`math12hub-v35-diagnostics-${new Date().toISOString().slice(0,10)}.json`;
@@ -163,7 +171,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v35.js',{scope:'./'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v35.js?v=35.1',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

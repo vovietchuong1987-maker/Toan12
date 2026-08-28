@@ -91,12 +91,39 @@ function v26RenderSystemHealth(){
   box.innerHTML=v26HealthState.status==='scanning'?'<div class="online-empty">Đang kiểm tra liên kết dữ liệu Firestore…</div>':rows||'<div class="firebase-banner"><b>✓ Chưa phát hiện lỗi toàn vẹn trong phạm vi đã quét.</b></div>';
   const note=document.getElementById('v26HealthLimitNote');if(note)note.textContent=v26HealthState.truncated.length?`Đã chạm giới hạn đọc: ${v26HealthState.truncated.join(', ')}. Kết quả là mẫu an toàn, chưa phải kiểm kê toàn bộ.`:'V26 chỉ quét khi admin bấm nút để tránh phát sinh Reads nền.';
 }
+async function v26FetchNestedFallback(parentDocs,subCollection,totalLimit,perParentLimit=250){
+  const docs=[];let queryCount=0;const parents=Array.isArray(parentDocs)?parentDocs:[];
+  for(let i=0;i<parents.length&&docs.length<totalLimit;i+=8){
+    const batch=parents.slice(i,i+8),remaining=Math.max(1,totalLimit-docs.length),each=Math.max(1,Math.min(perParentLimit,remaining));
+    const snaps=await Promise.all(batch.map(d=>d.ref.collection(subCollection).limit(each).get()));queryCount+=snaps.length;
+    for(const snap of snaps){for(const d of snap.docs){if(docs.length>=totalLimit)break;docs.push(d)}}
+  }
+  return {docs,size:docs.length,_fallback:true,_queryCount:queryCount};
+}
 async function v26SystemHealthScan(){
   if(!v25AdminRequire?.()||!firebaseDb)return;v26HealthState={...v26HealthState,status:'scanning',issues:[],scannedDocs:0,score:null,repairable:0,truncated:[]};v26RenderSystemHealth();
   try{
-    const L=V26_HEALTH_LIMITS,[uSnap,cSnap,jSnap,memSnap,shipSnap,aSnap,kSnap,iSnap]=await Promise.all([
-      firebaseDb.collection('users').limit(L.users).get(),firebaseDb.collection('classes').limit(L.classes).get(),firebaseDb.collection('joinCodes').limit(L.joinCodes).get(),firebaseDb.collectionGroup('members').limit(L.members).get(),firebaseDb.collectionGroup('memberships').limit(L.memberships).get(),firebaseDb.collectionGroup('assignmentsV18').limit(L.assignments).get(),firebaseDb.collectionGroup('answerKeysV18').limit(L.answerKeys).get(),firebaseDb.collectionGroup('submissionIndexV19').limit(L.indexes).get()
+    const L=V26_HEALTH_LIMITS;
+    const [uSnap,cSnap,jSnap]=await Promise.all([
+      firebaseDb.collection('users').limit(L.users).get(),firebaseDb.collection('classes').limit(L.classes).get(),firebaseDb.collection('joinCodes').limit(L.joinCodes).get()
     ]);
+    let memSnap,shipSnap,aSnap,kSnap,iSnap,fallbackMode=false,fallbackReason='';
+    try{
+      [memSnap,shipSnap,aSnap,kSnap,iSnap]=await Promise.all([
+        firebaseDb.collectionGroup('members').limit(L.members).get(),firebaseDb.collectionGroup('memberships').limit(L.memberships).get(),firebaseDb.collectionGroup('assignmentsV18').limit(L.assignments).get(),firebaseDb.collectionGroup('answerKeysV18').limit(L.answerKeys).get(),firebaseDb.collectionGroup('submissionIndexV19').limit(L.indexes).get()
+      ]);
+    }catch(groupErr){
+      const code=String(groupErr?.code||'').toLowerCase();
+      if(!code.includes('permission-denied')&&!String(groupErr?.message||'').toLowerCase().includes('permission'))throw groupErr;
+      fallbackMode=true;fallbackReason=firebaseErrorText?.(groupErr)||String(groupErr?.message||groupErr);
+      [memSnap,aSnap,kSnap,iSnap,shipSnap]=await Promise.all([
+        v26FetchNestedFallback(cSnap.docs,'members',L.members,300),
+        v26FetchNestedFallback(cSnap.docs,'assignmentsV18',L.assignments,250),
+        v26FetchNestedFallback(cSnap.docs,'answerKeysV18',L.answerKeys,250),
+        v26FetchNestedFallback(cSnap.docs,'submissionIndexV19',L.indexes,400),
+        v26FetchNestedFallback(uSnap.docs,'memberships',L.memberships,80)
+      ]);
+    }
     const snaps=[['users',uSnap,L.users],['classes',cSnap,L.classes],['joinCodes',jSnap,L.joinCodes],['members',memSnap,L.members],['memberships',shipSnap,L.memberships],['assignments',aSnap,L.assignments],['answerKeys',kSnap,L.answerKeys],['indexes',iSnap,L.indexes]];snaps.forEach(([n,s,l])=>{v26HealthState.scannedDocs+=s.size;if(s.size>=l)v26HealthState.truncated.push(n)});
     const users=new Map(uSnap.docs.map(d=>[d.id,{id:d.id,...d.data()}])),classes=new Map(cSnap.docs.map(d=>[d.id,{id:d.id,...d.data()}])),joinCodes=new Map(jSnap.docs.map(d=>[d.id,{id:d.id,...d.data()}]));
     v26HealthContext={users,classes,joinCodes};
@@ -114,45 +141,23 @@ async function v26SystemHealthScan(){
     aSnap.docs.forEach(d=>{let p=v26PathParts(d),classId=p[1],id=p[3];assignments.add(`${classId}|${id}`)});
     kSnap.docs.forEach(d=>{let p=v26PathParts(d),classId=p[1],id=p[3];keys.add(`${classId}|${id}`)});
     const out=[];
+    if(fallbackMode)out.push(v26Issue('info','rules-fallback','Đã quét bằng chế độ tương thích Firestore Rules',`Collection-group scan bị Rules từ chối nên V35 tự chuyển sang đọc từng nhánh được Admin cho phép. Không cần đổi Rules để hoàn tất lần quét này.`,{},false));
     for(const c of classes.values()){
       const owner=users.get(c.ownerId);if(!owner&&complete.users)out.push(v26Issue('critical','class-owner-missing',`Lớp “${c.name||c.id}” không tìm thấy chủ lớp`,`ownerId ${c.ownerId||'—'} không tồn tại trong users.`,{classId:c.id},false));
       else if(owner&&!['teacher','admin'].includes(owner.role))out.push(v26Issue('warn','class-owner-role',`Chủ lớp “${c.name||c.id}” không còn quyền giáo viên`,`Tài khoản ${owner.email||c.ownerId} hiện có role = ${owner.role||'student'}.`,{classId:c.id,ownerId:c.ownerId},false));
-      if(c.status!=='trashed'&&complete.joinCodes){
-        const jc=c.joinCode?joinCodes.get(c.joinCode):null;if(!c.joinCode||!jc||jc.classId!==c.id||jc.ownerId!==c.ownerId)out.push(v26Issue('warn','join-code-broken',`Mã tham gia lớp “${c.name||c.id}” không đồng bộ`,`V26 có thể tạo một mã mới và liên kết lại lớp mà không đụng dữ liệu học sinh.`,{classId:c.id},true));
-      }
+      if(c.status!=='trashed'&&complete.joinCodes){const jc=c.joinCode?joinCodes.get(c.joinCode):null;if(!c.joinCode||!jc||jc.classId!==c.id||jc.ownerId!==c.ownerId)out.push(v26Issue('warn','join-code-broken',`Mã tham gia lớp “${c.name||c.id}” không đồng bộ`,`V26 có thể tạo một mã mới và liên kết lại lớp mà không đụng dữ liệu học sinh.`,{classId:c.id},true))}
       if((Number(c.schemaVersion)||0)<27)out.push(v26Issue('info','class-schema-old',`Lớp “${c.name||c.id}” đang ở schema cũ`,`schemaVersion hiện là ${Number(c.schemaVersion)||0}; dữ liệu vẫn tương thích và sẽ được nâng khi có thao tác V27.`,{classId:c.id},false));
     }
     if(!complete.users)out.push(v26Issue('info','scan-partial-users','Chưa kiểm kê đầy đủ hồ sơ người dùng',`Đã đọc tới giới hạn ${L.users} users. V26 không kết luận “mất hồ sơ” và không tự dựng liên kết dựa trên user vắng mặt ở mẫu này.`,{},false));
     if(!complete.classes)out.push(v26Issue('info','scan-partial-classes','Chưa kiểm kê đầy đủ lớp học',`Đã đọc tới giới hạn ${L.classes} classes. V26 không kết luận membership trỏ tới lớp không tồn tại nếu class vắng mặt trong mẫu.`,{},false));
     if(!complete.joinCodes)out.push(v26Issue('info','scan-partial-joincodes','Chưa đối chiếu đầy đủ mã tham gia lớp',`Đã đọc tới giới hạn ${L.joinCodes} joinCodes nên V26 bỏ qua kết luận “thiếu mã” để tránh báo sai.`,{},false));
     if(complete.memberLinks){
-      for(const [key,m] of members){
-        const c=classes.get(m.classId);if(c?.status==='trashed')continue;
-        if(!memberships.has(key)){
-          const userExists=users.has(m.uid),userKnown=userExists||complete.users;
-          if(userExists)out.push(v26Issue('warn','membership-missing',`Thiếu membership của ${m.data.name||m.uid}`,`Lớp ${c?.name||m.classId} có member nhưng users/${m.uid}/memberships/${m.classId} chưa tồn tại.`,{classId:m.classId,uid:m.uid},true));
-          else if(userKnown)out.push(v26Issue('critical','member-user-missing',`Member ${m.data.name||m.uid} không còn hồ sơ người dùng`,`classes/${m.classId}/members/${m.uid} tồn tại nhưng users/${m.uid} không tồn tại. V26 không tự dựng liên kết đoán mò.`,{classId:m.classId,uid:m.uid},false));
-        }
-      }
-      for(const [key,s] of memberships){
-        const c=classes.get(s.classId),userExists=users.has(s.uid),userKnown=userExists||complete.users;
-        if(!c&&complete.classes)out.push(v26Issue('warn','orphan-membership',`Membership mồ côi của ${users.get(s.uid)?.displayName||s.uid}`,`Liên kết trỏ tới lớp ${s.classId} không còn tồn tại. Có thể xóa liên kết này an toàn.`,{classId:s.classId,uid:s.uid},true));
-        else if(c?.status==='trashed')out.push(v26Issue('info','trashed-class-membership',`Membership còn sót tới lớp trong Thùng rác`,`Lớp ${c.name||s.classId} đã ở Thùng rác nên membership này có thể xóa để giữ mô hình truy cập V24–V26 nhất quán.`,{classId:s.classId,uid:s.uid},true));
-        else if(c&&!members.has(key)){
-          if(userExists)out.push(v26Issue('warn','member-missing',`Thiếu member trong lớp của ${users.get(s.uid)?.displayName||s.uid}`,`Membership tồn tại nhưng classes/${s.classId}/members/${s.uid} bị thiếu. V26 có thể dựng lại member từ hồ sơ người dùng.`,{classId:s.classId,uid:s.uid},true));
-          else if(userKnown)out.push(v26Issue('critical','membership-user-missing',`Membership ${s.uid} không còn hồ sơ người dùng`,`users/${s.uid}/memberships/${s.classId} tồn tại nhưng users/${s.uid} không tồn tại. V26 chỉ cảnh báo.`,{classId:s.classId,uid:s.uid},false));
-        }
-      }
+      for(const [key,m] of members){const c=classes.get(m.classId);if(c?.status==='trashed')continue;if(!memberships.has(key)){const userExists=users.has(m.uid),userKnown=userExists||complete.users;if(userExists)out.push(v26Issue('warn','membership-missing',`Thiếu membership của ${m.data.name||m.uid}`,`Lớp ${c?.name||m.classId} có member nhưng users/${m.uid}/memberships/${m.classId} chưa tồn tại.`,{classId:m.classId,uid:m.uid},true));else if(userKnown)out.push(v26Issue('critical','member-user-missing',`Member ${m.data.name||m.uid} không còn hồ sơ người dùng`,`classes/${m.classId}/members/${m.uid} tồn tại nhưng users/${m.uid} không tồn tại. V26 không tự dựng liên kết đoán mò.`,{classId:m.classId,uid:m.uid},false))}}
+      for(const [key,s] of memberships){const c=classes.get(s.classId),userExists=users.has(s.uid),userKnown=userExists||complete.users;if(!c&&complete.classes)out.push(v26Issue('warn','orphan-membership',`Membership mồ côi của ${users.get(s.uid)?.displayName||s.uid}`,`Liên kết trỏ tới lớp ${s.classId} không còn tồn tại. Có thể xóa liên kết này an toàn.`,{classId:s.classId,uid:s.uid},true));else if(c?.status==='trashed')out.push(v26Issue('info','trashed-class-membership',`Membership còn sót tới lớp trong Thùng rác`,`Lớp ${c.name||s.classId} đã ở Thùng rác nên membership này có thể xóa để giữ mô hình truy cập V24–V26 nhất quán.`,{classId:s.classId,uid:s.uid},true));else if(c&&!members.has(key)){if(userExists)out.push(v26Issue('warn','member-missing',`Thiếu member trong lớp của ${users.get(s.uid)?.displayName||s.uid}`,`Membership tồn tại nhưng classes/${s.classId}/members/${s.uid} bị thiếu. V26 có thể dựng lại member từ hồ sơ người dùng.`,{classId:s.classId,uid:s.uid},true));else if(userKnown)out.push(v26Issue('critical','membership-user-missing',`Membership ${s.uid} không còn hồ sơ người dùng`,`users/${s.uid}/memberships/${s.classId} tồn tại nhưng users/${s.uid} không tồn tại. V26 chỉ cảnh báo.`,{classId:s.classId,uid:s.uid},false))}}
     }else out.push(v26Issue('info','scan-partial-members','Chưa đối chiếu đầy đủ member ↔ membership',`Một trong hai truy vấn đã chạm giới hạn (${L.members}/${L.memberships}). V26 bỏ qua sửa liên kết để tránh false positive.`,{},false));
-
-    if(complete.assignmentKeys){
-      for(const key of assignments)if(!keys.has(key)){let [classId,id]=key.split('|');out.push(v26Issue('critical','answer-key-missing',`Bài ${id} thiếu khóa đáp án`,`Secure assignment của lớp ${classes.get(classId)?.name||classId} không có answerKeysV18 tương ứng. Không tự sửa vì không thể tái tạo đáp án tin cậy.`,{classId,assignmentId:id},false))}
-      for(const key of keys)if(!assignments.has(key)){let [classId,id]=key.split('|');out.push(v26Issue('info','orphan-answer-key',`Khóa đáp án ${id} không còn bài công khai`,`Có answerKeysV18 nhưng assignment tương ứng không tồn tại trong tập assignment đã quét đầy đủ. V26 chỉ cảnh báo, không tự xóa.`,{classId,assignmentId:id},false))}
-    }else out.push(v26Issue('info','scan-partial-answerkeys','Chưa đối chiếu đầy đủ assignment ↔ answer key',`Assignment hoặc answer key đã chạm giới hạn (${L.assignments}/${L.answerKeys}). V26 không kết luận thiếu khóa đáp án ở lần quét này.`,{},false));
-
-    if(complete.assignments)iSnap.docs.forEach(d=>{let p=v26PathParts(d),classId=p[1],x=d.data()||{},aid=x.assignmentId||String(d.id).split('__')[0];if(aid&&!assignments.has(`${classId}|${aid}`))out.push(v26Issue('warn','orphan-submission-index',`Chỉ mục nộp bài ${d.id} không tìm thấy bài`,`submissionIndexV19 của lớp ${classes.get(classId)?.name||classId} trỏ tới assignment ${aid} không còn tồn tại trong tập assignment đã quét đầy đủ. V26 không tự xóa chỉ mục điểm.`,{classId,assignmentId:aid,indexId:d.id},false))});
-    else out.push(v26Issue('info','scan-partial-indexes','Chưa đối chiếu đầy đủ submission index',`Assignment đã chạm giới hạn ${L.assignments}; V26 bỏ qua kết luận chỉ mục mồ côi để tránh báo sai.`,{},false));
-    v26HealthState={status:'done',issues:out,scannedDocs:v26HealthState.scannedDocs,score:v26HealthScore(out),repairable:out.filter(x=>x.repairable).length,scannedAt:new Date().toISOString(),truncated:v26HealthState.truncated,lastRepair:v26HealthState.lastRepair};v26RenderSystemHealth();
+    if(complete.assignmentKeys){for(const key of assignments)if(!keys.has(key)){let [classId,id]=key.split('|');out.push(v26Issue('critical','answer-key-missing',`Bài ${id} thiếu khóa đáp án`,`Secure assignment của lớp ${classes.get(classId)?.name||classId} không có answerKeysV18 tương ứng. Không tự sửa vì không thể tái tạo đáp án tin cậy.`,{classId,assignmentId:id},false))}for(const key of keys)if(!assignments.has(key)){let [classId,id]=key.split('|');out.push(v26Issue('info','orphan-answer-key',`Khóa đáp án ${id} không còn bài công khai`,`Có answerKeysV18 nhưng assignment tương ứng không tồn tại trong tập assignment đã quét đầy đủ. V26 chỉ cảnh báo, không tự xóa.`,{classId,assignmentId:id},false))}}else out.push(v26Issue('info','scan-partial-answerkeys','Chưa đối chiếu đầy đủ assignment ↔ answer key',`Assignment hoặc answer key đã chạm giới hạn (${L.assignments}/${L.answerKeys}). V26 không kết luận thiếu khóa đáp án ở lần quét này.`,{},false));
+    if(complete.assignments)iSnap.docs.forEach(d=>{let p=v26PathParts(d),classId=p[1],x=d.data()||{},aid=x.assignmentId||String(d.id).split('__')[0];if(aid&&!assignments.has(`${classId}|${aid}`))out.push(v26Issue('warn','orphan-submission-index',`Chỉ mục nộp bài ${d.id} không tìm thấy bài`,`submissionIndexV19 của lớp ${classes.get(classId)?.name||classId} trỏ tới assignment ${aid} không còn tồn tại trong tập assignment đã quét đầy đủ. V26 không tự xóa chỉ mục điểm.`,{classId,assignmentId:aid,indexId:d.id},false))});else out.push(v26Issue('info','scan-partial-indexes','Chưa đối chiếu đầy đủ submission index',`Assignment đã chạm giới hạn ${L.assignments}; V26 bỏ qua kết luận chỉ mục mồ côi để tránh báo sai.`,{},false));
+    v26HealthState={status:'done',issues:out,scannedDocs:v26HealthState.scannedDocs,score:v26HealthScore(out),repairable:out.filter(x=>x.repairable).length,scannedAt:new Date().toISOString(),truncated:v26HealthState.truncated,lastRepair:v26HealthState.lastRepair,fallbackMode};v26RenderSystemHealth();
   }catch(err){console.error('V26 health scan',err);v26HealthState.status='error';v26HealthState.issues=[v26Issue('critical','scan-error','Không hoàn tất quét hệ thống',firebaseErrorText?.(err)||String(err),{},false)];v26HealthState.score=0;v26RenderSystemHealth()}
 }
 async function v26RepairSafeIssues(){

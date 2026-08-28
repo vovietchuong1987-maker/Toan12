@@ -27,3 +27,9 @@ VM regression checks completed:
 Important production note:
 - Firebase App Check remains READY-BUT-NOT-ENABLED because MATH12_APP_CHECK_SITE_KEY is blank.
 - No Firestore collection/schema migration is introduced by V35; V34 scale markers remain intentionally compatible.
+
+HOTFIX 35.1:
+- Fix stale APP_VERSION via versioned asset URLs + SW shell-2/network-first.
+- Fix Data Safety regression check: saveState -> save.
+- Add Firestore collectionGroup permission fallback in integrity scan.
+- Add runtime issue clear + ignore browser extension errors.

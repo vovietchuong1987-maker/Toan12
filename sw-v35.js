@@ -1,19 +1,26 @@
-/* Math12 Hub V35 — same-origin offline shell cache */
-const CACHE='math12hub-v35-shell-1';
+/* Math12 Hub V35.1 hotfix — version-safe offline shell */
+const CACHE='math12hub-v35-shell-2';
 const CORE=[
-  './','./index.html','./manifest.webmanifest','./assets/css/app.css',
-  './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
-  './assets/js/core.js','./assets/js/authoring.js','./assets/js/data-vault.js','./assets/js/exam.js','./assets/js/firebase.js',
-  './assets/js/dashboard-v22.js','./assets/js/admin-v25.js','./assets/js/integrity-v26.js','./assets/js/teacher-ops-v27.js','./assets/js/student-ux-v28.js',
-  './assets/js/question-bank-v29.js','./assets/js/exam-pro-v30.js','./assets/js/analytics-pro-v31.js','./assets/js/scale-v34.js','./assets/js/hardening-v35.js','./assets/js/bootstrap.js',
-  './assets/icons/icon-192.png','./assets/icons/icon-512.png'
+  './','./index.html','./manifest.webmanifest?v=35.1','./assets/css/app.css?v=35.1',
+  './assets/js/mathjax-config.js?v=35.1','./assets/vendor/mathjax.js?v=35.1',
+  './assets/js/core.js?v=35.1','./assets/js/authoring.js?v=35.1','./assets/js/data-vault.js?v=35.1','./assets/js/exam.js?v=35.1','./assets/js/firebase.js?v=35.1',
+  './assets/js/dashboard-v22.js?v=35.1','./assets/js/admin-v25.js?v=35.1','./assets/js/integrity-v26.js?v=35.1','./assets/js/teacher-ops-v27.js?v=35.1','./assets/js/student-ux-v28.js?v=35.1',
+  './assets/js/question-bank-v29.js?v=35.1','./assets/js/exam-pro-v30.js?v=35.1','./assets/js/analytics-pro-v31.js?v=35.1','./assets/js/scale-v34.js?v=35.1','./assets/js/hardening-v35.js?v=35.1','./assets/js/bootstrap.js?v=35.1',
+  './assets/icons/icon-192.png?v=35.1','./assets/icons/icon-512.png'
 ];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+async function freshPut(cache,url){
+  const req=new Request(url,{cache:'reload'}),res=await fetch(req);if(res&&res.ok)await cache.put(url,res.clone());return res;
+}
+self.addEventListener('install',event=>event.waitUntil((async()=>{const c=await caches.open(CACHE);for(const url of CORE){try{await freshPut(c,url)}catch(_){}}await self.skipWaiting()})()));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('math12hub-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
-  const req=event.request;if(req.method!=='GET')return;let u=new URL(req.url);if(u.origin!==self.location.origin)return;
+  const req=event.request;if(req.method!=='GET')return;const u=new URL(req.url);if(u.origin!==self.location.origin)return;
   if(req.mode==='navigate'){
-    event.respondWith(fetch(req).then(r=>{let copy=r.clone();caches.open(CACHE).then(c=>c.put('./index.html',copy));return r}).catch(()=>caches.match('./index.html')));return
+    event.respondWith(fetch(new Request(req,{cache:'no-cache'})).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put('./index.html',copy));return r}).catch(()=>caches.match('./index.html')));return;
   }
-  event.respondWith(caches.match(req).then(hit=>hit||fetch(req).then(r=>{if(r&&r.ok){let copy=r.clone();caches.open(CACHE).then(c=>c.put(req,copy))}return r})))
+  const isAppAsset=/\/(assets\/|manifest\.webmanifest)/.test(u.pathname);
+  if(isAppAsset){
+    event.respondWith(fetch(new Request(req,{cache:'no-cache'})).then(r=>{if(r&&r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(req,copy))}return r}).catch(()=>caches.match(req)));return;
+  }
+  event.respondWith(caches.match(req).then(hit=>hit||fetch(req)));
 });

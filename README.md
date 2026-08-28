@@ -1,4 +1,4 @@
-# Math12 Hub V35 — Production Hardening & Smart Loading
+# Math12 Hub V35 — Hotfix 35.1 — Production Hardening & Smart Loading
 
 V35 nâng trực tiếp từ V34 và **giữ nguyên kiến trúc/dữ liệu cũ**: Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32, Reports V33 và Performance & Scale V34.
 
@@ -58,3 +58,10 @@ Gói vẫn để:
 - Admin: quản lý tài khoản/lớp, Scale Center, Production Center.
 - Mở lại trang khi offline để xác nhận shell PWA hiển thị; các tác vụ cloud đương nhiên cần mạng.
 
+
+
+## Hotfix 35.1 (28/08/2026)
+- Sửa Production Center báo sai **Data Safety** do kiểm tra nhầm `saveState` thay vì hàm thực tế `save`.
+- Chống trộn asset V34/V35 do cache bằng cache-busting `?v=35.1`, Service Worker cache mới và network-first cho asset ứng dụng.
+- Health Scan V26 tự fallback sang đọc từng nhánh khi Firestore Rules từ chối `collectionGroup`, nên Admin vẫn quét được mà không bắt buộc đổi Rules.
+- Thêm nút **Xóa lỗi phiên** và bỏ qua lỗi do extension trình duyệt chèn vào trang.
