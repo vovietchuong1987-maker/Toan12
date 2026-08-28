@@ -65,3 +65,14 @@ Gói vẫn để:
 - Chống trộn asset V34/V35 do cache bằng cache-busting `?v=35.1`, Service Worker cache mới và network-first cho asset ứng dụng.
 - Health Scan V26 tự fallback sang đọc từng nhánh khi Firestore Rules từ chối `collectionGroup`, nên Admin vẫn quét được mà không bắt buộc đổi Rules.
 - Thêm nút **Xóa lỗi phiên** và bỏ qua lỗi do extension trình duyệt chèn vào trang.
+
+## UI Update 35.2 (28/08/2026)
+
+- Thiết kế lại sidebar theo vai trò, giữ nguyên toàn bộ page và quyền truy cập cũ.
+- Học sinh chỉ thấy các nhóm: Học tập, Luyện & thi, Cá nhân, Kết nối; không hiện công cụ Giáo viên/Admin.
+- Giáo viên ưu tiên: Lớp học online, Theo dõi lớp, Thông báo, Báo cáo, Ngân hàng câu hỏi, Tạo đề, Trợ lý AI; nhóm nội dung học sinh mặc định thu gọn.
+- Admin kế thừa menu giáo viên và có nhóm Hệ thống riêng.
+- Các nhóm menu có thể đóng/mở và ghi nhớ lựa chọn trên thiết bị.
+- Desktop có nút thu gọn sidebar thành icon; trạng thái được ghi nhớ. Mobile luôn dùng drawer đầy đủ chữ.
+- Menu có vùng cuộn riêng và footer rút gọn để không bị tràn chiều cao.
+- Cache-busting + Service Worker tăng lên build 35.2 để tránh dùng nhầm giao diện 35.1 từ cache.

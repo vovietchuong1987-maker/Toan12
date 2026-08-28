@@ -33,3 +33,13 @@ HOTFIX 35.1:
 - Fix Data Safety regression check: saveState -> save.
 - Add Firestore collectionGroup permission fallback in integrity scan.
 - Add runtime issue clear + ignore browser extension errors.
+
+UI UPDATE 35.2:
+- Role-aware grouped sidebar.
+- Student menu hides teacher/admin tools completely.
+- Teacher-first navigation and collapsed student-reference group.
+- Admin system group.
+- Desktop icon-only sidebar + remembered preference.
+- Collapsible nav groups + remembered preference.
+- Sidebar scroll/spacing/footer compacted.
+- Cache build 35.2 / shell-3.

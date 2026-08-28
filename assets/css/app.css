@@ -307,3 +307,56 @@ button,input,select{font:inherit}.hidden{display:none!important}.app{min-height:
 .v35-issue-row{display:grid;grid-template-columns:150px 1fr auto;gap:10px;padding:8px 0;border-top:1px solid var(--line);align-items:start}.v35-issue-row b{font-size:11px}.v35-issue-row span,.v35-issue-row small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
 @media(max-width:760px){.v35-check-row{grid-template-columns:1fr}.v35-issue-row{grid-template-columns:1fr}.v35-feature-loader{left:12px;right:12px;text-align:center}.v35-connectivity{bottom:10px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* V35.2 • Role-aware compact navigation */
+.app{grid-template-columns:248px 1fr;transition:grid-template-columns .2s ease}
+.sidebar{padding:16px 12px 12px;gap:12px;overflow:hidden}
+.brand{gap:10px;padding:4px 6px 12px;position:relative;flex:0 0 auto}
+.brand-logo{width:40px;height:40px;border-radius:12px;flex:0 0 40px}
+.brand-copy{min-width:0;flex:1}.brand-copy h1{white-space:nowrap}.brand-copy small{font-size:11px;line-height:1.35}
+.sidebar-compact-btn{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#dbe4ff;border-radius:9px;cursor:pointer;font-size:22px;line-height:1;transition:.18s}
+.sidebar-compact-btn:hover{background:rgba(255,255,255,.13);color:#fff}
+.nav{display:block;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.20) transparent}
+.nav::-webkit-scrollbar{width:5px}.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
+.nav button[data-page]{width:100%;padding:9px 10px;min-height:38px;border-radius:10px;gap:9px;font-size:13.5px;font-weight:700}
+.nav button[data-page] .ico{width:20px;flex:0 0 20px;font-size:15px}
+.nav-label{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-home{margin-bottom:5px}
+.student-nav-block{display:block}.teacher-nav-block,.admin-nav-block{display:none}
+.teacher-mode .student-nav-block{display:none}.teacher-mode .teacher-nav-block{display:block}.admin-mode .admin-nav-block{display:block}
+.nav-group{margin-top:4px;padding-top:3px;border-top:1px solid rgba(255,255,255,.055)}
+.nav-group:first-child{border-top:0;margin-top:0}.nav-group-toggle{width:100%;border:0;background:transparent;color:#8290b8;padding:8px 8px 5px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;text-transform:uppercase;letter-spacing:.075em;font-size:9.5px;font-weight:900;text-align:left}
+.nav-group-toggle:hover{color:#c8d3f2}.nav-chevron{font-size:13px;transition:transform .18s ease}.nav-group:not(.open) .nav-chevron{transform:rotate(-90deg)}
+.nav-group-items{display:none;gap:3px}.nav-group.open .nav-group-items{display:grid}
+.nav-group:has(button[data-page].active){background:rgba(255,255,255,.018);border-radius:11px}
+.nav button[data-page].active{background:rgba(111,142,255,.20);box-shadow:inset 3px 0 0 #6f8eff;color:#fff}
+.nav button[data-page]:hover{background:rgba(255,255,255,.085)}
+.admin-nav-group button[data-page].active{background:rgba(167,139,250,.19);box-shadow:inset 3px 0 0 #a78bfa}
+.sidebar-foot{margin-top:4px;padding:9px 10px;border-radius:11px;flex:0 0 auto}.sidebar-foot-title{font-size:11px;font-weight:900}.sidebar-foot .tiny{font-size:10px;line-height:1.35;margin-top:2px}
+
+/* Desktop icon-only mode */
+@media(min-width:761px){
+  .app.sidebar-compact{grid-template-columns:74px 1fr}
+  .app.sidebar-compact .sidebar{padding-left:9px;padding-right:9px}
+  .app.sidebar-compact .brand{justify-content:center;padding-left:0;padding-right:0}
+  .app.sidebar-compact .brand-copy,.app.sidebar-compact .sidebar-foot,.app.sidebar-compact .nav-group-toggle{display:none}
+  .app.sidebar-compact .sidebar-compact-btn{position:absolute;right:-2px;top:31px;width:22px;height:22px;font-size:18px;background:#17264d;z-index:3}
+  .app.sidebar-compact .sidebar-compact-btn{transform:rotate(180deg)}
+  .app.sidebar-compact .nav{padding-right:0}
+  .app.sidebar-compact .nav-group{border-top:0;margin:1px 0;padding:0}
+  .app.sidebar-compact .nav-group-items,.app.sidebar-compact .nav-group.open .nav-group-items{display:grid;gap:2px}
+  .app.sidebar-compact .nav button[data-page]{justify-content:center;padding:8px;min-height:40px}
+  .app.sidebar-compact .nav button[data-page] .ico{width:24px;flex-basis:24px;font-size:16px}
+  .app.sidebar-compact .nav-label{display:none}
+  .app.sidebar-compact .nav-notify-badge{position:absolute;margin:0;transform:translate(13px,-11px);min-width:15px;height:15px;font-size:8px;padding:0 3px}
+  .app.sidebar-compact .nav button[data-page]{position:relative}
+  .app.sidebar-compact .nav button[data-page].active{box-shadow:inset 2px 0 0 #6f8eff}
+}
+
+/* Mobile keeps a readable drawer, independent of desktop compact preference */
+@media(max-width:760px){
+  .app{grid-template-columns:1fr}.sidebar{width:268px;left:-285px;padding:16px 12px 12px}
+  .sidebar-compact-btn{display:none}.nav{padding-bottom:10px}
+  .nav button[data-page]{min-height:42px;padding:10px 11px;font-size:14px}
+  .sidebar-foot{display:none}
+}
