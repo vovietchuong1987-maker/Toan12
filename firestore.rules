@@ -1,6 +1,6 @@
-// Math12 Hub V31 — Firestore Security Rules
+// Math12 Hub V32 — Firestore Security Rules
 // V27 Teacher Operations, V26 Integrity/Recovery, V25 Admin, V24 Account Security, Secure Exam V18 and Low Reads V19 remain compatible.
-// V31 adds no new collection. Verified competency is a teacher-written aggregate nested inside studentStatsV19; students cannot read or write that collection. V30 cloud drafts and all earlier security invariants remain unchanged.
+// V32 adds no Firestore collection for AI. Gemini API keys and AI draft queues remain browser-local; approved AI questions reuse the teacher-owned questionBank collection. V31 verified competency, V30 cloud drafts and all earlier security invariants remain unchanged.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {

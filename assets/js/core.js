@@ -1,4 +1,4 @@
-const APP_VERSION='31'; // V31 Analytics & Competency Pro; V30 Exam Engine and earlier data layers remain compatible.
+const APP_VERSION='32'; // V32 AI Teacher Assistant; V31 Analytics and all earlier data layers remain compatible.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Tính đơn điệu và cực trị của hàm số'},
@@ -71,16 +71,16 @@ const V23_LEGACY_DEMO_DONE=['F1-01','F1-02','F1-03','F2-01'];
 const v23PreviousSchema=Number(state?._meta?.schemaVersion)||0;
 const v23OnlyLegacyDemo=state.done.length===V23_LEGACY_DEMO_DONE.length&&V23_LEGACY_DEMO_DONE.every(x=>state.done.includes(x))&&!(state.attempts||[]).length&&!(state.examAttempts||[]).length&&!(state.questionHistory||[]).length&&!Object.keys(state.lessonScores||{}).length;
 if(v23PreviousSchema<23&&v23OnlyLegacyDemo){state.done=[];state.mastered={};}
-state._meta=state._meta&&typeof state._meta==='object'?state._meta:{};state._meta.schemaVersion=30;state._meta.deviceId=state._meta.deviceId||v21DeviceId();state._meta.revision=Number(state._meta.revision)||0;if(localStateLoadError)state._meta.localLoadError=localStateLoadError;
+state._meta=state._meta&&typeof state._meta==='object'?state._meta:{};state._meta.schemaVersion=32;state._meta.deviceId=state._meta.deviceId||v21DeviceId();state._meta.revision=Number(state._meta.revision)||0;if(localStateLoadError)state._meta.localLoadError=localStateLoadError;
 // Tương thích dữ liệu V2: bài đã hoàn thành được ánh xạ sang các chuẩn kiến thức con.
 state.done.forEach(id=>{if(!state.mastered[id])state.mastered[id]=getLessonMeta(id).knowledge.map(k=>k.code)});
 let activeChapter=1;
 let firebaseApp=null,firebaseAuth=null,firebaseDb=null,firebaseAppCheck=null,firebaseAppCheckStatus='not-configured',firebaseUser=null,firebaseProfile=null,firebaseAccountLocked=false;
 let firebaseReady=false,firebaseHydrating=false,firebaseSyncTimer=null,firebaseMemberships=[],firebaseOwnedClasses=[],firebaseTrashedClasses=[],firebaseInitError='',firebaseLastTeacherHash='',firebaseSelectedClassId='',firebaseStudentAssignments=[],firebaseAssignmentLoading=false,firebaseNotificationItems=[],firebaseNotificationLoading=false,firebaseNotificationClassId='',firebaseSmartTargetPreset='all';
 function save(options={}){
-  state._meta=state._meta||{};state._meta.schemaVersion=30;state._meta.deviceId=state._meta.deviceId||v21DeviceId();state._meta.revision=(Number(state._meta.revision)||0)+1;state._meta.updatedAt=new Date().toISOString();state._meta.lastSaveReason=options.reason||'save';
+  state._meta=state._meta||{};state._meta.schemaVersion=32;state._meta.deviceId=state._meta.deviceId||v21DeviceId();state._meta.revision=(Number(state._meta.revision)||0)+1;state._meta.updatedAt=new Date().toISOString();state._meta.lastSaveReason=options.reason||'save';
   let serialized=JSON.stringify(state);
-  try{localStorage.setItem(LOCAL_STATE_KEY,serialized);state._meta.storageMode='localStorage+IndexedDB'}catch(err){state._meta.storageWarning='localStorage không đủ chỗ; V30 đang dùng kho cứu hộ IndexedDB.';if(typeof v21HandleStorageQuota==='function')v21HandleStorageQuota(serialized,err);else console.error(err)}
+  try{localStorage.setItem(LOCAL_STATE_KEY,serialized);state._meta.storageMode='localStorage+IndexedDB'}catch(err){state._meta.storageWarning='localStorage không đủ chỗ; V32 đang dùng kho cứu hộ IndexedDB.';if(typeof v21HandleStorageQuota==='function')v21HandleStorageQuota(serialized,err);else console.error(err)}
   if(typeof v21MirrorState==='function')v21MirrorState();
   if(options.sync!==false&&typeof scheduleFirebaseSync==='function')scheduleFirebaseSync();
 }

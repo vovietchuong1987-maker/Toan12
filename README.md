@@ -1,189 +1,266 @@
-# Math12 Hub V31 – Analytics & Competency Pro
+# Math12 Hub V32 – AI Teacher Assistant
 
-V31 được nâng trực tiếp từ V30. Toàn bộ Secure Exam V18, Low Reads V19, Data Safety V21, Dashboard V22, Account/Admin V24–V25, Data Integrity V26, Teacher Operations V27, Student Learning UX V28, Question Bank Pro V29 và Exam Engine Pro V30 được giữ nguyên.
+V32 được nâng trực tiếp từ V31. Toàn bộ Secure Exam V18, Low Reads V19, Data Safety V21, Dashboard V22, Account/Admin V24–V25, Data Integrity V26, Teacher Operations V27, Student Learning UX V28, Question Bank Pro V29, Exam Engine Pro V30 và Analytics & Competency Pro V31 được giữ nguyên.
 
-## Mục tiêu V31
+## Mục tiêu V32
 
-Biến điểm và lịch sử câu hỏi thành **bản đồ năng lực có nguồn dữ liệu rõ ràng**, theo cấu trúc:
+V32 thêm một lớp **AI hỗ trợ biên tập cho giáo viên** nhưng không cho AI tự xuất bản nội dung. Quy trình bắt buộc là:
 
-`Chương → Bài → Mã kiến thức → NB / TH / VD`
+`Nguồn giáo viên → AI tạo/kiểm tra bản nháp → Hàng chờ AI → Giáo viên xem/chỉnh/duyệt → Question Bank Pro → Tạo đề/Giao bài`
 
-V31 tách hai nguồn:
+AI không tự ghi câu vào ngân hàng, không tự thay đáp án câu đang dùng, không tự đánh dấu câu là đã duyệt chuyên môn và không tự giao bài cho học sinh.
 
-- **Verified / Xác minh:** chỉ từ Secure Exam đã được giáo viên chấm.
-- **Practice / Tự luyện:** lịch sử luyện tập do học sinh đồng bộ, dùng để cá nhân hóa và tham khảo.
+## 1. Trợ lý AI riêng cho giáo viên
 
-Dữ liệu Practice không được coi là thay thế điểm/năng lực xác minh.
+Menu mới: **Trợ lý AI**.
 
----
+Trang này chỉ mở cho vai trò `teacher` và `admin`, dùng cùng cơ chế `ROLE_ACCESS` hiện có.
 
-## 1. Aggregate năng lực xác minh Low Reads
+Các nhóm chức năng:
 
-V31 **không tạo collection analytics mới**. Năng lực xác minh được cộng dồn ngay trong document teacher-only đã có:
+- cấu hình Gemini;
+- ảnh/PDF/LaTeX → bản nháp câu hỏi;
+- kiểm định câu hiện có;
+- tạo biến thể;
+- hàng chờ AI;
+- provenance/nguồn AI.
 
-`classes/{classId}/studentStatsV19/{uid}.verifiedCompetencyV31`
+## 2. Gemini adapter V32
 
-Các nhóm aggregate:
+Mặc định:
 
-- tổng bằng chứng câu (`totalAttempts`);
-- tổng credit (`totalCredit`);
-- mã kiến thức (`codes`);
-- bài (`lessons`);
-- chương (`chapters`);
-- mức độ (`levels`: NB / TH / VD).
+`gemini-3.7-flash`
 
-Khi giáo viên chấm một Secure Exam mới, V31 tự cộng phần `questionResults` vào aggregate. Khi mở Dashboard, hệ thống chỉ đọc `studentStatsV19` vốn đã được Low Reads V19 tải, **không đọc lại toàn bộ submissions**.
+Model là trường cấu hình nên có thể đổi mà không sửa code. V32 cũng gợi ý một số model khác trong `datalist`, nhưng giáo viên có thể nhập model ID hợp lệ khác.
 
-## 2. Bản đồ năng lực giáo viên
+V32 gọi Gemini qua REST `models.generateContent` để phù hợp website tĩnh GitHub Pages và hỗ trợ input ảnh/PDF trực tiếp. Adapter dùng structured JSON output và có fallback cho dạng cấu hình JSON cũ nếu endpoint trả lỗi tương thích.
 
-Dashboard giáo viên có thêm **Bản đồ năng lực xác minh • V31**:
+### API key
 
-- số kết quả câu đã xác minh;
-- mức đạt xác minh;
-- độ phủ mã kiến thức có đủ bằng chứng;
-- số mã yếu;
-- NB / TH / VD;
-- Chương → Bài → Mã kiến thức;
-- số câu xác minh ở từng nút;
-- trạng thái: Chưa đủ dữ liệu / Cần học lại / Cần củng cố / Đã vững.
+API key **không** được lưu trong:
 
-Ngưỡng hiển thị mặc định:
+- `state`;
+- Firestore;
+- full backup;
+- audit log;
+- source code của package.
 
-- dưới 2 bằng chứng: chưa đủ dữ liệu;
-- dưới 60%: cần học lại;
-- 60% đến dưới 80%: cần củng cố;
-- từ 80%: đã vững.
+Giáo viên chọn một trong hai cách:
 
-## 3. Ma trận học sinh × mã yếu
+- **Chỉ phiên này** → `sessionStorage`;
+- **Trên thiết bị này** → `localStorage`.
 
-V31 tự chọn tối đa 6 mã kiến thức yếu nổi bật của lớp và lập ma trận học sinh × mã.
+V32 có nút xóa key khỏi trình duyệt.
 
-Giáo viên có thể bấm tên học sinh để xem:
+> Đây vẫn là frontend tĩnh. Client-side API key không có mức bảo vệ như backend. Khi triển khai quy mô lớn, lộ trình V35 nên chuyển gọi AI sang Cloud Functions/backend để quản lý quota và bí mật tốt hơn.
 
-- điểm trung bình Secure Exam;
-- số câu xác minh;
-- mức đạt xác minh;
-- năng lực theo chương;
-- mã kiến thức yếu;
-- dữ liệu tự luyện được đặt ở khu vực tham khảo riêng.
+## 3. Ảnh/PDF/LaTeX → câu hỏi
 
-## 4. Chi tiết theo mã kiến thức
+Nguồn hỗ trợ:
 
-Bấm một mã kiến thức trong cây năng lực để xem những học sinh đã có bằng chứng xác minh cho mã đó, sắp từ yếu lên mạnh.
+- văn bản;
+- LaTeX;
+- PNG;
+- JPEG/JPG;
+- WEBP;
+- PDF.
 
-Từ modal này có thể chuyển sang luồng **Tạo bài củng cố** bằng ngân hàng câu hỏi hiện có.
+Giới hạn chủ động của V32:
 
-## 5. Gợi ý giao bài ưu tiên dữ liệu Verified
+- ảnh: 8 MB;
+- PDF: 12 MB.
 
-Khối gợi ý giao bài của Dashboard V31 ưu tiên:
+Tệp chỉ được đọc và gửi Gemini khi giáo viên bấm **Tạo bản nháp AI**. Nội dung file không được lưu vào Firestore.
 
-1. mã có ít nhất 2 câu Secure Exam đã chấm;
-2. mức đạt dưới 80%;
-3. mã yếu hơn đứng trước.
+Giáo viên có thể chọn:
 
-Nếu chưa đủ Verified evidence, hệ thống mới fallback về gợi ý tự luyện cũ. Giáo viên luôn là người duyệt đề và bấm “Giao bài”; V31 không tự xuất bản bài.
+- AI tự phân loại bài;
+- khóa về một bài cụ thể;
+- MCQ;
+- Đúng/Sai 4 ý;
+- trả lời ngắn;
+- phối hợp tự động;
+- tối đa 1/3/5/8/10 câu mỗi lần.
 
-## 6. Tách nguồn trên trang học sinh
+AI nhận danh mục 57 mã kiến thức đang có trong chương trình Math12 Hub để phân loại.
 
-Trang **Phân tích năng lực** có hai thẻ nguồn:
+## 4. Quy tắc câu hỏi AI
 
-- `✓ Secure Exam đã xác minh`;
-- `◎ Tự luyện trên thiết bị`.
+Prompt hệ thống V32 yêu cầu:
 
-Secure Exam được nhận diện từ lịch sử `assignment` / `assignment-graded`. Practice là các chế độ luyện còn lại.
+- công thức dùng LaTeX;
+- MCQ có đúng 4 phương án A–D và duy nhất một đáp án đúng;
+- TF4 đúng 4 ý liên quan logic;
+- ưu tiên ý sau dựa trên dữ kiện/kết quả ý trước khi hợp lý;
+- Short Answer có đáp án ngắn chấm được;
+- nếu ảnh/PDF không đọc rõ phải ghi `warnings`, không được tự bịa;
+- tự kiểm tra phép tính và đáp án trước khi trả JSON;
+- không được tự đánh dấu “đã duyệt chuyên môn”.
 
-Nhờ vậy học sinh không nhầm dữ liệu tự luyện với kết quả giáo viên đã chấm.
+## 5. Hàng chờ AI
 
-## 7. Chuẩn hóa dữ liệu V30 một lần
+AI không ghi thẳng vào `state.questionBank`.
 
-Bài được chấm mới từ V31 tự cộng aggregate. Với bài V30 trở về trước đã có `questionResults`, giáo viên dùng nút:
+Bản nháp được lưu cục bộ trong:
 
-**Chuẩn hóa dữ liệu V30**
+`math12hub.ai.v32.drafts`
 
-V31 sẽ đọc current graded submissions của lớp, bỏ qua submission đã đánh dấu `competencyV31Aggregated`, cộng dữ liệu còn thiếu rồi đánh dấu đã chuẩn hóa.
+Giới hạn:
 
-Đây là thao tác **theo yêu cầu, một lần và có phát sinh Firestore Reads**. V31 không tự chạy migration nền.
+- tối đa 40 bản nháp;
+- tự giảm số lượng nếu tổng JSON quá lớn;
+- không lưu ảnh/PDF nguồn.
 
-## 8. Idempotent – tránh cộng trùng
+Mỗi bản nháp hiển thị:
 
-Mỗi current graded submission đã cộng năng lực được đánh dấu:
+- mã tạm;
+- mã kiến thức;
+- loại câu;
+- confidence AI;
+- Quality Score V29;
+- cảnh báo local;
+- nghi trùng với ngân hàng hiện có;
+- model đã sinh câu.
 
-- `competencyV31Aggregated: true`
-- `competencyV31SchemaVersion: 31`
+Giáo viên có bốn lựa chọn:
 
-Vì vậy mở lại kết quả hoặc chạy backfill lần nữa không cộng trùng phần đã xử lý.
+1. **Xem**;
+2. **Mở trình soạn**;
+3. **Đưa vào kho (nháp)**;
+4. **Đã kiểm tra & duyệt**.
 
-## 9. Làm lại và xóa bài vẫn giữ aggregate đúng
+Chỉ hai thao tác 3–4 mới đưa câu vào Question Bank Pro.
 
-Khi giáo viên **cấp thêm lượt làm**:
+## 6. Provenance AI
 
-- điểm current official được gỡ khỏi `studentStatsV19`;
-- phần năng lực xác minh của lượt current cũng bị trừ;
-- lịch sử lượt V27 vẫn giữ nguyên;
-- khi lượt mới được chấm, V31 cộng kết quả mới trở lại.
+Câu được duyệt trực tiếp từ hàng chờ giữ metadata:
 
-Khi **xóa vĩnh viễn** một bài đang trong Thùng rác, V31 đồng thời gỡ phần năng lực current official của bài khỏi thống kê.
+```js
+aiV32: {
+  schemaVersion: 32,
+  model,
+  task,
+  sourceKind,
+  generatedAt,
+  confidence,
+  warnings,
+  sourceNote,
+  teacherReviewed,
+  teacherDecision,
+  approvedAt
+}
+```
 
-## 10. Snapshot so sánh lớp V31
+Question Bank Pro V29 vẫn là nơi quản lý chính. Field `aiV32` chỉ là provenance bổ sung và được đồng bộ cùng document câu hỏi hiện có.
 
-Document lớp ghi snapshot nhẹ:
+## 7. Local QC + AI QC
 
-`analyticsV31`
+Trước khi duyệt, V32 chạy kiểm tra local độc lập:
 
-Bổ sung:
+- câu quá ngắn;
+- mã kiến thức không hợp lệ;
+- MCQ thiếu 4 phương án;
+- phương án trùng;
+- đáp án MCQ sai cấu trúc;
+- TF4 thiếu 4 ý;
+- short thiếu đáp án;
+- thiếu lời giải;
+- near-duplicate theo thuật toán V29.
 
-- `verifiedEvidence`
-- `verifiedAccuracy`
-- `verifiedCoverage`
-- `weakVerifiedCode`
-- `weakVerifiedAccuracy`
+Local QC không dùng API và không phát sinh Firestore Reads.
 
-Khi so sánh các lớp, Dashboard đọc snapshot ngay trên class document, không tải toàn bộ học sinh của lớp khác.
+## 8. AI phản biện câu đang có
 
-V31 vẫn đọc fallback `analyticsV30 → ... → analyticsV22`.
+Giáo viên nhập/chọn mã câu trong ngân hàng rồi bấm:
 
-## 11. Firestore Rules
+**Kiểm tra đáp án & metadata**
 
-V31 không cần mở quyền mới cho học sinh. `verifiedCompetencyV31` nằm trong `studentStatsV19`, collection vốn chỉ cho:
+AI trả về:
 
-- admin đọc;
-- chủ lớp đọc/ghi;
-- học sinh không đọc/ghi trực tiếp.
+- trạng thái `ok / needs_review / critical`;
+- confidence;
+- summary;
+- danh sách vấn đề;
+- đánh giá đáp án;
+- metadata đề xuất;
+- tags đề xuất.
 
-Các lớp bảo mật Secure Exam, answer key, draftsV30, retry và target của V30 được giữ nguyên.
+V32 chỉ cho **áp dụng metadata** tự động. Đáp án và lời giải đang dùng không bị AI tự sửa.
 
-## 12. Firestore Indexes
+Khi áp dụng metadata, V32 dùng version history V29 nên bản cũ vẫn được giữ lại.
 
-V31 **không thêm composite index mới**. Tiếp tục giữ 2 index từ V27–V30:
+## 9. Tạo biến thể
 
-- `targetMode + opensAt`
-- `targetUids ARRAY_CONTAINS + opensAt`
+Từ một câu đang có, giáo viên có thể tạo 1/3/5 biến thể.
 
-Nếu hai index đã `Enabled`, không cần tạo lại.
+Prompt V32 yêu cầu:
 
-## 13. Nâng cấp từ V30
+- cùng mã kiến thức;
+- cùng loại câu;
+- gần cùng độ khó;
+- thay dữ kiện/ngữ cảnh thật sự;
+- không chỉ đổi tên biến;
+- ưu tiên nghiệm/đáp án đẹp;
+- tự giải lại từng biến thể;
+- có đáp án duy nhất.
 
-Khuyến nghị:
+Biến thể cũng chỉ vào **Hàng chờ AI**, không tự đi vào ngân hàng.
 
-1. Sao lưu V30.
-2. Publish `firestore-v31.rules`.
-3. Giữ nguyên 2 indexes nếu đã Enabled.
-4. Upload toàn bộ package V31 lên GitHub Pages.
-5. Đăng nhập tài khoản giáo viên và chọn một lớp test.
-6. Chấm một Secure Exam mới rồi kiểm tra Bản đồ năng lực V31.
-7. Với dữ liệu V30 cũ, bấm **Chuẩn hóa dữ liệu V30** một lần.
-8. Thử: chấm → cấp thêm lượt → chấm lượt mới, kiểm tra aggregate không cộng lặp.
+## 10. Không thêm Firestore collection
 
-## 14. Các lớp dữ liệu cũ được giữ nguyên
+V32 không thêm collection/subcollection AI.
 
-V31 không đổi tên các collection quan trọng như:
+AI draft + settings + usage counter nằm cục bộ. Câu đã duyệt tiếp tục dùng:
 
-- `assignmentsV18`
-- `answerKeysV18`
-- `submissionIndexV19`
-- `studentStatsV19`
-- `recycleBinV26`
-- `attemptHistoryV27`
-- `draftsV30`
+`users/{uid}/questionBank/{questionId}`
 
-Không có collection mới chỉ để phục vụ V31 Analytics.
+Do đó:
+
+- không cần Firestore composite index mới;
+- không tăng Reads nền;
+- Data Safety/Conflict Guard cũ vẫn hoạt động;
+- Secure Exam không đổi.
+
+## 11. Firestore Rules V32
+
+Rules V32 không mở thêm quyền cho AI hoặc học sinh.
+
+Question Bank vẫn chỉ cho chính tài khoản giáo viên đang active đọc/ghi. API key không đi qua Firestore nên Rules không cần collection mới.
+
+## 12. Schema/app version
+
+- `APP_VERSION = 32`
+- local state `_meta.schemaVersion = 32`
+- full backup schema = 32
+- learning/profile/syncMeta writes mới = 32
+- Question Bank schema vẫn là V29 vì đó là schema riêng của module Question Bank;
+- Verified Competency vẫn là schema V31 vì đó là schema riêng của module Analytics.
+
+## 13. Nâng từ V31
+
+1. Sao lưu V31.
+2. Có thể publish `firestore-v32.rules` để đồng bộ version comment/config; V32 không thêm quyền mới.
+3. Hai composite index cũ vẫn giữ nguyên; nếu đã Enabled thì không cần tạo lại.
+4. Upload toàn bộ package V32 lên GitHub Pages.
+5. Đăng nhập giáo viên.
+6. Mở **Trợ lý AI**.
+7. Nhập Gemini API key, ưu tiên **Chỉ phiên này** khi dùng máy dùng chung.
+8. Bấm **Kiểm tra kết nối**.
+9. Thử một ảnh/đoạn LaTeX → tạo 1–3 câu.
+10. Xem bản nháp → kiểm tra đáp án → chỉ sau đó đưa vào ngân hàng.
+
+## 14. Kiểm thử nên làm sau deploy
+
+- API key session không xuất hiện trong Firestore;
+- refresh trang vẫn giữ key nếu cùng session;
+- chọn “Trên thiết bị này” rồi mở lại trình duyệt vẫn đọc key;
+- xóa key hoạt động;
+- ảnh/PDF lớn bị chặn trước request;
+- AI draft không tự xuất hiện trong Question Bank;
+- duyệt draft mới tạo câu trong Question Bank;
+- provenance `aiV32` được giữ sau sync;
+- audit AI không tự đổi answer;
+- apply metadata tạo version history;
+- tạo biến thể chỉ sinh draft;
+- học sinh không thấy menu AI.
+
