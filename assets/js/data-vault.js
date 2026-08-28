@@ -34,7 +34,7 @@ async function v21VaultGet(store,key){const db=await v21OpenVault(),tx=db.transa
 async function v21VaultDelete(store,key){const db=await v21OpenVault(),tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);return new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 async function v21VaultGetAll(store){const db=await v21OpenVault(),tx=db.transaction(store,'readonly');return v21IdbRequest(tx.objectStore(store).getAll())}
 function v21Clone(value){return JSON.parse(JSON.stringify(value))}
-function v21TeacherPayload(){return {questionBank:v21Clone(state.questionBank||[]),customExams:v21Clone(state.customExams||[]),savedAt:new Date().toISOString(),revision:Number(state._meta?.revision)||0,teacherHash:typeof firebaseTeacherHash==='function'?firebaseTeacherHash():''}}
+function v21TeacherPayload(){return {questionBank:v21Clone(state.questionBank||[]),customExams:v21Clone(state.customExams||[]),recycleBinV26:v21Clone(state.recycleBinV26||{questions:[],customExams:[]}),savedAt:new Date().toISOString(),revision:Number(state._meta?.revision)||0,teacherHash:typeof firebaseTeacherHash==='function'?firebaseTeacherHash():''}}
 function v21SafeStateSnapshot(){const copy=v21Clone(state);if(copy?._meta){delete copy._meta.syncConflict;delete copy._meta.storageWarning}return copy}
 
 async function v21MirrorStateNow(){
@@ -82,7 +82,7 @@ async function v21RestoreTeacherRescueIfUseful(){
   const currentCount=Array.isArray(state.questionBank)?state.questionBank.length:0;
   const rescueCount=rescue.questionBank.length;
   if(!currentCount||state._meta?.teacherContentInVault||rescue.revision>(Number(state._meta?.revision)||0)){
-    state.questionBank=v21Clone(rescue.questionBank);state.customExams=v21Clone(rescue.customExams||[]);
+    state.questionBank=v21Clone(rescue.questionBank);state.customExams=v21Clone(rescue.customExams||[]);state.recycleBinV26=v21Clone(rescue.recycleBinV26||state.recycleBinV26||{questions:[],customExams:[]});
     if(state._meta)state._meta.teacherContentInVault=false;
     return true;
   }
@@ -111,8 +111,8 @@ async function v21HandleStorageQuota(serialized,err){
   }catch(fallbackErr){console.error('V21 storage fallback failed',fallbackErr)}
 }
 
-function v21FullBackupPayload(){return {format:'math12hub-full-backup',version:APP_VERSION,schemaVersion:25,createdAt:new Date().toISOString(),meta:{revision:Number(state._meta?.revision)||0,role:state.role||'student'},state:v21SafeStateSnapshot()}}
-function v21BackupFilename(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `math12hub-v21-full-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.json`}
+function v21FullBackupPayload(){return {format:'math12hub-full-backup',version:APP_VERSION,schemaVersion:26,createdAt:new Date().toISOString(),meta:{revision:Number(state._meta?.revision)||0,role:state.role||'student'},state:v21SafeStateSnapshot()}}
+function v21BackupFilename(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `math12hub-v26-full-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.json`}
 function v21ExportFullBackup(){
   const payload=v21FullBackupPayload();triggerJsonDownload(payload,v21BackupFilename());
   if(state._meta){state._meta.lastExportAt=payload.createdAt}
@@ -125,13 +125,13 @@ function v21ChooseFullBackup(){
 }
 function v21OpenFullRestorePreview(){
   const p=v21PendingFullRestore;if(!p)return;const s=p.data.state||{},bank=Array.isArray(s.questionBank)?s.questionBank.length:0,exams=Array.isArray(s.customExams)?s.customExams.length:0,attempts=Array.isArray(s.examAttempts)?s.examAttempts.length:0;
-  const body=`<div class="notice"><b>${esc(p.fileName)}</b><br>Phiên bản ${esc(p.data.version||'?')} • ${p.data.createdAt?new Date(p.data.createdAt).toLocaleString('vi-VN'):''}</div><div class="backup-summary"><div><b>${bank}</b><small>Câu hỏi</small></div><div><b>${exams}</b><small>Đề đã lưu</small></div><div><b>${attempts}</b><small>Lượt kiểm tra</small></div></div><div class="restore-warnings"><b>V25 sẽ tạo điểm khôi phục trước khi thay dữ liệu.</b><br>Dữ liệu khôi phục được giữ ở máy trước; nếu đang đăng nhập, hệ thống sẽ đánh dấu cần đồng bộ lại thay vì âm thầm ghi đè cloud.</div>`;
-  openModal('Khôi phục toàn bộ dữ liệu','V25 • Data Safety',body,`<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="v21CommitFullRestore()">Khôi phục</button>`);
+  const body=`<div class="notice"><b>${esc(p.fileName)}</b><br>Phiên bản ${esc(p.data.version||'?')} • ${p.data.createdAt?new Date(p.data.createdAt).toLocaleString('vi-VN'):''}</div><div class="backup-summary"><div><b>${bank}</b><small>Câu hỏi</small></div><div><b>${exams}</b><small>Đề đã lưu</small></div><div><b>${attempts}</b><small>Lượt kiểm tra</small></div></div><div class="restore-warnings"><b>V26 sẽ tạo điểm khôi phục trước khi thay dữ liệu.</b><br>Dữ liệu khôi phục được giữ ở máy trước; nếu đang đăng nhập, hệ thống sẽ đánh dấu cần đồng bộ lại thay vì âm thầm ghi đè cloud.</div>`;
+  openModal('Khôi phục toàn bộ dữ liệu','V26 • Data Safety',body,`<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="v21CommitFullRestore()">Khôi phục</button>`);
 }
 async function v21CommitFullRestore(){
   if(!v21PendingFullRestore)return;
   await v21CreateRecoverySnapshot('before-full-restore',false);
-  const restored=v21Clone(v21PendingFullRestore.data.state);restored._meta=restored._meta||{};restored._meta.schemaVersion=24;restored._meta.revision=(Number(restored._meta.revision)||0)+1;restored._meta.updatedAt=new Date().toISOString();restored._meta.restorePending=true;restored._meta.teacherBaseHash='';restored._meta.learningBaseHash='';
+  const restored=v21Clone(v21PendingFullRestore.data.state);restored._meta=restored._meta||{};restored._meta.schemaVersion=26;restored._meta.revision=(Number(restored._meta.revision)||0)+1;restored._meta.updatedAt=new Date().toISOString();restored._meta.restorePending=true;restored._meta.teacherBaseHash='';restored._meta.learningBaseHash='';
   state=restored;v21PendingFullRestore=null;save({sync:false,reason:'full-restore'});await v21MirrorStateNow();closeModal();applyRoleAccess(currentSecureRole(),true);renderAll();alert('Đã khôi phục dữ liệu trên thiết bị. Hãy kiểm tra rồi bấm “Đồng bộ ngay” nếu muốn cập nhật lên cloud.');
 }
 async function v21RestoreSnapshot(id){
@@ -141,8 +141,10 @@ async function v21RestoreSnapshot(id){
 }
 async function v21OpenDataSafetyCenter(){
   let snaps=[];try{snaps=await v21ListRecoverySnapshots()}catch(_){}
+  let cloudBundles=[];try{if(typeof v26ListCloudRecoveryBundles==='function')cloudBundles=await v26ListCloudRecoveryBundles()}catch(_){}
   const m=state._meta||{},latest=snaps[0],conflict=m.syncConflict;
   const rows=snaps.slice(0,6).map(s=>`<div class="teacher-history-row"><div><b>${s.kind==='auto'?'Tự động':s.kind==='manual'?'Thủ công':s.kind}</b><small>${new Date(s.createdAt).toLocaleString('vi-VN')} • rev ${s.revision||0}</small></div><button class="btn btn-soft" onclick="v21RestoreSnapshot('${attrEsc(s.id)}')">Khôi phục</button></div>`).join('')||'<div class="online-empty">Chưa có điểm khôi phục.</div>';
-  const body=`<div class="grid grid-3"><div class="card"><small>Phiên bản dữ liệu</small><h2>V25 / rev ${m.revision||0}</h2></div><div class="card"><small>Lưu cục bộ</small><h2>${esc(m.storageMode||'localStorage')}</h2></div><div class="card"><small>Cloud</small><h2>${conflict?'⚠ Xung đột':firebaseUser?'✓ Đã đăng nhập':'—'}</h2></div></div>${m.storageWarning?`<div class="firebase-banner warn mt">${esc(m.storageWarning)}</div>`:''}${conflict?'<div class="firebase-banner error mt"><b>Đang có xung đột local/cloud.</b> V25 đã tạm dừng tự ghi đè nội dung giáo viên.</div>':''}<div class="card mt"><div class="section-head" style="margin:0 0 8px"><div><h3>Sao lưu đầy đủ</h3><p>Bao gồm tiến độ, lịch sử, ngân hàng câu hỏi và đề đã lưu.</p></div></div><div class="online-actions"><button class="btn btn-blue" onclick="v21ExportFullBackup()">⬇ Xuất bản sao lưu</button><button class="btn btn-soft" onclick="v21ChooseFullBackup()">↥ Khôi phục từ file</button><button class="btn btn-soft" onclick="v21CreateRecoverySnapshot('manual',true).then(()=>v21OpenDataSafetyCenter())">＋ Tạo điểm khôi phục</button></div></div><div class="card mt"><h3 style="margin-top:0">Điểm khôi phục trên thiết bị</h3>${rows}</div><div class="math-help mt">IndexedDB được dùng như kho cứu hộ và bản sao cho dữ liệu lớn. V25 vẫn giữ tương thích localStorage để website hoạt động như các bản trước.</div>`;
-  openModal('Dữ liệu & sao lưu','V25 • Data Safety Vault',body,'<button class="btn btn-soft" onclick="closeModal()">Đóng</button>');
+  const bundleRows=cloudBundles.slice(0,6).map(x=>`<div class="teacher-history-row"><div><b>${esc(x.payload?.type==='submission'?'Lượt nộp đã xóa':'Bài giao đã xóa')}</b><small>${new Date(x.createdAt||Date.now()).toLocaleString('vi-VN')} • ${esc(x.payload?.assignmentId||'')}</small></div><div class="online-actions"><button class="btn btn-soft" onclick="v26ExportCloudRecovery('${attrEsc(x.key)}')">Xuất JSON</button><button class="btn btn-danger" onclick="v26DeleteCloudRecovery('${attrEsc(x.key)}')">Xóa gói</button></div></div>`).join('')||'<div class="online-empty">Chưa có gói cứu hộ thao tác cloud.</div>';
+  const body=`<div class="grid grid-3"><div class="card"><small>Phiên bản dữ liệu</small><h2>V26 / rev ${m.revision||0}</h2></div><div class="card"><small>Lưu cục bộ</small><h2>${esc(m.storageMode||'localStorage')}</h2></div><div class="card"><small>Cloud</small><h2>${conflict?'⚠ Xung đột':firebaseUser?'✓ Đã đăng nhập':'—'}</h2></div></div>${m.storageWarning?`<div class="firebase-banner warn mt">${esc(m.storageWarning)}</div>`:''}${conflict?'<div class="firebase-banner error mt"><b>Đang có xung đột local/cloud.</b> V26 đã tạm dừng tự ghi đè nội dung giáo viên.</div>':''}<div class="card mt"><div class="section-head" style="margin:0 0 8px"><div><h3>Sao lưu đầy đủ</h3><p>Bao gồm tiến độ, lịch sử, ngân hàng câu hỏi và đề đã lưu.</p></div></div><div class="online-actions"><button class="btn btn-blue" onclick="v21ExportFullBackup()">⬇ Xuất bản sao lưu</button><button class="btn btn-soft" onclick="v21ChooseFullBackup()">↥ Khôi phục từ file</button><button class="btn btn-soft" onclick="v21CreateRecoverySnapshot('manual',true).then(()=>v21OpenDataSafetyCenter())">＋ Tạo điểm khôi phục</button></div></div><div class="card mt"><h3 style="margin-top:0">Điểm khôi phục trên thiết bị</h3>${rows}</div><div class="card mt"><h3 style="margin-top:0">Gói cứu hộ thao tác cloud • V26</h3><p class="cloud-sync-note">V26 tự lưu bản câu trả lời/chỉ mục trước khi giáo viên xóa vĩnh viễn lượt nộp hoặc bài giao. Gói này nằm trong IndexedDB của thiết bị và có thể xuất JSON để đối soát.</p>${bundleRows}</div><div class="math-help mt">IndexedDB được dùng như kho cứu hộ và bản sao cho dữ liệu lớn. V26 vẫn giữ tương thích localStorage để website hoạt động như các bản trước.</div>`;
+  openModal('Dữ liệu & sao lưu','V26 • Data Safety Vault',body,'<button class="btn btn-soft" onclick="closeModal()">Đóng</button>');
 }

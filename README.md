@@ -1,169 +1,282 @@
-# Math12 Hub V25 — Production Admin & User Management
+# Math12 Hub V26 — Data Integrity, Recovery & System Health
 
-V25 nâng trực tiếp từ V24 và **giữ nguyên kiến trúc/module/dữ liệu cũ**. Secure Exam V18, Low Reads V19, Data Safety V21, Smart Analytics V22, Data Integrity V23 và Account Security V24 tiếp tục tương thích.
+V26 nâng trực tiếp từ V25 và **giữ nguyên kiến trúc, dữ liệu và các module đang hoạt động**. Secure Exam V18, Low Reads V19, Data Safety V21, Smart Analytics V22, Data Integrity V23, Account Security V24 và Production Admin V25 tiếp tục tương thích.
 
-## Nâng cấp chính V25
+## Mục tiêu của V26
 
-### 1. Vai trò `admin` và Admin Console
+V26 không chạy theo việc thêm nhiều màn hình mới. Trọng tâm là bảo đảm dữ liệu quan trọng **khó mất, có đường khôi phục và có công cụ phát hiện liên kết sai** trước khi hệ thống được dùng với nhiều lớp/học sinh.
 
-V25 bổ sung vai trò thứ ba ở tầng ứng dụng:
+## 1. Thùng rác nội dung giáo viên
 
-- `student` — học sinh;
-- `teacher` — giáo viên;
-- `admin` — quản trị viên hệ thống.
+Các thao tác xóa trong ngân hàng câu hỏi và đề tự tạo đã chuyển sang mô hình xóa an toàn:
 
-Admin có trang **Quản trị hệ thống** riêng để:
+- Câu hỏi → `Thùng rác nội dung`.
+- Đề đã lưu → `Thùng rác nội dung`.
+- Có thể khôi phục lại.
+- Nếu mã câu/đề bị trùng khi khôi phục, V26 tự tạo mã `RESTORED` mới thay vì ghi đè dữ liệu đang có.
+- Chỉ thao tác `Xóa vĩnh viễn` mới loại mục khỏi thùng rác.
+- Trước thao tác nguy hiểm, V26 yêu cầu Data Safety V21 tạo recovery snapshot nếu IndexedDB đang sẵn sàng.
 
-- xem tổng số tài khoản, giáo viên, học sinh và lớp;
-- tìm theo tên/email/UID;
-- đổi quyền `student ↔ teacher`;
-- khóa/mở quyền truy cập ứng dụng;
-- gửi email đặt lại mật khẩu;
-- xem và khóa/mở quyền học sinh truy cập một lớp;
-- xem cảnh báo vận hành;
-- xem nhật ký thao tác quản trị.
-
-V25 **không cho phép tạo hoặc nâng một tài khoản thành admin từ trình duyệt**. Đây là chủ ý bảo mật.
-
-### 2. Thiết lập admin đầu tiên
-
-Sau khi publish `firestore.rules` V25:
-
-1. Đăng nhập tài khoản sẽ dùng làm quản trị viên ít nhất một lần để document `users/{uid}` tồn tại.
-2. Mở **Firebase Console → Firestore Database → users → UID của tài khoản**.
-3. Đổi trường:
+Thùng rác này nằm trong `state.recycleBinV26` và được đồng bộ cho giáo viên qua:
 
 ```text
-role: "admin"
+users/{uid}/recycleBinV26/{trashId}
 ```
 
-4. Tải lại website và đăng nhập lại.
+Do đó đổi máy/đăng nhập lại vẫn có thể nhận lại thùng rác cùng ngân hàng câu hỏi và đề.
 
-Từ đó admin có thể đổi người dùng khác giữa `student` và `teacher`, nhưng không thể tạo thêm admin từ client.
+## 2. Thùng rác bài giao Firestore
 
-## 3. Khóa tài khoản an toàn
-
-Admin Console có thể đặt:
+`Xóa bài` trong quản lý lớp không còn xóa ngay:
 
 ```text
-users/{uid}.accountStatus = "locked"
+assignmentsV18/{assignmentId}.status = "trashed"
 ```
 
-Firestore Rules V25 sẽ từ chối hầu hết đọc/ghi online của tài khoản bị khóa. Website vẫn cho người dùng thấy thông báo tài khoản bị khóa và có thể đăng xuất.
+Khi vào Thùng rác:
 
-> Đây là **khóa ở cấp ứng dụng/Firestore**, không phải vô hiệu hóa Firebase Authentication. Vô hiệu hóa Auth thật sự cần Firebase Admin SDK/Cloud Functions/backend tin cậy; không nên đặt quyền Admin SDK trong GitHub Pages.
+- Học sinh không còn đọc/nhìn thấy bài.
+- `targetMode/targetUids` bị vô hiệu hóa tạm thời.
+- Bài nộp vẫn còn.
+- Điểm vẫn còn.
+- `submissionIndexV19` vẫn còn.
+- `answerKeysV18` vẫn còn.
+- Giáo viên có thể khôi phục và V26 trả lại target cũ.
 
-## 4. Quản lý học sinh trong từng lớp
+Chỉ bài đang ở Thùng rác mới có nút `Xóa vĩnh viễn`. Khi xóa vĩnh viễn phải nhập `XOA`.
 
-Giáo viên có thêm nút ở danh sách học sinh:
+## 3. Gói cứu hộ trước khi xóa cloud vĩnh viễn
 
-- **Tạm khóa** — học sinh mất quyền đọc lớp, nhận bài và ghi progress; lịch sử cũ vẫn giữ nguyên.
-- **Mở lại** — cấp lại quyền truy cập.
-- **Gỡ khỏi lớp** — xóa member/progress/membership nhưng **không xóa bài nộp và điểm lịch sử**, giúp đối soát an toàn.
+Trước khi xóa vĩnh viễn một bài giao, V26 đọc và lưu một recovery bundle cục bộ gồm:
 
-Học sinh bị tạm khóa không được tính vào mẫu số nộp bài/trễ hạn và không được đưa vào nhóm giao bài thông minh.
+- document assignment;
+- answer key;
+- submissions;
+- submission indexes.
 
-## 5. Quản trị lớp ở cấp hệ thống
+Trước khi giáo viên reset lượt nộp của một học sinh, V26 lưu:
 
-Admin có thể đặt:
+- submission;
+- submission index.
+
+Các gói này được giữ trong IndexedDB Data Safety Vault và có thể **xuất JSON** từ `Dữ liệu & sao lưu`.
+
+> V26 cố tình chưa tự động ghi ngược recovery bundle lên Firestore. Timestamp và dữ liệu chấm điểm là dữ liệu nhạy cảm; tự phục hồi đoán mò có thể làm sai lịch sử. Bundle là lớp cứu hộ/đối soát sau xóa vĩnh viễn, còn đường khôi phục chuẩn vẫn là Thùng rác trước khi purge.
+
+## 4. System Health cho Admin
+
+Trang `Quản trị hệ thống` có thêm **Sức khỏe dữ liệu V26**.
+
+Admin chủ động bấm `Quét hệ thống`; V26 không chạy quét nền để tránh tăng Firestore Reads.
+
+Bộ quét kiểm tra:
+
+### Chủ lớp
+
+- lớp không tìm thấy `users/{ownerId}`;
+- owner không còn role `teacher/admin`;
+- schema lớp cũ.
+
+### Join code
+
+- lớp hoạt động không có join code;
+- join code không trỏ đúng lớp;
+- owner của join code không khớp owner lớp.
+
+### Member ↔ Membership
+
+Đối chiếu:
 
 ```text
-classes/{classId}.accessStatus = "locked"
+classes/{classId}/members/{uid}
+↕
+users/{uid}/memberships/{classId}
 ```
 
-Khi đó:
+Phát hiện:
 
-- học sinh không thể đọc lớp/bài giao;
-- mã tham gia không thể dùng để vào lớp;
-- giáo viên chủ lớp vẫn đọc/quản trị được;
-- mở khóa không làm mất dữ liệu.
+- thiếu membership;
+- thiếu member;
+- membership trỏ tới lớp không còn tồn tại;
+- membership còn sót tới lớp đã ở Thùng rác;
+- member/membership không còn hồ sơ người dùng.
 
-Thùng rác lớp V24 vẫn được giữ riêng, không bị thay thế bởi `accessStatus`.
+### Secure Exam
 
-## 6. Nhật ký quản trị V25
-
-Các thao tác quyền cao được ghi vào:
+Đối chiếu:
 
 ```text
-adminAudit/{logId}
+assignmentsV18/{assignmentId}
+↕
+answerKeysV18/{assignmentId}
 ```
 
-Ví dụ:
+và kiểm tra `submissionIndexV19` có trỏ tới assignment tồn tại hay không.
 
-- `user.role.change`
-- `user.lock`
-- `user.unlock`
-- `user.password-reset.request`
-- `class.lock`
-- `class.unlock`
+## 5. Repair Database — chỉ sửa phần an toàn
 
-Client chỉ được **thêm** log khi đang là admin; không được sửa/xóa log.
+Nút `Sửa lỗi an toàn` chỉ xử lý những liên kết có thể suy ra chắc chắn:
 
-Nhật ký cá nhân V24 tại `users/{uid}/audit` vẫn được giữ nguyên.
+- tạo join code mới cho lớp bị hỏng mã;
+- dựng membership từ member khi hồ sơ người dùng còn tồn tại;
+- dựng member từ membership + hồ sơ người dùng khi đủ dữ liệu;
+- xóa membership trỏ tới lớp không còn tồn tại;
+- xóa membership còn sót tới lớp đã ở Thùng rác.
 
-## 7. Hồ sơ tài khoản V25
+V26 **KHÔNG tự sửa**:
 
-Khi đăng nhập V25, hồ sơ tự bổ sung/cập nhật:
+- answer key bị thiếu;
+- đáp án;
+- điểm;
+- submission;
+- chỉ mục điểm nghi ngờ;
+- owner lớp bị mất;
+- member/membership khi hồ sơ người dùng không còn đủ dữ liệu.
+
+Mỗi lần Repair được ghi vào `adminAudit` với action:
 
 ```text
-schemaVersion: 25
-accountStatus: "active"        // nếu hồ sơ cũ chưa có
-emailVerified: true | false
-lastLoginAt: serverTimestamp()
-updatedAt: serverTimestamp()
+system.integrity.repair
 ```
 
-Điều này giúp Admin Console có dữ liệu trạng thái mà không cần truy cập Firebase Authentication Admin API.
+## 6. Chống false-positive khi quét dữ liệu lớn
 
-## 8. Firestore Rules V25
+System Health dùng giới hạn đọc để bảo vệ chi phí. Nếu một collection chạm giới hạn mẫu, V26:
 
-Rules V25 bổ sung:
+1. đánh dấu phần quét là `partial`;
+2. hiện cảnh báo trong Admin Console;
+3. **không kết luận “thiếu” ở phép đối chiếu phụ thuộc tập dữ liệu chưa đầy đủ**;
+4. không cho Repair tự động trên kết luận có nguy cơ false-positive.
 
-- `currentAccountActive()` — khóa tài khoản ở cấp dữ liệu;
-- `isAdmin()`;
-- admin được list `users` và `classes`;
-- người dùng không thể tự đổi `role` hoặc `accountStatus`;
-- admin chỉ đổi được `student ↔ teacher`, không sửa tài khoản admin khác;
-- `isClassMember()` kiểm tra cả `member.status != suspended`;
-- `isActiveClass()` kiểm tra cả Thùng rác và `accessStatus != locked`;
-- học sinh không thể tự bỏ trạng thái suspended bằng Firestore;
-- `adminAudit` chỉ admin đọc/thêm, không sửa/xóa.
+Giới hạn mặc định:
 
-## 9. Các file chính
+```text
+users             1000
+classes           1000
+joinCodes          700
+members           2500
+memberships       2500
+assignmentsV18    1800
+answerKeysV18     1800
+submissionIndex   3000
+```
+
+Nếu hệ thống vượt quy mô này, V26 chỉ coi lần quét là mẫu an toàn; V34/V35 sẽ chuyển health check sang backend/pagination.
+
+## 7. Firestore Rules V26
+
+Rules V26 bổ sung/siết các điểm quan trọng:
+
+- `recycleBinV26` chỉ chính giáo viên sở hữu tài khoản đọc/ghi.
+- Admin được `list/read` các collection cần thiết cho System Health.
+- Admin chỉ được sửa member/membership theo quyền quản trị hiện có.
+- bài `status = trashed` không thể được học sinh đọc.
+- `assignmentTargetsMe()` từ chối assignment đã trashed.
+- giữ nguyên account lock V25 và member suspend V25.
+- giữ nguyên Secure Exam: học sinh không đọc `answerKeysV18`, không tự ghi điểm.
+
+## 8. Analytics V26
+
+Dashboard lớp ghi snapshot mới:
+
+```text
+classes/{classId}.analyticsV26
+```
+
+và tiếp tục đọc tương thích:
+
+```text
+analyticsV26
+→ analyticsV25
+→ analyticsV24
+→ analyticsV23
+→ analyticsV22
+```
+
+Không cần migrate xóa dữ liệu snapshot cũ.
+
+## 9. Full Backup V26
+
+Full Backup hiện ghi:
+
+```text
+schemaVersion: 26
+version: 26
+```
+
+Tên file mặc định:
+
+```text
+math12hub-v26-full-....json
+```
+
+Teacher Rescue cũng bao gồm `recycleBinV26`, vì vậy việc cứu ngân hàng câu hỏi không làm mất thùng rác nội dung.
+
+## 10. Cấu trúc package
 
 ```text
 index.html
-assets/css/app.css
-assets/js/core.js
-assets/js/authoring.js
-assets/js/firebase.js
-assets/js/admin-v25.js       ← mới
-assets/js/dashboard-v22.js  ← giữ tên để tương thích, snapshot mới analyticsV25
-assets/js/data-vault.js
-assets/js/exam.js
-assets/js/bootstrap.js
 firestore.rules
+README.md
+assets/
+  css/
+    app.css
+  js/
+    core.js
+    authoring.js
+    data-vault.js
+    exam.js
+    firebase.js
+    dashboard-v22.js      # giữ tên để tương thích, ghi analyticsV26
+    admin-v25.js          # giữ tên/API DOM V25 để không phá nâng cấp cũ
+    integrity-v26.js      # mới: recycle/recovery/system health/repair
+    bootstrap.js
+    mathjax-config.js
+vendor/
+  mathjax.js
 ```
 
-## 10. Thứ tự triển khai V25
+Tên `dashboard-v22.js`, `admin-v25.js` và các ID/hàm `v25...` được **cố ý giữ lại**. Đổi tên chúng không mang lợi ích vận hành nhưng dễ gây lỗi các lời gọi cũ.
 
-1. **Publish `firestore.rules` V25 trước.**
-2. Upload `index.html` và toàn bộ thư mục `assets/` V25 lên GitHub Pages.
-3. Đăng nhập tài khoản quản trị một lần.
-4. Trong Firebase Console, đặt `users/{adminUid}.role = "admin"` cho admin đầu tiên.
-5. Đăng xuất/đăng nhập lại và kiểm tra mục **Quản trị hệ thống**.
-6. Chưa cần bật App Check enforcement nếu thầy chưa theo dõi request metrics ổn định.
+## 11. Thứ tự triển khai V26
 
-## 11. Tương thích dữ liệu
+Khuyến nghị:
 
-V25 không đổi/xóa các kho chính:
+1. **Publish `firestore.rules` V26 trước.**
+2. Upload `index.html`, `assets/` và `vendor/` của V26 lên GitHub Pages.
+3. Đăng nhập tài khoản admin.
+4. Mở `Quản trị hệ thống` → `Quét hệ thống`.
+5. Đọc danh sách lỗi trước khi bấm `Sửa lỗi an toàn`.
+6. Đăng nhập một tài khoản giáo viên và thử:
+   - xóa/khôi phục 1 câu hỏi mẫu;
+   - đưa/khôi phục 1 bài giao thử;
+   - mở `Dữ liệu & sao lưu` để xác nhận Data Safety.
+7. Chỉ sau khi luồng trên ổn định mới dùng `Xóa vĩnh viễn` cho dữ liệu thật.
 
-- `assignmentsV18`
-- `answerKeysV18`
-- `submissionIndexV19`
-- `studentStatsV19`
-- `users/{uid}/learning`
-- `users/{uid}/questionBank`
-- `users/{uid}/customExams`
+## 12. Tương thích V25
 
-Dashboard ghi snapshot mới vào `analyticsV25` và vẫn đọc fallback `analyticsV24 → analyticsV23 → analyticsV22`.
+V26 không xóa hoặc đổi tên các kho dữ liệu chính:
+
+```text
+users
+classes
+joinCodes
+assignmentsV18
+answerKeysV18
+submissionIndexV19
+studentStatsV19
+adminAudit
+```
+
+Dữ liệu V25 tiếp tục hoạt động. Không có migration phá hủy bắt buộc.
+
+## 13. Giới hạn có chủ ý
+
+- Account lock vẫn là khóa **quyền ứng dụng/Firestore**, chưa phải disable Firebase Authentication ở server. Disable Auth thật cần Admin SDK/backend.
+- System Health là công cụ hỗ trợ toàn vẹn dữ liệu trong phạm vi quét, không thay thế backup bên ngoài Firebase.
+- Recovery bundle sau `purge` hiện là JSON cứu hộ/đối soát, chưa có one-click cloud restore để tránh ghi lại Timestamp/điểm sai kiểu dữ liệu.
+- Quét hệ thống có phát sinh Reads **khi admin bấm quét**; không có polling nền.
+
+---
+
+**Math12 Hub V26** đặt mục tiêu: trước khi thêm nhiều chức năng dạy học ở V27, dữ liệu hiện tại phải có cơ chế xóa an toàn, cứu hộ và kiểm tra sức khỏe đủ rõ để vận hành production.

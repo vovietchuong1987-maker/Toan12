@@ -75,7 +75,7 @@ function renderExamBuilderPreview(){let box=document.getElementById('examBuilder
 function renderSavedCustomExams(){let box=document.getElementById('examBuilderSaved');if(!box)return;let arr=state.customExams||[];box.innerHTML=arr.length?arr.map(e=>`<div class="saved-exam"><div><h4>${esc(e.title)}</h4><p>${e.questions?.length||0} câu • ${e.durationMinutes||45} phút • ${new Date(e.createdAt||Date.now()).toLocaleString('vi-VN')}${e.scoring==='thpt'?' • thang THPT':''}</p></div><div class="saved-exam-actions"><button class="btn btn-blue" onclick="openSavedCustomExam('${e.id}')">Thi</button><button class="btn btn-soft" onclick="previewSavedCustomExam('${e.id}')">Xem</button><button class="btn btn-soft" onclick="exportCustomExam('${e.id}')">JSON</button><button class="btn btn-danger" onclick="deleteSavedCustomExam('${e.id}')">Xóa</button></div></div>`).join(''):'<div class="exam-preview-empty" style="padding:18px">Chưa có đề tự tạo nào được lưu.</div>'}
 function openSavedCustomExam(id){let e=(state.customExams||[]).find(x=>x.id===id);if(e)openExamStart(examBuilderConfig(e))}
 function previewSavedCustomExam(id){let e=(state.customExams||[]).find(x=>x.id===id);if(!e)return;examBuilderDraft=ebClone(e);renderExamBuilderPreview();document.getElementById('examBuilderPreview')?.scrollIntoView({behavior:'smooth',block:'start'})}
-function deleteSavedCustomExam(id){let e=(state.customExams||[]).find(x=>x.id===id);if(!e||!confirm(`Xóa đề “${e.title}”?`))return;state.customExams=state.customExams.filter(x=>x.id!==id);save();renderSavedCustomExams();updateExamBuilderSummary()}
+async function deleteSavedCustomExam(id){let e=(state.customExams||[]).find(x=>x.id===id);if(!e||!confirm(`Đưa đề “${e.title}” vào Thùng rác V26?`))return;if(typeof v26TrashLocalContent==='function')await v26TrashLocalContent('exam',e);state.customExams=state.customExams.filter(x=>x.id!==id);save({reason:'v26-exam-trash'});renderSavedCustomExams();updateExamBuilderSummary();examToast?.('Đã chuyển đề vào Thùng rác V26.')}
 function exportCustomExam(id){let e=(state.customExams||[]).find(x=>x.id===id);if(!e)return;let blob=new Blob([JSON.stringify({app:'Math12 Hub',version:APP_VERSION,kind:'custom-exam',exam:e},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`math12-exam-${String(e.id).replace(/[^A-Za-z0-9_-]/g,'-')}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 
 const ROLE_ACCESS={
@@ -98,7 +98,7 @@ function clearTeacherPrivateLocal(){
   if(!state._meta.teacherContentInVault&&typeof v21StashTeacherContent==='function')v21StashTeacherContent('role-lock').catch(()=>{});
   state._meta.teacherContentInVault=true;state._meta.teacherLockedAt=new Date().toISOString();
   state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));
-  state.customExams=[];
+  state.customExams=[];state.recycleBinV26={questions:[],customExams:[]};
   if(typeof examBuilderDraft!=='undefined')examBuilderDraft=null;
   try{localStorage.setItem(LOCAL_STATE_KEY||'math12hub2026',JSON.stringify(state))}catch(_){}
   const tb=document.getElementById('questionBankTable');if(tb)tb.innerHTML='';
@@ -839,7 +839,7 @@ function saveQuestionEditor(editId=''){if(!requireTeacher('Lưu câu hỏi'))ret
   if(state.questionBank.some(q=>q.id===item.id&&q.id!==editId)){alert('Mã câu đã tồn tại.');return}
   if(editId){let i=state.questionBank.findIndex(q=>q.id===editId);if(i>=0)state.questionBank[i]=item}else state.questionBank.unshift(item);save();closeModal();renderQuestionBank(true)
 }
-function deleteBankQuestion(id){if(!requireTeacher('Xóa câu hỏi'))return;let x=state.questionBank.find(q=>q.id===id);if(!x)return;if(!confirm(`Xóa câu ${id}?`))return;state.questionBank=state.questionBank.filter(q=>q.id!==id);save();renderQuestionBank()}
+async function deleteBankQuestion(id){if(!requireTeacher('Xóa câu hỏi'))return;let x=state.questionBank.find(q=>q.id===id);if(!x)return;if(!confirm(`Đưa câu ${id} vào Thùng rác V26?`))return;if(typeof v26TrashLocalContent==='function')await v26TrashLocalContent('question',x);state.questionBank=state.questionBank.filter(q=>q.id!==id);save({reason:'v26-question-trash'});renderQuestionBank();examToast?.('Đã chuyển câu hỏi vào Thùng rác V26.')}
 function previewBankQuestion(id){if(!requireTeacher('Xem đáp án ngân hàng'))return;let x=state.questionBank.find(q=>q.id===id);if(!x)return;openModal(`${x.id} • ${questionTypeName(x.type)}`,`${x.knowledgeCode} • ${levelName(x.level)}${x.form?' • '+x.form:''}`,buildQuestionPreviewHTML(x,{showAnswer:true,showExplanation:true}),`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)}
 
 function bankBackupFilename(prefix='math12-question-bank-backup'){
@@ -885,8 +885,9 @@ function openBankRestorePreview(){
   const body=`<div class="notice"><b>File:</b> ${esc(r.fileName)}${r.createdAt?` • Sao lưu ${new Date(r.createdAt).toLocaleString('vi-VN')}`:''}${r.version?` • phiên bản ${esc(r.version)}`:''}</div><div class="backup-summary"><div><b>${r.bank.length}</b><small>Tổng câu trong file</small></div><div><b>${valid}</b><small>Câu đạt kiểm tra</small></div><div><b>${duplicates}</b><small>Mã trùng hiện tại</small></div></div>${r.invalid.length?`<div class="restore-warnings"><b>${r.invalid.length} câu có cảnh báo và sẽ bị bỏ qua:</b><br>${warnings}${r.invalid.length>8?'<br>…':''}</div>`:'<div class="notice"><b>✓ File hợp lệ.</b> Không phát hiện câu lỗi cấu trúc.</div>'}<div class="field" style="margin-top:12px"><label>Cách khôi phục</label><select id="restoreBankMode"><option value="replace">Thay toàn bộ ngân hàng hiện tại</option><option value="merge_keep">Gộp – giữ câu hiện tại nếu trùng mã</option><option value="merge_file">Gộp – câu trong file ghi đè nếu trùng mã</option></select></div><div class="math-help">Trước khi thực hiện, website tự lưu một bản <b>hoàn tác khôi phục gần nhất</b> trong trình duyệt.</div>`;
   openModal('Khôi phục ngân hàng câu hỏi','Kiểm tra bản sao lưu trước khi áp dụng',body,`<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="commitBankRestore()">Khôi phục</button>`);
 }
-function commitBankRestore(){
+async function commitBankRestore(){
   if(!pendingBankRestore)return;const mode=document.getElementById('restoreBankMode')?.value||'replace';
+  if(typeof v26SafetyCheckpoint==='function')await v26SafetyCheckpoint('bank-restore');
   const valid=pendingBankRestore.bank.filter(q=>validateRestoredQuestion(q).length===0).map(q=>JSON.parse(JSON.stringify(q)));
   if(!valid.length){alert('Không có câu hợp lệ để khôi phục.');return}
   localStorage.setItem('math12hub2026_bank_before_restore',JSON.stringify({savedAt:new Date().toISOString(),questionBank:state.questionBank}));
@@ -898,7 +899,7 @@ function commitBankRestore(){
 function undoLastBankRestore(){
   try{const raw=localStorage.getItem('math12hub2026_bank_before_restore');if(!raw){alert('Chưa có bản hoàn tác khôi phục.');return}const data=JSON.parse(raw);if(!Array.isArray(data.questionBank))throw new Error('Bản hoàn tác không hợp lệ');if(!confirm(`Hoàn tác về ngân hàng trước lần khôi phục gần nhất (${data.questionBank.length} câu)?`))return;state.questionBank=data.questionBank;save();renderQuestionBank(true);localStorage.removeItem('math12hub2026_bank_before_restore');alert('Đã hoàn tác lần khôi phục gần nhất.')}catch(err){alert('Không thể hoàn tác: '+(err?.message||err))}
 }
-function resetQuestionBank(){if(!requireTeacher('Khôi phục ngân hàng'))return;if(!confirm('Khôi phục ngân hàng mẫu? Các câu đã thêm/sửa trong ngân hàng hiện tại sẽ bị thay thế.'))return;state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));save();renderQuestionBank(true)}
+async function resetQuestionBank(){if(!requireTeacher('Khôi phục ngân hàng'))return;if(!confirm('Khôi phục ngân hàng mẫu? Các câu đã thêm/sửa trong ngân hàng hiện tại sẽ bị thay thế. V26 sẽ tạo điểm khôi phục trước.'))return;if(typeof v26SafetyCheckpoint==='function')await v26SafetyCheckpoint('bank-reset');state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));save({reason:'v26-bank-reset'});renderQuestionBank(true)}
 function exportQuestionBank(){if(!requireTeacher('Xuất ngân hàng'))return;let blob=new Blob([JSON.stringify(state.questionBank,null,2)],{type:'application/json;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`math12-question-bank-v${APP_VERSION}.json`;a.click();URL.revokeObjectURL(a.href)}
 function equalShort(a,b){let x=normAns(a),y=normAns(b);return x===y||(!isNaN(Number(x))&&!isNaN(Number(y))&&Math.abs(Number(x)-Number(y))<.011)}
 const fullExam={
