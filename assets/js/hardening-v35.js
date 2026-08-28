@@ -9,10 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
-const V35_BUILD='35.2-role-ui';
+const V35_BUILD='35.3-ux-polish';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=35.2',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js?v=35.2',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=35.3',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=35.3',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -171,7 +171,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v35.js?v=35.2',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v35.js?v=35.3',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

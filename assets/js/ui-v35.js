@@ -1,7 +1,7 @@
-/* Math12 Hub V35.2 — role-aware compact navigation */
+/* Math12 Hub V35.3 — role-aware compact navigation */
 (function(){
-  const PREF_COMPACT='math12hub:v35.2:sidebar-compact';
-  const PREF_GROUPS='math12hub:v35.2:nav-groups';
+  const PREF_COMPACT='math12hub:v35.3:sidebar-compact';
+  const PREF_GROUPS='math12hub:v35.3:nav-groups';
   const app=()=>document.getElementById('app');
   const nav=()=>document.getElementById('nav');
   function readGroups(){try{return JSON.parse(localStorage.getItem(PREF_GROUPS)||'{}')||{}}catch(_){return {}}}
@@ -19,7 +19,7 @@
     visibleButtons.forEach(b=>{const g=b.closest('.nav-group');if(g&&!g.classList.contains('open'))setGroup(g,true,false)})
   }
   function roleName(){try{const r=typeof currentSecureRole==='function'?currentSecureRole():'student';return r==='admin'?'Quản trị':r==='teacher'?'Giáo viên':'Học sinh'}catch(_){return 'Học sinh'}}
-  function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=`V35.2 • ${roleName()} • Giao diện theo vai trò`}
+  function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=`V35.3 • ${roleName()} • UX theo vai trò`}
   function applyCompact(fromUser=false){
     if(innerWidth<=760){app()?.classList.remove('sidebar-compact');return}
     let on=false;try{on=localStorage.getItem(PREF_COMPACT)==='1'}catch(_){}

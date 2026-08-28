@@ -43,3 +43,14 @@ UI UPDATE 35.2:
 - Collapsible nav groups + remembered preference.
 - Sidebar scroll/spacing/footer compacted.
 - Cache build 35.2 / shell-3.
+
+UX UPDATE 35.3:
+- Role-aware action dashboard cho Teacher/Admin.
+- Mobile bottom navigation 5 mục theo role.
+- Breadcrumb desktop + autosave state indicator.
+- Skeleton loading cho các trang dữ liệu nặng.
+- Empty-state components cho dashboard học sinh.
+- Unified success toast bridge (giữ nguyên alert lỗi/cảnh báo).
+- Responsive table swipe hint trên mobile.
+- Accessibility: focus-visible, aria-label nav, reduced motion.
+- Cache build 35.3 / shell-4.

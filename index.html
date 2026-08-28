@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V35 2026–2027 - Ôn tập Toán 12</title>
+<title>Math12 Hub V35.3 2026–2027 - Ôn tập Toán 12</title>
 <meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
 <meta name="app-version" content="35" />
-<meta name="app-build" content="35.2-role-ui" />
+<meta name="app-build" content="35.3-ux-polish" />
 <meta name="app-architecture" content="modular-static-github-pages" />
 <meta name="theme-color" content="#172033" />
-<link rel="manifest" href="manifest.webmanifest?v=35.2" />
-<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=35.2" />
+<link rel="manifest" href="manifest.webmanifest?v=35.3" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=35.3" />
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-<script defer src="assets/js/mathjax-config.js?v=35.2"></script>
-<script defer src="assets/vendor/mathjax.js?v=35.2"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=35.2">
+<script defer src="assets/js/mathjax-config.js?v=35.3"></script>
+<script defer src="assets/vendor/mathjax.js?v=35.3"></script>
+<link rel="stylesheet" href="assets/css/app.css?v=35.3">
 </head>
 <body>
 <div id="v33PublicReportShell" class="v33-public-shell hidden"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập V33</small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -101,7 +101,7 @@
     </div>
     <div class="sidebar-foot" title="Math12 Hub • Chương trình Toán 12 GDPT 2018">
       <div class="sidebar-foot-title">Toán 12 • GDPT 2018</div>
-      <div class="tiny">V35.2 • Giao diện theo vai trò</div>
+      <div class="tiny">V35.3 • UX theo vai trò</div>
     </div>
   </aside>
   <main class="main">
@@ -111,10 +111,12 @@
         <div><div class="page-title" id="pageTitle">Tổng quan học tập</div><div class="badge">Lớp 12 • Năm học 2026–2027</div></div>
       </div>
       <div class="topbar-right">
+        <div class="v353-save-state" id="v353SaveState" title="Trạng thái lưu dữ liệu trên thiết bị"><span class="v353-save-icon">✓</span><span class="v353-save-text">Tự lưu sẵn sàng</span></div>
         <div class="secure-role-badge student" id="secureRoleBadge" title="Vai trò được xác thực từ Firestore">👤 Học sinh</div>
         <button class="cloud-account" id="firebaseAccountBtn" onclick="openFirebaseAccount()" title="Tài khoản và đồng bộ Firebase"><span class="cloud-dot" id="firebaseDot"></span><span id="firebaseAccountText">Đăng nhập</span></button>
       </div>
     </header>
+    <div class="v353-breadcrumb-bar" aria-label="Đường dẫn điều hướng"><div class="v353-breadcrumb" id="v353Breadcrumb"></div></div>
 
     <div class="content">
       <section class="section active" id="page-dashboard">
@@ -131,6 +133,17 @@
         <div class="teacher-only hero">
           <div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Bảng điều khiển giáo viên • V35</div><h2>Theo dõi lớp bằng dữ liệu Firestore thật</h2><p>Xem tỷ lệ nộp bài, điểm trung bình, học sinh trễ hạn, mã kiến thức yếu và lịch sử làm bài của từng em. Dữ liệu được tổng hợp trực tiếp từ các lớp online do thầy/cô sở hữu.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('teacher')">Mở dashboard lớp</button><button class="btn btn-ghost" onclick="goPage('online')">Quản lý lớp & giao bài</button><button class="btn btn-ghost" onclick="goPage('reports')">Báo cáo phụ huynh</button></div></div>
           <div class="hero-progress"><small>V31 • Verified Competency + Practice Analytics</small><br><strong>Class Intelligence</strong><div style="font-size:12px;color:#d9e3ff">Thành viên • Tiến độ • Bài giao • Lượt nộp</div><div class="progress" style="margin-top:14px"><span style="width:100%"></span></div><div style="margin-top:10px;font-size:12px">Có cảnh báo học sinh cần hỗ trợ và bảng xếp hạng theo kết quả thật.</div></div>
+        </div>
+
+        <div class="teacher-only v353-role-dashboard" aria-label="Tác vụ nhanh giáo viên">
+          <button class="v353-quick-card" type="button" onclick="goPage('online')"><span class="v353-quick-icon">☁</span><span><strong id="v353TeacherClasses">0</strong><small>Lớp đang phụ trách</small></span></button>
+          <button class="v353-quick-card" type="button" onclick="goPage('question-bank')"><span class="v353-quick-icon">▦</span><span><strong id="v353TeacherBank">0</strong><small>Câu trong ngân hàng</small></span></button>
+          <button class="v353-quick-card" type="button" onclick="goPage('exam-builder')"><span class="v353-quick-icon">▧</span><span><strong id="v353TeacherExams">0</strong><small>Đề đã lưu</small></span></button>
+          <button class="v353-quick-card" type="button" onclick="goPage('notifications')"><span class="v353-quick-icon">🔔</span><span><strong id="v353TeacherNotices">0</strong><small>Thông báo hiện có</small></span></button>
+        </div>
+        <div class="admin-only v353-admin-strip" aria-label="Trạng thái hệ thống nhanh">
+          <div class="v353-admin-status"><span><small>Firebase App Check</small><b>Bảo vệ request từ trình duyệt</b></span><strong id="v353AdminAppCheck">—</strong></div>
+          <div class="v353-admin-status"><span><small>Lỗi runtime phiên này</small><b>Production Center V35</b></span><strong id="v353AdminRuntime">0</strong></div>
         </div>
 
         <div class="grid grid-4 mt student-only">
@@ -160,8 +173,8 @@
           </div>
         </div>
 
-        <div class="section-head"><div><h3>6 chương cốt lõi Toán 12</h3><p>Hệ thống hóa theo Chương trình GDPT 2018.</p></div><button class="link-btn" onclick="goPage('chapters')">Xem tất cả →</button></div>
-        <div class="chapter-grid" id="dashboardChapters"></div>
+        <div class="section-head student-only"><div><h3>6 chương cốt lõi Toán 12</h3><p>Hệ thống hóa theo Chương trình GDPT 2018.</p></div><button class="link-btn" onclick="goPage('chapters')">Xem tất cả →</button></div>
+        <div class="chapter-grid student-only" id="dashboardChapters"></div>
 
         <div class="grid grid-2 mt student-only">
           <div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Chủ đề cần củng cố</h3><p>Dựa trên các bài em đã làm.</p></div></div><div id="weakList"></div></div>
@@ -718,6 +731,30 @@
     </div>
   </main>
 </div>
+<nav class="v353-mobile-nav" id="v353MobileNav" data-role="student" aria-label="Điều hướng nhanh trên điện thoại">
+  <div class="v353-mobile-role" data-role="student">
+    <button type="button" data-mobile-page="dashboard"><span>⌂</span><span>Trang chủ</span></button>
+    <button type="button" data-mobile-page="lessons"><span>▤</span><span>Học</span></button>
+    <button type="button" data-mobile-page="thpt"><span>★</span><span>Luyện thi</span></button>
+    <button type="button" data-mobile-page="reports"><span>▣</span><span>Báo cáo</span></button>
+    <button type="button" data-mobile-more><span>☰</span><span>Thêm</span></button>
+  </div>
+  <div class="v353-mobile-role" data-role="teacher">
+    <button type="button" data-mobile-page="dashboard"><span>⌂</span><span>Trang chủ</span></button>
+    <button type="button" data-mobile-page="online"><span>☁</span><span>Lớp học</span></button>
+    <button type="button" data-mobile-page="teacher"><span>♙</span><span>Theo dõi</span></button>
+    <button type="button" data-mobile-page="question-bank"><span>▦</span><span>Ngân hàng</span></button>
+    <button type="button" data-mobile-more><span>☰</span><span>Thêm</span></button>
+  </div>
+  <div class="v353-mobile-role" data-role="admin">
+    <button type="button" data-mobile-page="dashboard"><span>⌂</span><span>Trang chủ</span></button>
+    <button type="button" data-mobile-page="online"><span>☁</span><span>Lớp học</span></button>
+    <button type="button" data-mobile-page="question-bank"><span>▦</span><span>Ngân hàng</span></button>
+    <button type="button" data-mobile-page="admin"><span>🛡</span><span>Quản trị</span></button>
+    <button type="button" data-mobile-more><span>☰</span><span>Thêm</span></button>
+  </div>
+</nav>
+<div id="v353ToastRegion" aria-live="polite" aria-atomic="false"></div>
 <div id="mobileOverlay" class="mobile-overlay hidden"></div>
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><div><h3 id="modalTitle">Bài kiểm tra</h3><small id="modalSub" style="color:var(--muted)"></small></div><button class="close" onclick="closeModal()">×</button></div><div class="modal-body" id="modalBody"></div><div class="quiz-footer" id="modalFooter"></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
@@ -727,22 +764,23 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=35.2"></script>
-<script src="assets/js/authoring.js?v=35.2"></script>
-<script src="assets/js/data-vault.js?v=35.2"></script>
-<script src="assets/js/exam.js?v=35.2"></script>
-<script src="assets/js/firebase.js?v=35.2"></script>
-<script src="assets/js/dashboard-v22.js?v=35.2"></script>
-<script src="assets/js/admin-v25.js?v=35.2"></script>
-<script src="assets/js/integrity-v26.js?v=35.2"></script>
-<script src="assets/js/teacher-ops-v27.js?v=35.2"></script>
-<script src="assets/js/student-ux-v28.js?v=35.2"></script>
-<script src="assets/js/question-bank-v29.js?v=35.2"></script>
-<script src="assets/js/exam-pro-v30.js?v=35.2"></script>
-<script src="assets/js/analytics-pro-v31.js?v=35.2"></script>
-<script src="assets/js/scale-v34.js?v=35.2"></script>
-<script src="assets/js/hardening-v35.js?v=35.2"></script>
-<script src="assets/js/ui-v35.js?v=35.2"></script>
-<script src="assets/js/bootstrap.js?v=35.2"></script>
+<script src="assets/js/core.js?v=35.3"></script>
+<script src="assets/js/authoring.js?v=35.3"></script>
+<script src="assets/js/data-vault.js?v=35.3"></script>
+<script src="assets/js/exam.js?v=35.3"></script>
+<script src="assets/js/firebase.js?v=35.3"></script>
+<script src="assets/js/dashboard-v22.js?v=35.3"></script>
+<script src="assets/js/admin-v25.js?v=35.3"></script>
+<script src="assets/js/integrity-v26.js?v=35.3"></script>
+<script src="assets/js/teacher-ops-v27.js?v=35.3"></script>
+<script src="assets/js/student-ux-v28.js?v=35.3"></script>
+<script src="assets/js/question-bank-v29.js?v=35.3"></script>
+<script src="assets/js/exam-pro-v30.js?v=35.3"></script>
+<script src="assets/js/analytics-pro-v31.js?v=35.3"></script>
+<script src="assets/js/scale-v34.js?v=35.3"></script>
+<script src="assets/js/hardening-v35.js?v=35.3"></script>
+<script src="assets/js/ui-v35.js?v=35.3"></script>
+<script src="assets/js/bootstrap.js?v=35.3"></script>
+<script src="assets/js/ux-v35.3.js?v=35.3"></script>
 </body>
 </html>

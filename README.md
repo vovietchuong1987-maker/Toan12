@@ -1,4 +1,4 @@
-# Math12 Hub V35 — Hotfix 35.1 — Production Hardening & Smart Loading
+# Math12 Hub V35.3 — UX Polish • Production Hardening & Smart Loading
 
 V35 nâng trực tiếp từ V34 và **giữ nguyên kiến trúc/dữ liệu cũ**: Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32, Reports V33 và Performance & Scale V34.
 
@@ -76,3 +76,18 @@ Gói vẫn để:
 - Desktop có nút thu gọn sidebar thành icon; trạng thái được ghi nhớ. Mobile luôn dùng drawer đầy đủ chữ.
 - Menu có vùng cuộn riêng và footer rút gọn để không bị tràn chiều cao.
 - Cache-busting + Service Worker tăng lên build 35.2 để tránh dùng nhầm giao diện 35.1 từ cache.
+
+## UX Update 35.3 (28/08/2026)
+
+V35.3 nâng trực tiếp từ V35.2 và giữ nguyên cấu trúc dữ liệu/Firestore hiện có.
+
+- Dashboard theo vai trò: giáo viên/admin có thẻ tác vụ nhanh; nội dung 6 chương trên dashboard chỉ ưu tiên học sinh.
+- Mobile bottom navigation 5 mục, tự đổi theo Học sinh / Giáo viên / Admin.
+- Breadcrumb trên desktop để biết vị trí hiện tại và quay nhanh về Tổng quan.
+- Trạng thái tự lưu trên topbar; khi mất mạng hiển thị rõ dữ liệu đã được giữ trên máy.
+- Skeleton loading cho các trang dữ liệu nặng (lớp học, theo dõi lớp, báo cáo, quản trị, ngân hàng, AI).
+- Empty state thân thiện cho các vùng học tập chưa có dữ liệu.
+- Toast thống nhất cho thông báo thành công; lỗi/cảnh báo quan trọng vẫn dùng hộp thoại cũ để không làm mất ngữ nghĩa.
+- Bảng dữ liệu trên mobile có gợi ý vuốt ngang và cuộn mượt hơn.
+- Bổ sung focus-visible, ARIA cho điều hướng và prefers-reduced-motion.
+- Cache build: `35.3-ux-polish`, Service Worker shell-4.
