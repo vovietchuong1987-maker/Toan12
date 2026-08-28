@@ -1,282 +1,189 @@
-# Math12 Hub V26 — Data Integrity, Recovery & System Health
+# Math12 Hub V31 – Analytics & Competency Pro
 
-V26 nâng trực tiếp từ V25 và **giữ nguyên kiến trúc, dữ liệu và các module đang hoạt động**. Secure Exam V18, Low Reads V19, Data Safety V21, Smart Analytics V22, Data Integrity V23, Account Security V24 và Production Admin V25 tiếp tục tương thích.
+V31 được nâng trực tiếp từ V30. Toàn bộ Secure Exam V18, Low Reads V19, Data Safety V21, Dashboard V22, Account/Admin V24–V25, Data Integrity V26, Teacher Operations V27, Student Learning UX V28, Question Bank Pro V29 và Exam Engine Pro V30 được giữ nguyên.
 
-## Mục tiêu của V26
+## Mục tiêu V31
 
-V26 không chạy theo việc thêm nhiều màn hình mới. Trọng tâm là bảo đảm dữ liệu quan trọng **khó mất, có đường khôi phục và có công cụ phát hiện liên kết sai** trước khi hệ thống được dùng với nhiều lớp/học sinh.
+Biến điểm và lịch sử câu hỏi thành **bản đồ năng lực có nguồn dữ liệu rõ ràng**, theo cấu trúc:
 
-## 1. Thùng rác nội dung giáo viên
+`Chương → Bài → Mã kiến thức → NB / TH / VD`
 
-Các thao tác xóa trong ngân hàng câu hỏi và đề tự tạo đã chuyển sang mô hình xóa an toàn:
+V31 tách hai nguồn:
 
-- Câu hỏi → `Thùng rác nội dung`.
-- Đề đã lưu → `Thùng rác nội dung`.
-- Có thể khôi phục lại.
-- Nếu mã câu/đề bị trùng khi khôi phục, V26 tự tạo mã `RESTORED` mới thay vì ghi đè dữ liệu đang có.
-- Chỉ thao tác `Xóa vĩnh viễn` mới loại mục khỏi thùng rác.
-- Trước thao tác nguy hiểm, V26 yêu cầu Data Safety V21 tạo recovery snapshot nếu IndexedDB đang sẵn sàng.
+- **Verified / Xác minh:** chỉ từ Secure Exam đã được giáo viên chấm.
+- **Practice / Tự luyện:** lịch sử luyện tập do học sinh đồng bộ, dùng để cá nhân hóa và tham khảo.
 
-Thùng rác này nằm trong `state.recycleBinV26` và được đồng bộ cho giáo viên qua:
-
-```text
-users/{uid}/recycleBinV26/{trashId}
-```
-
-Do đó đổi máy/đăng nhập lại vẫn có thể nhận lại thùng rác cùng ngân hàng câu hỏi và đề.
-
-## 2. Thùng rác bài giao Firestore
-
-`Xóa bài` trong quản lý lớp không còn xóa ngay:
-
-```text
-assignmentsV18/{assignmentId}.status = "trashed"
-```
-
-Khi vào Thùng rác:
-
-- Học sinh không còn đọc/nhìn thấy bài.
-- `targetMode/targetUids` bị vô hiệu hóa tạm thời.
-- Bài nộp vẫn còn.
-- Điểm vẫn còn.
-- `submissionIndexV19` vẫn còn.
-- `answerKeysV18` vẫn còn.
-- Giáo viên có thể khôi phục và V26 trả lại target cũ.
-
-Chỉ bài đang ở Thùng rác mới có nút `Xóa vĩnh viễn`. Khi xóa vĩnh viễn phải nhập `XOA`.
-
-## 3. Gói cứu hộ trước khi xóa cloud vĩnh viễn
-
-Trước khi xóa vĩnh viễn một bài giao, V26 đọc và lưu một recovery bundle cục bộ gồm:
-
-- document assignment;
-- answer key;
-- submissions;
-- submission indexes.
-
-Trước khi giáo viên reset lượt nộp của một học sinh, V26 lưu:
-
-- submission;
-- submission index.
-
-Các gói này được giữ trong IndexedDB Data Safety Vault và có thể **xuất JSON** từ `Dữ liệu & sao lưu`.
-
-> V26 cố tình chưa tự động ghi ngược recovery bundle lên Firestore. Timestamp và dữ liệu chấm điểm là dữ liệu nhạy cảm; tự phục hồi đoán mò có thể làm sai lịch sử. Bundle là lớp cứu hộ/đối soát sau xóa vĩnh viễn, còn đường khôi phục chuẩn vẫn là Thùng rác trước khi purge.
-
-## 4. System Health cho Admin
-
-Trang `Quản trị hệ thống` có thêm **Sức khỏe dữ liệu V26**.
-
-Admin chủ động bấm `Quét hệ thống`; V26 không chạy quét nền để tránh tăng Firestore Reads.
-
-Bộ quét kiểm tra:
-
-### Chủ lớp
-
-- lớp không tìm thấy `users/{ownerId}`;
-- owner không còn role `teacher/admin`;
-- schema lớp cũ.
-
-### Join code
-
-- lớp hoạt động không có join code;
-- join code không trỏ đúng lớp;
-- owner của join code không khớp owner lớp.
-
-### Member ↔ Membership
-
-Đối chiếu:
-
-```text
-classes/{classId}/members/{uid}
-↕
-users/{uid}/memberships/{classId}
-```
-
-Phát hiện:
-
-- thiếu membership;
-- thiếu member;
-- membership trỏ tới lớp không còn tồn tại;
-- membership còn sót tới lớp đã ở Thùng rác;
-- member/membership không còn hồ sơ người dùng.
-
-### Secure Exam
-
-Đối chiếu:
-
-```text
-assignmentsV18/{assignmentId}
-↕
-answerKeysV18/{assignmentId}
-```
-
-và kiểm tra `submissionIndexV19` có trỏ tới assignment tồn tại hay không.
-
-## 5. Repair Database — chỉ sửa phần an toàn
-
-Nút `Sửa lỗi an toàn` chỉ xử lý những liên kết có thể suy ra chắc chắn:
-
-- tạo join code mới cho lớp bị hỏng mã;
-- dựng membership từ member khi hồ sơ người dùng còn tồn tại;
-- dựng member từ membership + hồ sơ người dùng khi đủ dữ liệu;
-- xóa membership trỏ tới lớp không còn tồn tại;
-- xóa membership còn sót tới lớp đã ở Thùng rác.
-
-V26 **KHÔNG tự sửa**:
-
-- answer key bị thiếu;
-- đáp án;
-- điểm;
-- submission;
-- chỉ mục điểm nghi ngờ;
-- owner lớp bị mất;
-- member/membership khi hồ sơ người dùng không còn đủ dữ liệu.
-
-Mỗi lần Repair được ghi vào `adminAudit` với action:
-
-```text
-system.integrity.repair
-```
-
-## 6. Chống false-positive khi quét dữ liệu lớn
-
-System Health dùng giới hạn đọc để bảo vệ chi phí. Nếu một collection chạm giới hạn mẫu, V26:
-
-1. đánh dấu phần quét là `partial`;
-2. hiện cảnh báo trong Admin Console;
-3. **không kết luận “thiếu” ở phép đối chiếu phụ thuộc tập dữ liệu chưa đầy đủ**;
-4. không cho Repair tự động trên kết luận có nguy cơ false-positive.
-
-Giới hạn mặc định:
-
-```text
-users             1000
-classes           1000
-joinCodes          700
-members           2500
-memberships       2500
-assignmentsV18    1800
-answerKeysV18     1800
-submissionIndex   3000
-```
-
-Nếu hệ thống vượt quy mô này, V26 chỉ coi lần quét là mẫu an toàn; V34/V35 sẽ chuyển health check sang backend/pagination.
-
-## 7. Firestore Rules V26
-
-Rules V26 bổ sung/siết các điểm quan trọng:
-
-- `recycleBinV26` chỉ chính giáo viên sở hữu tài khoản đọc/ghi.
-- Admin được `list/read` các collection cần thiết cho System Health.
-- Admin chỉ được sửa member/membership theo quyền quản trị hiện có.
-- bài `status = trashed` không thể được học sinh đọc.
-- `assignmentTargetsMe()` từ chối assignment đã trashed.
-- giữ nguyên account lock V25 và member suspend V25.
-- giữ nguyên Secure Exam: học sinh không đọc `answerKeysV18`, không tự ghi điểm.
-
-## 8. Analytics V26
-
-Dashboard lớp ghi snapshot mới:
-
-```text
-classes/{classId}.analyticsV26
-```
-
-và tiếp tục đọc tương thích:
-
-```text
-analyticsV26
-→ analyticsV25
-→ analyticsV24
-→ analyticsV23
-→ analyticsV22
-```
-
-Không cần migrate xóa dữ liệu snapshot cũ.
-
-## 9. Full Backup V26
-
-Full Backup hiện ghi:
-
-```text
-schemaVersion: 26
-version: 26
-```
-
-Tên file mặc định:
-
-```text
-math12hub-v26-full-....json
-```
-
-Teacher Rescue cũng bao gồm `recycleBinV26`, vì vậy việc cứu ngân hàng câu hỏi không làm mất thùng rác nội dung.
-
-## 10. Cấu trúc package
-
-```text
-index.html
-firestore.rules
-README.md
-assets/
-  css/
-    app.css
-  js/
-    core.js
-    authoring.js
-    data-vault.js
-    exam.js
-    firebase.js
-    dashboard-v22.js      # giữ tên để tương thích, ghi analyticsV26
-    admin-v25.js          # giữ tên/API DOM V25 để không phá nâng cấp cũ
-    integrity-v26.js      # mới: recycle/recovery/system health/repair
-    bootstrap.js
-    mathjax-config.js
-vendor/
-  mathjax.js
-```
-
-Tên `dashboard-v22.js`, `admin-v25.js` và các ID/hàm `v25...` được **cố ý giữ lại**. Đổi tên chúng không mang lợi ích vận hành nhưng dễ gây lỗi các lời gọi cũ.
-
-## 11. Thứ tự triển khai V26
-
-Khuyến nghị:
-
-1. **Publish `firestore.rules` V26 trước.**
-2. Upload `index.html`, `assets/` và `vendor/` của V26 lên GitHub Pages.
-3. Đăng nhập tài khoản admin.
-4. Mở `Quản trị hệ thống` → `Quét hệ thống`.
-5. Đọc danh sách lỗi trước khi bấm `Sửa lỗi an toàn`.
-6. Đăng nhập một tài khoản giáo viên và thử:
-   - xóa/khôi phục 1 câu hỏi mẫu;
-   - đưa/khôi phục 1 bài giao thử;
-   - mở `Dữ liệu & sao lưu` để xác nhận Data Safety.
-7. Chỉ sau khi luồng trên ổn định mới dùng `Xóa vĩnh viễn` cho dữ liệu thật.
-
-## 12. Tương thích V25
-
-V26 không xóa hoặc đổi tên các kho dữ liệu chính:
-
-```text
-users
-classes
-joinCodes
-assignmentsV18
-answerKeysV18
-submissionIndexV19
-studentStatsV19
-adminAudit
-```
-
-Dữ liệu V25 tiếp tục hoạt động. Không có migration phá hủy bắt buộc.
-
-## 13. Giới hạn có chủ ý
-
-- Account lock vẫn là khóa **quyền ứng dụng/Firestore**, chưa phải disable Firebase Authentication ở server. Disable Auth thật cần Admin SDK/backend.
-- System Health là công cụ hỗ trợ toàn vẹn dữ liệu trong phạm vi quét, không thay thế backup bên ngoài Firebase.
-- Recovery bundle sau `purge` hiện là JSON cứu hộ/đối soát, chưa có one-click cloud restore để tránh ghi lại Timestamp/điểm sai kiểu dữ liệu.
-- Quét hệ thống có phát sinh Reads **khi admin bấm quét**; không có polling nền.
+Dữ liệu Practice không được coi là thay thế điểm/năng lực xác minh.
 
 ---
 
-**Math12 Hub V26** đặt mục tiêu: trước khi thêm nhiều chức năng dạy học ở V27, dữ liệu hiện tại phải có cơ chế xóa an toàn, cứu hộ và kiểm tra sức khỏe đủ rõ để vận hành production.
+## 1. Aggregate năng lực xác minh Low Reads
+
+V31 **không tạo collection analytics mới**. Năng lực xác minh được cộng dồn ngay trong document teacher-only đã có:
+
+`classes/{classId}/studentStatsV19/{uid}.verifiedCompetencyV31`
+
+Các nhóm aggregate:
+
+- tổng bằng chứng câu (`totalAttempts`);
+- tổng credit (`totalCredit`);
+- mã kiến thức (`codes`);
+- bài (`lessons`);
+- chương (`chapters`);
+- mức độ (`levels`: NB / TH / VD).
+
+Khi giáo viên chấm một Secure Exam mới, V31 tự cộng phần `questionResults` vào aggregate. Khi mở Dashboard, hệ thống chỉ đọc `studentStatsV19` vốn đã được Low Reads V19 tải, **không đọc lại toàn bộ submissions**.
+
+## 2. Bản đồ năng lực giáo viên
+
+Dashboard giáo viên có thêm **Bản đồ năng lực xác minh • V31**:
+
+- số kết quả câu đã xác minh;
+- mức đạt xác minh;
+- độ phủ mã kiến thức có đủ bằng chứng;
+- số mã yếu;
+- NB / TH / VD;
+- Chương → Bài → Mã kiến thức;
+- số câu xác minh ở từng nút;
+- trạng thái: Chưa đủ dữ liệu / Cần học lại / Cần củng cố / Đã vững.
+
+Ngưỡng hiển thị mặc định:
+
+- dưới 2 bằng chứng: chưa đủ dữ liệu;
+- dưới 60%: cần học lại;
+- 60% đến dưới 80%: cần củng cố;
+- từ 80%: đã vững.
+
+## 3. Ma trận học sinh × mã yếu
+
+V31 tự chọn tối đa 6 mã kiến thức yếu nổi bật của lớp và lập ma trận học sinh × mã.
+
+Giáo viên có thể bấm tên học sinh để xem:
+
+- điểm trung bình Secure Exam;
+- số câu xác minh;
+- mức đạt xác minh;
+- năng lực theo chương;
+- mã kiến thức yếu;
+- dữ liệu tự luyện được đặt ở khu vực tham khảo riêng.
+
+## 4. Chi tiết theo mã kiến thức
+
+Bấm một mã kiến thức trong cây năng lực để xem những học sinh đã có bằng chứng xác minh cho mã đó, sắp từ yếu lên mạnh.
+
+Từ modal này có thể chuyển sang luồng **Tạo bài củng cố** bằng ngân hàng câu hỏi hiện có.
+
+## 5. Gợi ý giao bài ưu tiên dữ liệu Verified
+
+Khối gợi ý giao bài của Dashboard V31 ưu tiên:
+
+1. mã có ít nhất 2 câu Secure Exam đã chấm;
+2. mức đạt dưới 80%;
+3. mã yếu hơn đứng trước.
+
+Nếu chưa đủ Verified evidence, hệ thống mới fallback về gợi ý tự luyện cũ. Giáo viên luôn là người duyệt đề và bấm “Giao bài”; V31 không tự xuất bản bài.
+
+## 6. Tách nguồn trên trang học sinh
+
+Trang **Phân tích năng lực** có hai thẻ nguồn:
+
+- `✓ Secure Exam đã xác minh`;
+- `◎ Tự luyện trên thiết bị`.
+
+Secure Exam được nhận diện từ lịch sử `assignment` / `assignment-graded`. Practice là các chế độ luyện còn lại.
+
+Nhờ vậy học sinh không nhầm dữ liệu tự luyện với kết quả giáo viên đã chấm.
+
+## 7. Chuẩn hóa dữ liệu V30 một lần
+
+Bài được chấm mới từ V31 tự cộng aggregate. Với bài V30 trở về trước đã có `questionResults`, giáo viên dùng nút:
+
+**Chuẩn hóa dữ liệu V30**
+
+V31 sẽ đọc current graded submissions của lớp, bỏ qua submission đã đánh dấu `competencyV31Aggregated`, cộng dữ liệu còn thiếu rồi đánh dấu đã chuẩn hóa.
+
+Đây là thao tác **theo yêu cầu, một lần và có phát sinh Firestore Reads**. V31 không tự chạy migration nền.
+
+## 8. Idempotent – tránh cộng trùng
+
+Mỗi current graded submission đã cộng năng lực được đánh dấu:
+
+- `competencyV31Aggregated: true`
+- `competencyV31SchemaVersion: 31`
+
+Vì vậy mở lại kết quả hoặc chạy backfill lần nữa không cộng trùng phần đã xử lý.
+
+## 9. Làm lại và xóa bài vẫn giữ aggregate đúng
+
+Khi giáo viên **cấp thêm lượt làm**:
+
+- điểm current official được gỡ khỏi `studentStatsV19`;
+- phần năng lực xác minh của lượt current cũng bị trừ;
+- lịch sử lượt V27 vẫn giữ nguyên;
+- khi lượt mới được chấm, V31 cộng kết quả mới trở lại.
+
+Khi **xóa vĩnh viễn** một bài đang trong Thùng rác, V31 đồng thời gỡ phần năng lực current official của bài khỏi thống kê.
+
+## 10. Snapshot so sánh lớp V31
+
+Document lớp ghi snapshot nhẹ:
+
+`analyticsV31`
+
+Bổ sung:
+
+- `verifiedEvidence`
+- `verifiedAccuracy`
+- `verifiedCoverage`
+- `weakVerifiedCode`
+- `weakVerifiedAccuracy`
+
+Khi so sánh các lớp, Dashboard đọc snapshot ngay trên class document, không tải toàn bộ học sinh của lớp khác.
+
+V31 vẫn đọc fallback `analyticsV30 → ... → analyticsV22`.
+
+## 11. Firestore Rules
+
+V31 không cần mở quyền mới cho học sinh. `verifiedCompetencyV31` nằm trong `studentStatsV19`, collection vốn chỉ cho:
+
+- admin đọc;
+- chủ lớp đọc/ghi;
+- học sinh không đọc/ghi trực tiếp.
+
+Các lớp bảo mật Secure Exam, answer key, draftsV30, retry và target của V30 được giữ nguyên.
+
+## 12. Firestore Indexes
+
+V31 **không thêm composite index mới**. Tiếp tục giữ 2 index từ V27–V30:
+
+- `targetMode + opensAt`
+- `targetUids ARRAY_CONTAINS + opensAt`
+
+Nếu hai index đã `Enabled`, không cần tạo lại.
+
+## 13. Nâng cấp từ V30
+
+Khuyến nghị:
+
+1. Sao lưu V30.
+2. Publish `firestore-v31.rules`.
+3. Giữ nguyên 2 indexes nếu đã Enabled.
+4. Upload toàn bộ package V31 lên GitHub Pages.
+5. Đăng nhập tài khoản giáo viên và chọn một lớp test.
+6. Chấm một Secure Exam mới rồi kiểm tra Bản đồ năng lực V31.
+7. Với dữ liệu V30 cũ, bấm **Chuẩn hóa dữ liệu V30** một lần.
+8. Thử: chấm → cấp thêm lượt → chấm lượt mới, kiểm tra aggregate không cộng lặp.
+
+## 14. Các lớp dữ liệu cũ được giữ nguyên
+
+V31 không đổi tên các collection quan trọng như:
+
+- `assignmentsV18`
+- `answerKeysV18`
+- `submissionIndexV19`
+- `studentStatsV19`
+- `recycleBinV26`
+- `attemptHistoryV27`
+- `draftsV30`
+
+Không có collection mới chỉ để phục vụ V31 Analytics.

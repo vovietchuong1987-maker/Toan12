@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "assignmentsV18",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetMode", "order": "ASCENDING" },
+        { "fieldPath": "opensAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "assignmentsV18",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetUids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "opensAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

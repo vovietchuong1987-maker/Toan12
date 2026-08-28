@@ -5,7 +5,7 @@
    - IndexedDB recovery bundles before permanent assignment/submission deletion
    - Admin-only integrity scanner + conservative safe repair tools
    ========================================================= */
-const V26_SCHEMA_VERSION=26;
+const V26_SCHEMA_VERSION=27; // tên hằng giữ để tương thích API V26; schema mới là V27
 const V26_HEALTH_LIMITS={users:1000,classes:1000,joinCodes:700,members:2500,memberships:2500,assignments:1800,answerKeys:1800,indexes:3000};
 let v26HealthContext={users:new Map(),classes:new Map(),joinCodes:new Map()};
 let v26HealthState={status:'idle',issues:[],scannedDocs:0,score:null,repairable:0,scannedAt:null,truncated:[],lastRepair:null};
@@ -37,7 +37,7 @@ function v26MergeTeacherRecycleDocs(items=[]){
 async function v26TrashLocalContent(kind,item){
   if(!item)return false;await v26SafetyCheckpoint(`${kind}-trash`);
   const arr=v26TrashCollection(kind),sourceId=String(item.id||'');
-  arr.unshift({id:v26TrashItemId(kind,sourceId),kind,sourceId,item:v26Clone(item),trashedAt:new Date().toISOString(),schemaVersion:26});
+  arr.unshift({id:v26TrashItemId(kind,sourceId),kind,sourceId,item:v26Clone(item),trashedAt:new Date().toISOString(),schemaVersion:27});
   if(arr.length>120)arr.length=120;
   save({reason:`v26-${kind}-trash`});return true;
 }
@@ -65,12 +65,12 @@ function v26OpenContentTrash(){
 }
 
 async function v26StoreRecoveryBundle(key,payload){
-  try{if(typeof v21VaultPut!=='function')return false;await v21VaultPut('kv',{key:`cloud-recovery-${key}`,kind:'cloud-recovery',createdAt:new Date().toISOString(),schemaVersion:26,payload:v26Clone(payload)});return true}catch(err){console.warn('V26 recovery bundle',err);return false}
+  try{if(typeof v21VaultPut!=='function')return false;await v21VaultPut('kv',{key:`cloud-recovery-${key}`,kind:'cloud-recovery',createdAt:new Date().toISOString(),schemaVersion:27,payload:v26Clone(payload)});return true}catch(err){console.warn('V26 recovery bundle',err);return false}
 }
 async function v26StoreAssignmentRecoveryBundle(classId,assignmentId){
   if(!firebaseDb)return false;try{
-    const ref=firebaseAssignmentsRef(classId).doc(assignmentId),[a,k,s,idx]=await Promise.all([ref.get(),firebaseAnswerKeysRef(classId).doc(assignmentId).get(),ref.collection('submissions').get(),firebaseSubmissionIndexRef(classId).where('assignmentId','==',assignmentId).get()]);
-    return await v26StoreRecoveryBundle(`assignment-${classId}-${assignmentId}-${Date.now()}`,{type:'assignment',classId,assignmentId,assignment:a.exists?a.data():null,answerKey:k.exists?k.data():null,submissions:s.docs.map(d=>({id:d.id,data:d.data()})),indexes:idx.docs.map(d=>({id:d.id,data:d.data()}))});
+    const ref=firebaseAssignmentsRef(classId).doc(assignmentId),[a,k,s,idx,h]=await Promise.all([ref.get(),firebaseAnswerKeysRef(classId).doc(assignmentId).get(),ref.collection('submissions').get(),firebaseSubmissionIndexRef(classId).where('assignmentId','==',assignmentId).get(),ref.collection('attemptHistoryV27').get()]);
+    return await v26StoreRecoveryBundle(`assignment-${classId}-${assignmentId}-${Date.now()}`,{type:'assignment',classId,assignmentId,assignment:a.exists?a.data():null,answerKey:k.exists?k.data():null,submissions:s.docs.map(d=>({id:d.id,data:d.data()})),indexes:idx.docs.map(d=>({id:d.id,data:d.data()})),attemptHistoryV27:h.docs.map(d=>({id:d.id,data:d.data()}))});
   }catch(err){console.warn('V26 assignment bundle',err);return false}
 }
 async function v26StoreSubmissionRecoveryBundle(classId,assignmentId,uid){
@@ -120,7 +120,7 @@ async function v26SystemHealthScan(){
       if(c.status!=='trashed'&&complete.joinCodes){
         const jc=c.joinCode?joinCodes.get(c.joinCode):null;if(!c.joinCode||!jc||jc.classId!==c.id||jc.ownerId!==c.ownerId)out.push(v26Issue('warn','join-code-broken',`Mã tham gia lớp “${c.name||c.id}” không đồng bộ`,`V26 có thể tạo một mã mới và liên kết lại lớp mà không đụng dữ liệu học sinh.`,{classId:c.id},true));
       }
-      if((Number(c.schemaVersion)||0)<26)out.push(v26Issue('info','class-schema-old',`Lớp “${c.name||c.id}” đang ở schema cũ`,`schemaVersion hiện là ${Number(c.schemaVersion)||0}; dữ liệu vẫn tương thích và sẽ được nâng khi có thao tác V26.`,{classId:c.id},false));
+      if((Number(c.schemaVersion)||0)<27)out.push(v26Issue('info','class-schema-old',`Lớp “${c.name||c.id}” đang ở schema cũ`,`schemaVersion hiện là ${Number(c.schemaVersion)||0}; dữ liệu vẫn tương thích và sẽ được nâng khi có thao tác V27.`,{classId:c.id},false));
     }
     if(!complete.users)out.push(v26Issue('info','scan-partial-users','Chưa kiểm kê đầy đủ hồ sơ người dùng',`Đã đọc tới giới hạn ${L.users} users. V26 không kết luận “mất hồ sơ” và không tự dựng liên kết dựa trên user vắng mặt ở mẫu này.`,{},false));
     if(!complete.classes)out.push(v26Issue('info','scan-partial-classes','Chưa kiểm kê đầy đủ lớp học',`Đã đọc tới giới hạn ${L.classes} classes. V26 không kết luận membership trỏ tới lớp không tồn tại nếu class vắng mặt trong mẫu.`,{},false));
@@ -162,16 +162,16 @@ async function v26RepairSafeIssues(){
   for(const issue of list){try{
     const {classId,uid}=issue.data||{},c=classMap.get(classId)||{};
     if(issue.type==='join-code-broken'){
-      const code=await firebaseGenerateUniqueJoinCode(),b=firebaseDb.batch(),cref=firebaseDb.collection('classes').doc(classId);b.set(cref,{joinCode:code,schemaVersion:26,integrityRepairedAt:firebaseServerTimestamp(),updatedAt:firebaseServerTimestamp()},{merge:true});b.set(firebaseDb.collection('joinCodes').doc(code),{classId,ownerId:c.ownerId,className:c.name||'',status:'active',schemaVersion:26,createdAt:firebaseServerTimestamp(),integrityRepairedAt:firebaseServerTimestamp()},{merge:false});await b.commit();fixed++;
+      const code=await firebaseGenerateUniqueJoinCode(),b=firebaseDb.batch(),cref=firebaseDb.collection('classes').doc(classId);b.set(cref,{joinCode:code,schemaVersion:27,integrityRepairedAt:firebaseServerTimestamp(),updatedAt:firebaseServerTimestamp()},{merge:true});b.set(firebaseDb.collection('joinCodes').doc(code),{classId,ownerId:c.ownerId,className:c.name||'',status:'active',schemaVersion:27,createdAt:firebaseServerTimestamp(),integrityRepairedAt:firebaseServerTimestamp()},{merge:false});await b.commit();fixed++;
     }else if(issue.type==='membership-missing'){
-      const m=await firebaseDb.collection('classes').doc(classId).collection('members').doc(uid).get();if(!m.exists)throw new Error('Member đã thay đổi trong lúc sửa.');const d=m.data()||{};await firebaseDb.collection('users').doc(uid).collection('memberships').doc(classId).set({classId,className:c.name||'',joinCode:c.joinCode||'',status:d.status||'active',schemaVersion:26,joinedAt:d.joinedAt||firebaseServerTimestamp(),integrityRepairedAt:firebaseServerTimestamp()},{merge:true});fixed++;
+      const m=await firebaseDb.collection('classes').doc(classId).collection('members').doc(uid).get();if(!m.exists)throw new Error('Member đã thay đổi trong lúc sửa.');const d=m.data()||{};await firebaseDb.collection('users').doc(uid).collection('memberships').doc(classId).set({classId,className:c.name||'',joinCode:c.joinCode||'',status:d.status||'active',schemaVersion:27,joinedAt:d.joinedAt||firebaseServerTimestamp(),integrityRepairedAt:firebaseServerTimestamp()},{merge:true});fixed++;
     }else if(issue.type==='orphan-membership'||issue.type==='trashed-class-membership'){
       await firebaseDb.collection('users').doc(uid).collection('memberships').doc(classId).delete();fixed++;
     }else if(issue.type==='member-missing'){
-      const ship=await firebaseDb.collection('users').doc(uid).collection('memberships').doc(classId).get(),u=userMap.get(uid)||{};if(!ship.exists)throw new Error('Membership đã thay đổi trong lúc sửa.');const sd=ship.data()||{};await firebaseDb.collection('classes').doc(classId).collection('members').doc(uid).set({uid,classId,joinCode:sd.joinCode||c.joinCode||'',name:u.displayName||u.email?.split('@')[0]||'Học sinh',email:u.email||'',role:'student',status:sd.status||'active',schemaVersion:26,joinedAt:sd.joinedAt||firebaseServerTimestamp(),integrityRepairedAt:firebaseServerTimestamp()},{merge:true});fixed++;
+      const ship=await firebaseDb.collection('users').doc(uid).collection('memberships').doc(classId).get(),u=userMap.get(uid)||{};if(!ship.exists)throw new Error('Membership đã thay đổi trong lúc sửa.');const sd=ship.data()||{};await firebaseDb.collection('classes').doc(classId).collection('members').doc(uid).set({uid,classId,joinCode:sd.joinCode||c.joinCode||'',name:u.displayName||u.email?.split('@')[0]||'Học sinh',email:u.email||'',role:'student',status:sd.status||'active',schemaVersion:27,joinedAt:sd.joinedAt||firebaseServerTimestamp(),integrityRepairedAt:firebaseServerTimestamp()},{merge:true});fixed++;
     }
   }catch(err){failed++;console.warn('V26 repair issue',issue,err)}}
-  try{await firebaseDb.collection('adminAudit').add({actorUid:firebaseUser.uid,actorEmail:firebaseUser.email||'',action:'system.integrity.repair',targetType:'system',targetId:'v26',detail:{requested:list.length,fixed,failed},schemaVersion:26,createdAt:firebaseServerTimestamp()})}catch(_){}
+  try{await firebaseDb.collection('adminAudit').add({actorUid:firebaseUser.uid,actorEmail:firebaseUser.email||'',action:'system.integrity.repair',targetType:'system',targetId:'v26',detail:{requested:list.length,fixed,failed},schemaVersion:27,createdAt:firebaseServerTimestamp()})}catch(_){}
   v26HealthState.lastRepair={fixed,failed,at:new Date().toISOString()};alert(`Đã sửa ${fixed} liên kết${failed?`; ${failed} mục không sửa được`:''}. V26 sẽ quét lại để xác nhận.`);await v25AdminRefresh(true);await v26SystemHealthScan();
 }
 
