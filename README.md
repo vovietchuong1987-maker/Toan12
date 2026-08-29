@@ -1,114 +1,137 @@
-# Math12 Hub V36.2 — Smart Exam Matrix & Multiple Test Codes
+# Math12 Hub V36.3 — Mastery Score & Adaptive Learning
 
-V36.2 được nâng trực tiếp từ V36.1. Knowledge Map V36.0 và Question Quality Engine V36.1 được giữ nguyên; toàn bộ nền V34 Scale, V35 Production Hardening, Role-aware UI, UX Polish, Smart Navigation và Exam Engine Pro V30 tiếp tục tương thích.
+V36.3 được nâng trực tiếp từ V36.2. Toàn bộ Knowledge Map V36.0, Question Quality Engine V36.1, Smart Exam Matrix V36.2, Exam Engine Pro V30, Analytics V31, Scale V34 và UX V35.x được giữ nguyên.
 
-## Trọng tâm V36.2
+## Trọng tâm V36.3
 
-V36.2 bổ sung `assets/js/smart-exam-v36.2.js`, chạy cục bộ trên ngân hàng câu hỏi đã tải trong phiên. Module không tự tạo Firestore query mới và không tạo collection mới.
+V36.3 bổ sung `assets/js/mastery-v36.3.js` để biến dữ liệu câu hỏi đã có thành một chỉ báo học tập theo từng `knowledgeCode`, sau đó dùng chỉ báo này để chọn câu luyện phù hợp hơn.
 
-### 1. Smart Exam Matrix
+### 1. Mastery Score theo 57 mã kiến thức
 
-Trang **Tạo đề kiểm tra** có thêm lớp chọn câu thông minh trước khi sinh đề:
+Mỗi mã kiến thức có các trường suy ra tại runtime:
 
-- Lọc theo QC V36.1:
-  - Không có lỗi nghiêm trọng (mặc định).
-  - Sạch lỗi + cảnh báo.
-  - Không lọc QC để tương thích dữ liệu cũ.
-- Tùy chọn chỉ lấy câu đã duyệt.
-- Tùy chọn bắt buộc metadata V36 đầy đủ.
-- Cân phủ `knowledgeCode` và `formId` để đề không dồn quá nhiều câu vào cùng một dạng.
-- Ưu tiên tránh câu đã xuất hiện trong 1 / 3 / 5 / 10 đề lưu gần nhất.
-- Phát hiện độ đủ của từng ô Chương × Mức độ sau khi áp dụng các bộ lọc.
-- Hiển thị số câu đủ điều kiện, số chuẩn kiến thức và số dạng toán phủ được.
+- Mastery Score 0–100%.
+- Confidence (độ tin cậy của bằng chứng).
+- Số lượt có dữ liệu.
+- Trọng số Secure Exam đã xác minh và tự luyện.
+- Xu hướng gần đây.
+- Mức độ câu mục tiêu tiếp theo.
+- Trạng thái:
+  - Đang thu thập dữ liệu.
+  - Cần học lại.
+  - Cần củng cố.
+  - Sẵn sàng nâng mức.
+  - Đã làm chủ.
 
-Hệ thống vẫn giữ ma trận cũ của V21/V30; V36.2 chỉ nâng lớp chọn câu, không xóa hoặc thay cấu trúc đề cũ.
+Mastery Score có tính trọng số theo nguồn dữ liệu, độ mới của kết quả, mức NB/TH/VD và độ khó câu nếu metadata có sẵn. Secure Exam đã chấm được ưu tiên trọng số hơn tự luyện.
 
-### 2. Blueprint V36.2
+> Mastery Score là chỉ báo cá nhân hóa, không thay thế điểm kiểm tra hoặc năng lực xác minh V31.
 
-Có thể:
+### 2. Luyện tập thích ứng V36.3
 
-- Kiểm tra blueprint trước khi sinh đề.
-- Xuất blueprint JSON.
-- Lưu tối đa 10 mẫu ma trận trên máy.
-- Nạp lại mẫu gồm: tên đề, thời gian, Chương × Mức độ, chính sách QC, cân bằng nội dung và số mã đề.
+`startAdaptivePractice()` được nâng cấp nhưng vẫn giữ API cũ để các nút V28/V31 tiếp tục hoạt động.
 
-### 3. Mã đề 101–108
+Bộ chọn mới:
 
-V36.2 tiếp tục dùng seed xác định của Exam Engine Pro V30 nhưng hiển thị mã đề theo cách quen thuộc:
+- Ưu tiên mã có Mastery thấp và đủ bằng chứng.
+- Nếu chưa có dữ liệu, có thể bắt đầu từ chuẩn đầu tiên của bài chưa hoàn thành.
+- Chọn độ khó gần mức Mastery hiện tại.
+- Ưu tiên câu chưa làm hoặc từng làm sai.
+- Giảm ưu tiên câu vừa làm đúng gần đây.
+- Loại câu có lỗi nghiêm trọng theo Question Quality Engine V36.1.
+- Khi một mã thiếu câu, có thể bổ sung từ các mã cùng bài để vẫn tạo được phiên luyện.
+- Không phát sinh Firestore Reads khi chọn câu; dùng ngân hàng đã tải trên thiết bị.
 
-- 101
-- 102
-- 103
-- 104
-- tối đa 108
+### 3. Sổ lỗi và lịch ôn
 
-Một đề chỉ lưu **một bộ câu gốc**. Các mã đề được tái tạo từ seed, không nhân bản 4–8 bản câu hỏi trong dữ liệu.
+V36.3 dựng `mistakeBank()` từ lịch sử hiện có để biết:
 
-### 4. Trộn an toàn
+- Câu từng sai bao nhiêu lần.
+- Lần gần nhất còn sai hay đã sửa được.
+- Chuỗi trả lời đúng sau lỗi.
+- Câu nào đang đến hạn nên ôn lại.
 
-- Chỉ đảo phương án của câu MCQ.
-- Không đảo 4 ý bên trong một câu Đúng/Sai 4 ý.
-- Có thể khóa riêng một MCQ bằng `lockOptions=true` hoặc `shuffleOptions=false`.
-- Nếu các câu có `groupId`, `stimulusId`, `parentId` hoặc `sharedContextId`, V36.2 coi đó là một block và giữ các câu cùng dữ kiện cạnh nhau khi đảo thứ tự.
-- Khi giữ Phần I–II–III, hệ thống chỉ đảo trong từng phần.
+Dashboard Mastery hiển thị số câu sai/ôn lại đang đến hạn. Dữ liệu gốc vẫn là `questionHistory`; không tạo kho Firestore riêng.
 
-### 5. Hạn chế lặp và câu gần trùng
+### 4. Dashboard học sinh
 
-Khi chọn câu, V36.2:
+Trang chủ được bổ sung thẻ **Mastery Score V36.3** gồm:
 
-- Không chọn hai ID giống nhau.
-- Ưu tiên không chọn hai câu có stem giống nhau sau chuẩn hóa.
-- Giảm ưu tiên câu đã xuất hiện trong các đề gần nhất.
-- Nếu ngân hàng không đủ, hệ thống vẫn ưu tiên đáp ứng đúng quota Chương × Mức độ × Loại câu thay vì làm hỏng cấu trúc đề.
+- Mastery trung bình của các mã có bằng chứng.
+- Số mã đã làm chủ.
+- Số mã sẵn sàng nâng mức.
+- Số mã cần học lại/củng cố.
+- Số câu sai đến hạn ôn.
+- 5 mã yếu nhất với nút luyện trực tiếp.
 
-### 6. Xuất bộ mã đề
+Trang **Phân tích năng lực** có bảng Mastery chi tiết cho từng mã, Confidence, xu hướng và độ khó mục tiêu.
 
-Từ đề xem trước có thể xuất một gói JSON gồm:
+### 5. Góc nhìn giáo viên
 
-- Blueprint.
-- Chính sách trộn.
-- Các mã 101–108.
-- Thứ tự câu của từng mã.
-- Thứ tự phương án MCQ sau trộn.
-- Answer key tương ứng từng mã.
+Dashboard lớp có thêm **Mastery Class View V36.3**.
 
-Gói này dành cho giáo viên; không tự công khai đáp án cho học sinh.
+Dữ liệu đọc từ snapshot `progress.masteryV363` vốn nằm trong document progress hiện có, vì vậy:
+
+- Không tạo collection mới.
+- Không tải toàn bộ submission nền.
+- Không làm thay đổi cơ chế năng lực xác minh V31.
+- Có thể nhìn nhanh mã nào nhiều học sinh cần củng cố và chuyển sang luồng tạo bài củng cố.
+
+Snapshot cá nhân hóa không được coi là điểm chính thức; Secure Exam V31 vẫn là nguồn xác minh của giáo viên.
+
+### 6. Đồng bộ Firestore tương thích cũ
+
+V36.3 chỉ mở rộng payload đã có:
+
+- `users/{uid}/learning/progress` có thêm `masteryV363`.
+- `classes/{classId}/progress/{studentUid}` có thêm `masteryV363`.
+
+Firestore Rules hiện tại đã cho học sinh cập nhật document progress của chính mình nên không cần rule mới. Không có migration bắt buộc.
 
 ## Production Center
 
-Regression V36.2 kiểm tra:
+Regression V36.3 kiểm tra thêm:
 
-- Module `36.2-smart-exam` đã nạp.
-- Mã đầu là 101 và mã thứ tư là 104.
-- Các câu có cùng group vẫn nằm cạnh nhau sau khi trộn.
-- Các regression cũ của THPT scoring, role access, Knowledge Map và Quality Engine vẫn giữ nguyên.
+- Module `36.3-mastery-adaptive` đã nạp.
+- Mastery tính được từ một bộ bằng chứng mẫu.
+- Secure Exam có trọng số lớn hơn practice trong regression.
+- Mastery Score nằm trong miền hợp lệ và có Confidence.
+
+Các regression cũ vẫn giữ nguyên:
+
+- cấu trúc đề THPT 12–4–6;
+- thang điểm Đúng/Sai;
+- phân quyền;
+- Knowledge Map V36.0;
+- Question Quality Engine V36.1;
+- Smart Exam Matrix V36.2.
 
 ## Tương thích dữ liệu
 
 - Không tạo Firestore collection mới.
-- Không yêu cầu migration Firestore Rules.
-- Không thay `firestore.indexes.json`.
+- Không đổi `firestore.rules`.
+- Không đổi `firestore.indexes.json`.
 - Không đổi ID câu hỏi.
-- Không xóa đề V36.1/V35.x.
-- Đề cũ V30 vẫn mở được; nếu không có metadata V36.2 thì dùng policy tương thích.
+- Không xóa lịch sử V35/V36.0–36.2.
+- Dữ liệu Mastery có thể tái tạo từ `questionHistory` hiện có.
 
 ## Build
 
-- `APP_VERSION = 36.2`
-- `app-build = 36.2-smart-exam`
-- Service Worker cache: `math12hub-v36-shell-8`
-- Local assets: `?v=36.2`
-- New module: `assets/js/smart-exam-v36.2.js`
-- Quality Engine vẫn dùng module: `assets/js/quality-engine-v36.1.js`
+- `APP_VERSION = 36.3`
+- `app-build = 36.3-mastery-adaptive`
+- Service Worker cache: `math12hub-v36-shell-9`
+- Local assets: `?v=36.3`
+- New module: `assets/js/mastery-v36.3.js`
+- Smart Exam vẫn dùng build nội bộ: `36.2-smart-exam`
+- Quality Engine vẫn dùng build nội bộ: `36.1-quality-engine`
 - Knowledge Map vẫn dùng build nội bộ: `36.0-knowledge-map`
 
 ## Sau khi triển khai GitHub Pages
 
-1. Thay toàn bộ package cũ bằng V36.2.
-2. `Ctrl + F5` một lần để bỏ cache `shell-7`.
-3. Đăng nhập Teacher/Admin.
-4. Mở **Tạo đề kiểm tra**.
-5. Chọn ma trận hoặc mẫu `Cấu trúc THPT 12–4–6`.
-6. Kiểm tra khối **Smart Exam Matrix V36.2**.
-7. Bấm **Kiểm tra blueprint** trước khi **Sinh đề từ ma trận**.
-8. Vào **Production Center** và chạy regression check.
+1. Thay toàn bộ package V36.2 bằng V36.3.
+2. Nhấn `Ctrl + F5` một lần để bỏ cache `shell-8`.
+3. Đăng nhập học sinh và làm ít nhất một bài có `knowledgeCode` để Mastery bắt đầu có bằng chứng.
+4. Mở **Trang chủ** hoặc **Phân tích năng lực** để xem Mastery Score.
+5. Bấm **Luyện theo Mastery / Luyện điểm yếu** để thử bộ chọn thích ứng V36.3.
+6. Với giáo viên, mở **Theo dõi lớp** sau khi học sinh đã đồng bộ progress để xem Mastery Class View.
+7. Admin vào **Production Center → Chạy kiểm tra**.

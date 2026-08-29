@@ -1,0 +1,21 @@
+Math12 Hub V36.3 - Validation Summary
+Build: 36.3-mastery-adaptive
+
+Validated:
+- APP_VERSION = 36.3
+- Service Worker cache = math12hub-v36-shell-9
+- 295 HTML IDs, 0 duplicate IDs
+- All local asset references checked, no missing files
+- All JavaScript files and service worker pass node --check
+- Mastery regression passed with synthetic history
+- Adaptive selector excludes questions with critical V36.1 QC errors
+- Secure/verified evidence receives higher mastery weight than ordinary practice
+- Firestore rules unchanged from V36.2
+- Firestore indexes unchanged from V36.2
+- Knowledge Map V36.0 unchanged
+- Question Quality Engine V36.1 unchanged
+- Smart Exam Matrix V36.2 unchanged
+- No new Firestore collection is required for V36.3
+
+Note:
+A Chromium headless file:// smoke attempt timed out in the container, so release confidence is based on static validation and Node regression tests rather than a completed browser smoke run.

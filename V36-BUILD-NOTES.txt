@@ -1,27 +1,32 @@
-Math12 Hub V36.2 — Smart Exam Matrix & Multiple Test Codes
-Build: 36.2-smart-exam
+Math12 Hub V36.3 — Mastery Score & Adaptive Learning
+Build: 36.3-mastery-adaptive
 
-Upgraded directly from V36.1.
+Upgraded directly from V36.2.
 
 Added:
-- QC-aware exam pool using Question Quality Engine V36.1.
-- Smart balancing by knowledgeCode + formId.
-- Recent-exam repetition penalty.
-- Duplicate stem avoidance within one generated exam.
-- Blueprint preflight, JSON export and local blueprint presets.
-- Numeric multiple test codes 101–108.
-- Deterministic variant engine preserving sections and shared-stimulus groups.
-- TF4 remains atomic; only MCQ options are shuffled.
-- Teacher export bundle with variants and answer keys.
-- Production Center regression for V36.2.
+- Mastery Score for all 57 knowledge codes.
+- Confidence/evidence model with Secure Exam evidence weighted above self-practice.
+- Recency-aware and difficulty-aware evidence weighting.
+- Mastery states: new / learn / reinforce / ready / mastered.
+- Adaptive target difficulty by current mastery.
+- QC-aware adaptive question selection using Question Quality Engine V36.1.
+- Recent-correct penalty, unseen/wrong-question preference.
+- Mistake bank model with unresolved/recovered/due-review signals.
+- Student dashboard Mastery card.
+- Detailed Mastery panel on analytics page.
+- Teacher Mastery Class View using existing progress snapshots.
+- Compact masteryV363 snapshot on existing learning/progress documents.
+- Production Center regression for V36.3.
 
 Unchanged:
 - Firestore collections, rules and indexes.
-- V36 Knowledge Map taxonomy.
+- V36.0 Knowledge Map taxonomy.
 - V36.1 Question Quality Engine.
+- V36.2 Smart Exam Matrix / numeric test codes.
+- V31 authoritative Verified Competency model.
 - V35 UX / Smart Navigation.
-- V34 scale / low-read architecture.
+- V34 Scale / Low Reads architecture.
 
 PWA:
-- Cache: math12hub-v36-shell-8
-- Asset query: ?v=36.2
+- Cache: math12hub-v36-shell-9
+- Asset query: ?v=36.3

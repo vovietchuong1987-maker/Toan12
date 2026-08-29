@@ -1,4 +1,4 @@
-const APP_VERSION='36.2'; // V36.2 Smart Exam Matrix on top of V36.1 Quality Engine + V36 Knowledge Map; previous V35 UX/production and V34 scale layers remain compatible.
+const APP_VERSION='36.3'; // V36.3 Mastery Score + Adaptive Learning on top of V36.2 Smart Exam, V36.1 Quality Engine and V36 Knowledge Map; previous V35 UX/production and V34 scale layers remain compatible.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Tính đơn điệu và cực trị của hàm số'},
