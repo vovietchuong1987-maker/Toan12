@@ -1,0 +1,37 @@
+Math12 Hub V37.3.2 — Graph Visual Polish
+=========================================
+APP_VERSION: 37.3.2
+BUILD: 37.3.2-graph-visual-polish
+Service Worker: sw-v37.3.2.js
+Cache: math12hub-v37-3-2-shell-16
+
+VALIDATION
+- 32 application JS files: syntax PASS
+- index.html static IDs: 309 / 309 unique
+- index local assets: PASS
+- Service Worker local assets: PASS
+- Firestore rules unchanged from V37.3.1: PASS
+- Firestore indexes unchanged from V37.3.1: PASS
+- Native graph regression cubic/rational11/rational21: 3/3 PASS
+- Formula recognition: PASS
+- Graph visual regression: PASS
+
+REFERENCE CUBIC
+  y = x^3 - 3x - 2
+  extrema: (-1,0), (1,-4)
+  exam-style labels: -1, 1, -2, -4
+  auto y-window: [-4.8, 0.8]
+  grid default: OFF
+  curve/guides/axes visual hierarchy: PASS
+  Graph -> TikZ special-axis labels: PASS
+
+V37.3.2 CHANGES
+- Exam-style graph mode is default for newly created graphs.
+- Meaningful special ticks instead of dense axis labels when grid is off.
+- Better O/x/y placement and axis label spacing.
+- Curve stronger than axes; guides/asymptotes lighter.
+- Added plot clipping + improved automatic margins.
+- Smarter point label placement and duplicate-point guard.
+- Responsive/mobile/print graph sizing.
+- Student exam surface hides Graph Engine technical header/code.
+- Existing V37.3 graph specs remain compatible.

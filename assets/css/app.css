@@ -546,3 +546,19 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* V37.3.1 — Question Bank tools menu auto-close guard */
 .v371-tools-menu:not([open]) > .v371-tools-panel{display:none!important}
+
+/* ==========================================================
+   V37.3.2 — Graph Visual Polish
+   - Exam-style native graphs: cleaner axes, responsive sizing,
+     no technical chrome inside the student exam surface.
+   ========================================================== */
+.v373-graph-wrap{padding:10px 12px 12px;display:flex;justify-content:center;align-items:center;overflow:hidden;background:#fff}
+.v373-graph-svg{width:min(100%,620px);height:auto;max-height:470px;display:block;shape-rendering:geometricPrecision;text-rendering:geometricPrecision}
+.v373-graph-svg text{user-select:none;-webkit-user-select:none}
+.v373-builder-preview .v373-graph-svg{width:min(100%,680px);max-height:500px}
+.exam-main .latex-figure.v373-native-graph{border:0;background:transparent;padding:0;margin:8px auto 14px;max-width:700px}
+.exam-main .v373-native-graph .v373-graph-head,.exam-main .v373-native-graph .latex-figure-code{display:none}
+.exam-main .v373-native-graph .v373-graph-wrap{padding:0;background:transparent}
+.exam-review-figure .v373-native-graph .v373-graph-head,.exam-review-figure .v373-native-graph .latex-figure-code{display:none}
+@media(max-width:700px){.v373-graph-wrap{padding:6px 4px}.v373-graph-svg{width:100%;max-height:390px}.v373-builder-preview .v373-graph-svg{max-height:360px}.exam-main .latex-figure.v373-native-graph{margin:6px auto 10px}}
+@media print{.v373-native-graph{break-inside:avoid}.v373-graph-head,.v373-native-graph .latex-figure-code{display:none!important}.v373-graph-wrap{padding:0}.v373-graph-svg{width:560px;max-width:100%;max-height:none}}
