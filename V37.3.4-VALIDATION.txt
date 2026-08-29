@@ -1,0 +1,5 @@
+Math12 Hub V37.3.4 — TikZ Plot Parser Hotfix
+- Fix: native TikZ plot expressions with unary minus before powers, e.g. -(\x)^3 and -x^3.
+- Exact user regression y=-x^3+3x: native SVG expected, no TikZJax fallback.
+- Existing V37.3.3 Graph Engine / presets preserved.
+- Firestore rules/indexes unchanged.

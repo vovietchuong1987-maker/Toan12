@@ -7,7 +7,7 @@
    ========================================================== */
 (function(){
 'use strict';
-const V='37.2';
+const V='37.3.4';
 const TIKZJAX_VERSION='1.6.0';
 const TIKZJAX_BASE=`https://cdn.jsdelivr.net/npm/@rod2ik/tikzjax@${TIKZJAX_VERSION}/dist/`;
 const svgCache=new Map();
@@ -52,14 +52,53 @@ function parseOpts(raw=''){
 function coordMatches(s=''){
   const out=[];const re=/\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/g;let m;while((m=re.exec(s)))out.push({x:Number(m[1]),y:Number(m[2]),index:m.index,end:re.lastIndex});return out;
 }
+function rewritePowers(expr=''){
+  let s=String(expr||''),guard=0;
+  // Convert TeX-style a^b to Math.pow(a,b) before JavaScript evaluation.
+  // This also fixes mathematically common forms such as -(x)^3 and -x^3,
+  // which are syntax errors when naively rewritten as -(x)**3 / -x**3.
+  while(s.includes('^')&&guard++<40){
+    const i=s.indexOf('^');
+    let l=i-1;while(l>=0&&/\s/.test(s[l]))l--;
+    if(l<0)return null;
+    let bs=l;
+    if(s[l]===')'){
+      let depth=1;l--;
+      while(l>=0&&depth){if(s[l]===')')depth++;else if(s[l]==='(')depth--;l--}
+      if(depth)return null;bs=l+1;
+    }else{
+      while(bs>0&&/[A-Za-z0-9_.]/.test(s[bs-1]))bs--;
+    }
+    let r=i+1;while(r<s.length&&/\s/.test(s[r]))r++;
+    if(r>=s.length)return null;
+    let es=r,ee=r;
+    if(s[ee]==='+'||s[ee]==='-')ee++;
+    if(s[ee]==='('){
+      let depth=1;ee++;
+      while(ee<s.length&&depth){if(s[ee]==='(')depth++;else if(s[ee]===')')depth--;ee++}
+      if(depth)return null;
+    }else{
+      const start=ee;while(ee<s.length&&/[A-Za-z0-9_.]/.test(s[ee]))ee++;
+      if(ee===start)return null;
+    }
+    const base=s.slice(bs,i).trim(),exp=s.slice(es,ee).trim();
+    if(!base||!exp)return null;
+    s=s.slice(0,bs)+`Math.pow(${base},${exp})`+s.slice(ee);
+  }
+  return s.includes('^')?null:s;
+}
 function safeExpr(raw=''){
-  let s=String(raw||'').replace(/\\x/g,'x').replace(/[−–]/g,'-').replace(/\^/g,'**').trim();
+  let s=String(raw||'').replace(/\\x/g,'x').replace(/[−–]/g,'-').trim();
   if(/\\[A-Za-z]+/.test(s))return null;
   const names={sqrt:'Math.sqrt',abs:'Math.abs',exp:'Math.exp',ln:'Math.log'};
   Object.entries(names).forEach(([a,b])=>{s=s.replace(new RegExp(`\\b${a}\\s*\\(`,'gi'),b+'(')});
   s=s.replace(/\bpi\b/gi,'Math.PI');
+  s=rewritePowers(s);if(!s)return null;
   if(!/^[0-9x+\-*/().,\sA-Za-z_]*$/.test(s))return null;
-  if(/(?:constructor|prototype|window|document|global|this|eval|Function|fetch|XMLHttpRequest|localStorage)/i.test(s))return null;
+  if(/(?:constructor|prototype|window|document|global|this|eval|Function|fetch|XMLHttpRequest|localStorage|alert|prompt|confirm|location|navigator)/i.test(s))return null;
+  const ids=s.match(/[A-Za-z_][A-Za-z0-9_]*/g)||[];
+  const allowed=new Set(['x','Math','pow','sqrt','abs','exp','log','PI']);
+  if(ids.some(id=>!allowed.has(id)))return null;
   try{const fn=new Function('x',`"use strict";return (${s});`);const v=fn(.137);return Number.isFinite(v)?fn:null}catch(_){return null}
 }
 function splitCommands(body=''){
@@ -136,7 +175,7 @@ function tikzJaxSrcdoc(tex=''){
   const source=normalize(tex).replace(/<\/script/gi,'<\\/script'),key=keyFor(source),safeKey=key.replace(/[^a-z0-9_-]/gi,'');
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${TIKZJAX_BASE}fonts.min.css"><style>html,body{margin:0;background:#fff;color:#111}body{padding:10px;display:flex;align-items:center;justify-content:center;min-height:180px;overflow:auto}.status{position:absolute;left:8px;bottom:5px;font:10px system-ui;color:#8290a5;background:rgba(255,255,255,.88);padding:3px 6px;border-radius:6px}svg{max-width:100%;height:auto}</style></head><body><script src="${TIKZJAX_BASE}tikzjax.min.js" defer><\/script><script id="src" type="text/tikz">${source}<\/script><div id="st" class="status">Đang dựng TikZ…</div><script>(function(){const K='${safeKey}',st=document.getElementById('st');let n=0;const send=()=>{const svg=document.querySelector('svg:not(.loader)');if(svg){st.textContent='TikZJax ✓';try{parent.postMessage({type:'math12-v372-tikz-svg',key:K,svg:svg.outerHTML},'*')}catch(e){}return true}return false};const obs=new MutationObserver(()=>{if(send())obs.disconnect()});obs.observe(document.body,{childList:true,subtree:true});const t=setInterval(()=>{n++;if(send()||n>60){clearInterval(t);if(n>60)st.textContent='Không dựng được — xem mã TikZ'}},250)})();<\/script></body></html>`;
 }
-function statusHtml(engine,extra=''){const cls=engine==='native-svg'?'ok':engine==='cached-svg'?'ok':engine==='tikzjax'?'wait':'warn';const name=engine==='native-svg'?'SVG nhanh V37.2':engine==='cached-svg'?'SVG đã lưu':engine==='tikzjax'?'TikZJax dự phòng':'Chưa dựng';return `<div class="v372-tikz-status ${cls}"><span>${name}</span>${extra?`<small>${extra}</small>`:''}</div>`}
+function statusHtml(engine,extra=''){const cls=engine==='native-svg'?'ok':engine==='cached-svg'?'ok':engine==='tikzjax'?'wait':'warn';const name=engine==='native-svg'?'SVG nhanh V37.3.4':engine==='cached-svg'?'SVG đã lưu':engine==='tikzjax'?'TikZJax dự phòng':'Chưa dựng';return `<div class="v372-tikz-status ${cls}"><span>${name}</span>${extra?`<small>${extra}</small>`:''}</div>`}
 function figureHtml(item={},compact=false){
   const mode=item.figureMode||((item.figureLatex||'').trim()?'tikz':'none');
   if(!['tikz','tkz'].includes(mode))return null;
@@ -208,15 +247,16 @@ function auditBank(){
   if(typeof requireTeacher==='function'&&!requireTeacher('Kiểm tra hình TikZ'))return;
   const rows=(state.questionBank||[]).filter(q=>q.figureLatex&&['tikz','tkz'].includes(q.figureMode||'tikz'));let native=0,cached=0,fallback=0,missing=0;
   rows.forEach(q=>{const r=nativeSvg(q.figureLatex);if(r.ok)native++;else if(q.figureSvg||loadCachedSvg(q.figureLatex))cached++;else fallback++;if(!normalize(q.figureLatex))missing++});
-  const body=`<div class="v372-audit-grid"><div><b>${rows.length}</b><small>Câu có TikZ</small></div><div><b>${native}</b><small>Dựng SVG nhanh</small></div><div><b>${cached}</b><small>Đã có SVG cache</small></div><div><b>${fallback}</b><small>Cần TikZJax</small></div></div><div class="math-help mt"><b>V37.2:</b> mã TikZ gốc luôn được giữ để xuất LaTeX. Hình đơn giản kiểu trục tọa độ, đường thẳng, đường gấp khúc, điểm và <code>plot(\\x,{...})</code> được dựng SVG ngay trên máy. Hình nâng cao dùng TikZJax khi có mạng và sẽ cache SVG sau khi dựng thành công.</div>${missing?`<div class="bulk-errors fatal mt">${missing} câu có metadata hình nhưng không có mã TikZ hợp lệ.</div>`:''}`;
-  openModal('TikZ Figure Support V37.2','Kiểm tra khả năng hiển thị hình trong ngân hàng',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
+  const body=`<div class="v372-audit-grid"><div><b>${rows.length}</b><small>Câu có TikZ</small></div><div><b>${native}</b><small>Dựng SVG nhanh</small></div><div><b>${cached}</b><small>Đã có SVG cache</small></div><div><b>${fallback}</b><small>Cần TikZJax</small></div></div><div class="math-help mt"><b>V37.3.4:</b> mã TikZ gốc luôn được giữ để xuất LaTeX. Hình đơn giản kiểu trục tọa độ, đường thẳng, đường gấp khúc, điểm và <code>plot(\\x,{...})</code> được dựng SVG ngay trên máy. Hình nâng cao dùng TikZJax khi có mạng và sẽ cache SVG sau khi dựng thành công.</div>${missing?`<div class="bulk-errors fatal mt">${missing} câu có metadata hình nhưng không có mã TikZ hợp lệ.</div>`:''}`;
+  openModal('TikZ Figure Support V37.3.4','Kiểm tra khả năng hiển thị hình trong ngân hàng',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
 }
 window.v372OpenTikzAudit=auditBank;
 window.V372Tikz={version:V,normalize,keyFor,parseTikz,nativeSvg,svgForTex,enrichItem,auditBank};
 
 // Small production-test hook.
 window.v372TikzRegression=function(){
-  const sample=String.raw`\begin{tikzpicture}[scale=0.8, >=stealth]
+  const samples=[
+String.raw`\begin{tikzpicture}[scale=0.8, >=stealth]
 \draw[->] (-2.2,0) -- (2.2,0) node[below]{$x$};
 \draw[->] (0,-4.5) -- (0,1) node[right]{$y$};
 \node[below left] at (0,0) {$O$};
@@ -227,7 +267,21 @@ window.v372TikzRegression=function(){
 \node[left] at (0,-2) {$-2$};
 \node[left] at (0,-4) {$-4$};
 \fill (-1,0) circle (1.5pt) (1,-4) circle (1.5pt);
-\end{tikzpicture}`;
-  const r=nativeSvg(sample);return {ok:!!r.ok&&/polyline|path/.test(r.svg||'')&&/circle/.test(r.svg||''),engine:r.engine||'',bytes:(r.svg||'').length,key:keyFor(sample)};
-};
-})();
+\end{tikzpicture}`,
+String.raw`\begin{tikzpicture}[scale=0.8, >=stealth]
+\draw[->] (-2.2,0) -- (2.2,0) node[below]{$x$};
+\draw[->] (0,-2.7) -- (0,2.7) node[right]{$y$};
+\node[below left] at (0,0) {$O$};
+\draw[dashed] (-1,0) -- (-1,-2) -- (0,-2);
+\draw[dashed] (1,0) -- (1,2) -- (0,2);
+\draw[smooth, samples=100, domain=-1.9:1.9, thick] plot(\x, {-(\x)^3 + 3*(\x)});
+\node[above left] at (-1,0) {$-1$};
+\node[below right] at (1,0) {$1$};
+\node[left] at (0,2) {$2$};
+\node[right] at (0,-2) {$-2$};
+\fill (-1,-2) circle (1.5pt) (1,2) circle (1.5pt);
+\end{tikzpicture}`
+  ];
+  const results=samples.map(sample=>{const r=nativeSvg(sample);return {ok:!!r.ok&&/polyline|path/.test(r.svg||'')&&/circle/.test(r.svg||''),engine:r.engine||'',bytes:(r.svg||'').length,key:keyFor(sample),unsupported:r.unsupported||[]}});
+  return {ok:results.every(x=>x.ok),cases:results};
+};})();
