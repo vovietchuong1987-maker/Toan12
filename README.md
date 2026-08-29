@@ -1,4 +1,20 @@
-# Math12 Hub V37.3 — Native Function Graph Engine
+# Math12 Hub V37.3.1 — Tools Menu UX Hotfix
+
+V37.3.1 là bản vá giao diện trực tiếp trên V37.3. Toàn bộ Native Function Graph Engine, TikZ Figure Support, Backup V2 và các mô-đun cũ được giữ nguyên.
+
+## Sửa lỗi bảng Công cụ trong Ngân hàng câu hỏi
+
+- Chọn bất kỳ mục nào trong **Công cụ** sẽ tự đóng bảng menu ngay sau thao tác.
+- Bấm ra ngoài bảng Công cụ sẽ tự đóng.
+- Nhấn `Esc` sẽ tự đóng.
+- Khi modal chung của hệ thống mở, bảng Công cụ cũng tự đóng để không đè lên cửa sổ Import/Backup/Khôi phục.
+- Có CSS guard để panel không thể còn hiển thị khi `<details>` đã đóng.
+
+Không thay đổi Firestore Rules, indexes hoặc cấu trúc dữ liệu.
+
+---
+
+## Nền V37.3 — Native Function Graph Engine
 
 V37.3 nâng trực tiếp từ V37.2 và giữ nguyên TikZ Figure Support, Backup V2, AI Teaching Intelligence, Mastery, Smart Exam, Quality Engine và Knowledge Map.
 

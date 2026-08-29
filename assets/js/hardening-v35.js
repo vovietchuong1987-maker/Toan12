@@ -201,7 +201,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v37.3.js?v=37.3',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v37.3.1.js?v=37.3.1',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

@@ -1,0 +1,9 @@
+Math12 Hub V37.3.1 — Tools Menu UX Hotfix
+
+Scope:
+- Preserve all V37.3 functionality and data structures.
+- Close Question Bank "Công cụ" details menu after any tool action.
+- Close it on outside pointer press and Escape.
+- Close it when the global modal backdrop becomes visible.
+- Explicit CSS guard hides tool panel whenever <details> is not open.
+- No Firestore rules/index changes; no migration.

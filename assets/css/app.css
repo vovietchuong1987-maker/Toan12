@@ -543,3 +543,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:700px){.v373-builder-overlay{padding:6px}.v373-builder-modal{width:100%;max-height:97vh;border-radius:14px}.v373-builder-head,.v373-builder-foot{padding:11px 12px}.v373-builder-body{padding:12px}.v373-builder-foot{flex-wrap:wrap}}
 .v373-formula-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.v373-formula-entry input{width:100%;border:1px solid #dbe5f3;border-radius:10px;padding:10px 12px;font:inherit;outline:none}.v373-formula-entry input:focus{border-color:#9bb3f3;box-shadow:0 0 0 3px rgba(49,87,213,.1)}
 @media(max-width:600px){.v373-formula-entry{grid-template-columns:1fr}.v373-formula-entry .btn{width:100%}}
+
+/* V37.3.1 — Question Bank tools menu auto-close guard */
+.v371-tools-menu:not([open]) > .v371-tools-panel{display:none!important}
