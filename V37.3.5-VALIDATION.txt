@@ -1,0 +1,16 @@
+Math12 Hub V37.3.5 — Variation Table & Exam Layout Polish
+
+Scope
+- Anchor-based tkz-tab arrows tied to exact x columns.
+- Value labels moved away from arrow paths at maxima/minima/infinity.
+- Compact exam question layout and reduced unused whitespace.
+- Technical TikZ/tkz-tab source/status hidden in student exam mode.
+- Short four-option MCQ automatically uses 2x2 layout on wide screens.
+- Long options remain one column; mobile always remains safe/readable.
+- No Firestore schema/rules/index migration.
+
+Regression sample
+  x: -infinity, -1, 3, +infinity
+  f': +,0,-,0,+
+  f : -infinity -> 1 -> -3 -> +infinity
+Expected trend segments: 3

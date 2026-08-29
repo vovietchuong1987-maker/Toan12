@@ -26,3 +26,10 @@ Nâng trực tiếp từ V37.3.2, giữ nguyên toàn bộ dữ liệu, Firestor
 - Không migration ngân hàng câu hỏi.
 - Không thay Firestore Rules.
 - Không thay Firestore Indexes.
+
+## V37.3.5 — Variation Table & Exam Layout Polish
+- Bảng biến thiên dùng mũi tên theo điểm neo của từng cột, đầu mũi tên và nhãn cực trị tách nhau rõ hơn.
+- Phòng thi ẩn mã TikZ/tkz-tab và nhãn kỹ thuật renderer.
+- Khung hình/đồ thị được co theo nội dung, giảm khoảng trắng dọc.
+- MCQ có 4 phương án ngắn tự chuyển 2 cột trên màn hình rộng; phương án dài và mobile vẫn 1 cột.
+- Không thay đổi Firestore Rules/Indexes hoặc dữ liệu câu hỏi.

@@ -575,3 +575,44 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .v373-layout-status{margin:0 0 8px;padding:8px 10px;border:1px solid #dbe5f3;border-radius:10px;background:#f5f8ff;color:#40577a;font-size:11px}.v373-layout-status b{color:#214ea4}
 #v373PresetHelp{margin-top:5px;min-height:28px}.v373-builder select#v373Preset{font-weight:700}
 @media(max-width:700px){.v373-bounds-grid{grid-template-columns:1fr 1fr}.v373-advanced-body{padding:10px}.v373-layout-status{font-size:10px}}
+
+/* V37.3.5 • Variation Table & Exam Layout Polish */
+.v3735-tkztab .tkztab-trend{stroke:#111;stroke-width:1.22;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.v3735-tkztab .v3735-arrow-head{fill:#111}
+.v3735-tkztab .v3735-value{padding:0 5px;background:rgba(255,249,215,.96);border-radius:3px;line-height:1.15}
+.v3735-tkztab .tkztab-y .tkztab-data{overflow:visible}
+
+/* Student exam mode: remove authoring/debug chrome and use the available space for mathematics. */
+.exam-app .latex-figure-code,.exam-app .v372-tikz-status,.exam-app .v373-graph-head,.exam-app .tkztab-validation{display:none!important}
+.exam-app .latex-figure.compact{margin:7px auto 10px;padding:5px;border-color:#e2e7ef;background:#fff}
+.exam-app .latex-figure.compact:not(.tkztab){border:0;padding:0;background:transparent;max-width:820px}
+.exam-app .v372-svg-wrap{min-height:0!important;padding:2px;border:0;background:transparent;overflow:hidden}
+.exam-app .v372-svg-wrap svg{width:auto;max-width:100%;height:auto;max-height:310px}
+.exam-app .latex-figure-frame.compact{min-height:0;height:min(310px,34vh);border:0;background:#fff}
+.exam-app .v373-native-graph .v373-graph-wrap{padding:3px 4px}
+.exam-app .v373-native-graph .v373-graph-svg{max-height:310px}
+
+/* Compact, exam-like variation table. */
+.exam-app .latex-figure.tkztab{margin:6px 0 10px;padding:6px;border-radius:10px}
+.exam-app .tkztab-scroll{padding:0}
+.exam-app .tkztab-native{--label:70px;min-width:560px}
+.exam-app .tkztab-row{grid-template-columns:var(--label) minmax(490px,1fr)}
+.exam-app .tkztab-x{height:42px}.exam-app .tkztab-d{height:40px}.exam-app .tkztab-y{height:94px}
+.exam-app .tkztab-label{font-size:19px}.exam-app .tkztab-node{font-size:18px}.exam-app .tkztab-sign{font-size:21px}.exam-app .tkztab-value{font-size:18px}
+.exam-app .tkztab-native mjx-container{font-size:1em}.exam-app .tkztab-label mjx-container{font-size:1.03em}
+
+/* Use more content area and reduce vertical scrolling without sacrificing tap targets. */
+.exam-body{grid-template-columns:minmax(0,1fr) 260px;gap:12px;padding:12px}
+.exam-question-scroll{padding:15px 20px 18px}
+.exam-question-head{margin-bottom:9px}.exam-question-text{font-size:16px;line-height:1.62;margin-bottom:11px}
+.exam-answer-list{gap:7px}.exam-answer-option{grid-template-columns:30px 1fr;gap:9px;padding:9px 11px;border-radius:10px;align-items:center}
+.exam-answer-letter{width:26px;height:26px;font-size:13px}.exam-answer-content{min-width:0;line-height:1.5}
+.exam-side{padding:12px}.exam-status-row{margin:10px 0}.exam-grid-title{margin:10px 0 6px}.exam-number-grid{gap:6px}.exam-num{height:34px}
+.exam-question-footer{padding:9px 14px}
+.v3735-exam-figure{margin:2px 0 5px}
+
+/* Short MCQ options automatically become a balanced 2×2 grid on wide screens. */
+@media(min-width:1080px){.exam-answer-list.v3735-answer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px}}
+@media(max-width:900px){.exam-body{grid-template-columns:1fr;padding:8px}.exam-question-scroll{padding:14px 13px 17px}.exam-app .v372-svg-wrap svg,.exam-app .v373-native-graph .v373-graph-svg{max-height:285px}.exam-app .latex-figure-frame.compact{height:min(285px,35vh)}}
+@media(max-width:620px){.exam-app .tkztab-native{--label:58px;min-width:520px}.exam-app .tkztab-row{grid-template-columns:var(--label) minmax(460px,1fr)}.exam-app .tkztab-x{height:39px}.exam-app .tkztab-d{height:38px}.exam-app .tkztab-y{height:88px}.exam-answer-list.v3735-answer-grid{grid-template-columns:1fr}.exam-answer-option{padding:9px 10px}.exam-question-text{line-height:1.58}}
+@media print{.latex-figure-code,.v372-tikz-status,.tkztab-validation{display:none!important}.v3735-tkztab{break-inside:avoid}}
