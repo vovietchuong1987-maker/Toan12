@@ -562,3 +562,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .exam-review-figure .v373-native-graph .v373-graph-head,.exam-review-figure .v373-native-graph .latex-figure-code{display:none}
 @media(max-width:700px){.v373-graph-wrap{padding:6px 4px}.v373-graph-svg{width:100%;max-height:390px}.v373-builder-preview .v373-graph-svg{max-height:360px}.exam-main .latex-figure.v373-native-graph{margin:6px auto 10px}}
 @media print{.v373-native-graph{break-inside:avoid}.v373-graph-head,.v373-native-graph .latex-figure-code{display:none!important}.v373-graph-wrap{padding:0}.v373-graph-svg{width:560px;max-width:100%;max-height:none}}
+
+
+/* ==========================================================
+   V37.3.3 — Smart Graph Layout & Exam Presets
+   ========================================================== */
+.v373-advanced{border:1px solid #dbe5f3;border-radius:12px;background:#fbfcff;overflow:hidden}
+.v373-advanced>summary{cursor:pointer;list-style:none;padding:11px 13px;font-size:13px;font-weight:800;color:#284a82;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.v373-advanced>summary::-webkit-details-marker{display:none}.v373-advanced>summary:after{content:'⌄';transition:transform .18s ease}.v373-advanced[open]>summary:after{transform:rotate(180deg)}
+.v373-advanced-body{border-top:1px solid #e5eaf2;padding:12px;background:#fff}.v373-bounds-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:10px}
+.v373-bounds-grid label{display:flex;align-items:center;gap:7px;border:1px solid #dbe5f3;border-radius:10px;padding:8px 9px;background:#f8fafc}.v373-bounds-grid span{font-size:11px;font-weight:800;color:#52647f;white-space:nowrap}.v373-bounds-grid input{width:100%;min-width:0;border:0;background:transparent;outline:none;font:inherit}
+.v373-layout-status{margin:0 0 8px;padding:8px 10px;border:1px solid #dbe5f3;border-radius:10px;background:#f5f8ff;color:#40577a;font-size:11px}.v373-layout-status b{color:#214ea4}
+#v373PresetHelp{margin-top:5px;min-height:28px}.v373-builder select#v373Preset{font-weight:700}
+@media(max-width:700px){.v373-bounds-grid{grid-template-columns:1fr 1fr}.v373-advanced-body{padding:10px}.v373-layout-status{font-size:10px}}

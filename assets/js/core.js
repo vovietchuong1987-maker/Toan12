@@ -1,4 +1,4 @@
-const APP_VERSION='37.3.2'; // V37.3.2 Graph Visual Polish on top of V37.3.1 Tools Menu UX hotfix and V37.3 Native Function Graph Engine + V37.2 TikZ Figure Support on top of V37.1 Question Bank Backup V2 on top of V37 AI Teaching Intelligence on top of V36.3 Mastery, V36.2 Smart Exam, V36.1 Quality Engine and V36 Knowledge Map; previous V35 UX/production and V34 scale layers remain compatible.
+const APP_VERSION='37.3.3'; // V37.3.3 Smart Graph Layout & Exam Presets on top of V37.3.1 Tools Menu UX hotfix and V37.3 Native Function Graph Engine + V37.2 TikZ Figure Support on top of V37.1 Question Bank Backup V2 on top of V37 AI Teaching Intelligence on top of V36.3 Mastery, V36.2 Smart Exam, V36.1 Quality Engine and V36 Knowledge Map; previous V35 UX/production and V34 scale layers remain compatible.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Tính đơn điệu và cực trị của hàm số'},
