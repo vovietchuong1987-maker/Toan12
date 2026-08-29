@@ -25,7 +25,7 @@
     online:{title:'Lớp học online',subtitle:'Lớp, thành viên và bài giao',icon:'☁',keywords:'lớp học online giao bài thành viên'},
     'question-bank':{title:'Ngân hàng câu hỏi',subtitle:'Kho câu hỏi của giáo viên',icon:'▦',keywords:'ngân hàng câu hỏi kho đề'},
     'exam-builder':{title:'Tạo đề kiểm tra',subtitle:'Sinh đề từ ma trận câu hỏi',icon:'▧',keywords:'tạo đề ma trận kiểm tra'},
-    'ai-teacher':{title:'Trợ lý AI',subtitle:'Tạo nháp và rà soát nội dung',icon:'✦',keywords:'ai giáo viên gemini tạo câu hỏi'},
+    'ai-teacher':{title:'AI Teaching Intelligence',subtitle:'Phân tích lớp, lập kế hoạch và tạo nháp',icon:'✦',keywords:'ai giáo viên gemini teaching intelligence kế hoạch dạy học mastery'},
     teacher:{title:'Theo dõi lớp',subtitle:'Dashboard lớp và học sinh',icon:'♙',keywords:'theo dõi lớp học sinh dashboard'},
     admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản, lớp và Production Center',icon:'🛡',keywords:'admin quản trị hệ thống'}
   };

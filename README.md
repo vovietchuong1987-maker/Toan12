@@ -1,137 +1,152 @@
-# Math12 Hub V36.3 — Mastery Score & Adaptive Learning
+# Math12 Hub V37 — AI Teaching Intelligence
 
-V36.3 được nâng trực tiếp từ V36.2. Toàn bộ Knowledge Map V36.0, Question Quality Engine V36.1, Smart Exam Matrix V36.2, Exam Engine Pro V30, Analytics V31, Scale V34 và UX V35.x được giữ nguyên.
+V37 được nâng trực tiếp từ V36.3, không viết lại nền tảng. Toàn bộ Knowledge Map V36.0, Question Quality Engine V36.1, Smart Exam Matrix V36.2, Mastery & Adaptive V36.3, Exam Engine Pro V30, Analytics V31, Scale V34 và UX V35.x được giữ nguyên.
 
-## Trọng tâm V36.3
+## Trọng tâm V37
 
-V36.3 bổ sung `assets/js/mastery-v36.3.js` để biến dữ liệu câu hỏi đã có thành một chỉ báo học tập theo từng `knowledgeCode`, sau đó dùng chỉ báo này để chọn câu luyện phù hợp hơn.
+V37 bổ sung `assets/js/ai-intelligence-v37.js` để biến dữ liệu lớp + Mastery thành **Teaching Intelligence** cho giáo viên. AI không được phép tự giao bài, tự sửa điểm, tự duyệt câu hỏi hay tự xuất bản nội dung.
 
-### 1. Mastery Score theo 57 mã kiến thức
+### 1. Teaching Brief cục bộ theo lớp
 
-Mỗi mã kiến thức có các trường suy ra tại runtime:
+Khi giáo viên bấm **Phân tích lớp**, V37 dùng dữ liệu lớp đã có để dựng:
 
-- Mastery Score 0–100%.
-- Confidence (độ tin cậy của bằng chứng).
-- Số lượt có dữ liệu.
-- Trọng số Secure Exam đã xác minh và tự luyện.
-- Xu hướng gần đây.
-- Mức độ câu mục tiêu tiếp theo.
-- Trạng thái:
-  - Đang thu thập dữ liệu.
-  - Cần học lại.
-  - Cần củng cố.
-  - Sẵn sàng nâng mức.
-  - Đã làm chủ.
+- số học sinh;
+- điểm trung bình đã xác minh;
+- tỷ lệ hoàn thành bài;
+- độ phủ Mastery snapshot;
+- số bài/lượt nộp cần xử lý;
+- các mã kiến thức cần ưu tiên;
+- nhóm học tập động.
 
-Mastery Score có tính trọng số theo nguồn dữ liệu, độ mới của kết quả, mức NB/TH/VD và độ khó câu nếu metadata có sẵn. Secure Exam đã chấm được ưu tiên trọng số hơn tự luyện.
+Teaching Brief cục bộ không cần Gemini API key.
 
-> Mastery Score là chỉ báo cá nhân hóa, không thay thế điểm kiểm tra hoặc năng lực xác minh V31.
+### 2. Xếp ưu tiên mã kiến thức
 
-### 2. Luyện tập thích ứng V36.3
+V37 kết hợp:
 
-`startAdaptivePractice()` được nâng cấp nhưng vẫn giữ API cũ để các nút V28/V31 tiếp tục hoạt động.
+- Mastery Score V36.3;
+- Confidence;
+- số học sinh có bằng chứng;
+- tỷ lệ học sinh dưới ngưỡng cần củng cố;
+- độ phủ bằng chứng trong lớp.
 
-Bộ chọn mới:
+Mỗi mã ưu tiên có thể chuyển trực tiếp sang:
 
-- Ưu tiên mã có Mastery thấp và đủ bằng chứng.
-- Nếu chưa có dữ liệu, có thể bắt đầu từ chuẩn đầu tiên của bài chưa hoàn thành.
-- Chọn độ khó gần mức Mastery hiện tại.
-- Ưu tiên câu chưa làm hoặc từng làm sai.
-- Giảm ưu tiên câu vừa làm đúng gần đây.
-- Loại câu có lỗi nghiêm trọng theo Question Quality Engine V36.1.
-- Khi một mã thiếu câu, có thể bổ sung từ các mã cùng bài để vẫn tạo được phiên luyện.
-- Không phát sinh Firestore Reads khi chọn câu; dùng ngân hàng đã tải trên thiết bị.
+- **Soạn câu AI**: chỉ chuẩn bị yêu cầu trong AI Editor, giáo viên vẫn phải bấm tạo nháp;
+- **Tạo bài**: dùng luồng bài củng cố hiện có, giáo viên vẫn phải xem lại và bấm Giao bài.
 
-### 3. Sổ lỗi và lịch ôn
+### 3. Nhóm học tập động
 
-V36.3 dựng `mistakeBank()` từ lịch sử hiện có để biết:
+V37 tiếp tục dùng cơ chế phân nhóm hiện có:
 
-- Câu từng sai bao nhiêu lần.
-- Lần gần nhất còn sai hay đã sửa được.
-- Chuỗi trả lời đúng sau lỗi.
-- Câu nào đang đến hạn nên ôn lại.
+- Cần hỗ trợ;
+- Đang củng cố;
+- Khá / tốt;
+- Đang trễ bài;
+- Chưa đủ dữ liệu.
 
-Dashboard Mastery hiển thị số câu sai/ôn lại đang đến hạn. Dữ liệu gốc vẫn là `questionHistory`; không tạo kho Firestore riêng.
+Nhấn một nhóm để xem học sinh cục bộ. Không gửi danh sách tên học sinh sang AI.
 
-### 4. Dashboard học sinh
+### 4. Privacy Guard V37
 
-Trang chủ được bổ sung thẻ **Mastery Score V36.3** gồm:
+Đây là thay đổi quan trọng của V37.
 
-- Mastery trung bình của các mã có bằng chứng.
-- Số mã đã làm chủ.
-- Số mã sẵn sàng nâng mức.
-- Số mã cần học lại/củng cố.
-- Số câu sai đến hạn ôn.
-- 5 mã yếu nhất với nút luyện trực tiếp.
+Khi giáo viên bấm **Tạo kế hoạch AI**, payload gửi sang Gemini chỉ chứa số liệu tổng hợp:
 
-Trang **Phân tích năng lực** có bảng Mastery chi tiết cho từng mã, Confidence, xu hướng và độ khó mục tiêu.
+- số học sinh;
+- điểm trung bình lớp;
+- tỷ lệ hoàn thành;
+- độ phủ Mastery;
+- số lượng từng nhóm;
+- các `knowledgeCode` ưu tiên và Mastery trung bình tương ứng.
 
-### 5. Góc nhìn giáo viên
+Payload AI **không chứa**:
 
-Dashboard lớp có thêm **Mastery Class View V36.3**.
+- tên học sinh;
+- email;
+- UID;
+- tên lớp;
+- classId.
 
-Dữ liệu đọc từ snapshot `progress.masteryV363` vốn nằm trong document progress hiện có, vì vậy:
+Production Center có regression riêng để kiểm tra Privacy Guard.
 
-- Không tạo collection mới.
-- Không tải toàn bộ submission nền.
-- Không làm thay đổi cơ chế năng lực xác minh V31.
-- Có thể nhìn nhanh mã nào nhiều học sinh cần củng cố và chuyển sang luồng tạo bài củng cố.
+### 5. Kế hoạch dạy học AI — luôn là bản nháp
 
-Snapshot cá nhân hóa không được coi là điểm chính thức; Secure Exam V31 vẫn là nguồn xác minh của giáo viên.
+Gemini có thể tạo JSON có cấu trúc gồm:
 
-### 6. Đồng bộ Firestore tương thích cũ
+- tóm tắt lớp;
+- ưu tiên kiến thức;
+- mục tiêu và mức NB/TH/VD đề xuất;
+- phân hóa hoạt động theo nhóm;
+- tiến trình dạy học theo pha và thời lượng;
+- minh chứng cần quan sát;
+- bài về nhà;
+- các mục giáo viên cần kiểm tra;
+- cảnh báo của AI.
 
-V36.3 chỉ mở rộng payload đã có:
+Kế hoạch được lưu tối đa 20 bản **trên thiết bị** để giáo viên xem lại. Không tạo collection Firestore mới.
 
-- `users/{uid}/learning/progress` có thêm `masteryV363`.
-- `classes/{classId}/progress/{studentUid}` có thêm `masteryV363`.
+### 6. Kết nối V37 với V36
 
-Firestore Rules hiện tại đã cho học sinh cập nhật document progress của chính mình nên không cần rule mới. Không có migration bắt buộc.
+Luồng dữ liệu hiện tại:
+
+```text
+Knowledge Map V36.0
+        ↓
+Question Quality Engine V36.1
+        ↓
+Smart Exam Matrix V36.2
+        ↓
+Mastery & Adaptive V36.3
+        ↓
+AI Teaching Intelligence V37
+```
+
+V37 không thay thế các engine cũ mà dùng kết quả của chúng để đưa ra gợi ý dạy học.
+
+### 7. AI Question Authoring V32 vẫn được giữ
+
+Adapter Gemini V32 vẫn là module tải theo nhu cầu. V37 chỉ mở rộng `v32GeminiGenerate()` để cho phép truyền system instruction riêng cho kế hoạch dạy học; toàn bộ chức năng cũ đọc ảnh/PDF/LaTeX, kiểm định câu và tạo biến thể vẫn giữ nguyên.
+
+## Firestore và dữ liệu
+
+V37:
+
+- không tạo collection Firestore mới;
+- không sửa `firestore.rules`;
+- không sửa `firestore.indexes.json`;
+- không migration dữ liệu;
+- không thay ID câu hỏi;
+- không thay cơ chế Secure Exam;
+- không ghi kế hoạch AI lên Firestore mặc định.
 
 ## Production Center
 
-Regression V36.3 kiểm tra thêm:
+V37 giữ tất cả regression cũ và bổ sung:
 
-- Module `36.3-mastery-adaptive` đã nạp.
-- Mastery tính được từ một bộ bằng chứng mẫu.
-- Secure Exam có trọng số lớn hơn practice trong regression.
-- Mastery Score nằm trong miền hợp lệ và có Confidence.
-
-Các regression cũ vẫn giữ nguyên:
-
-- cấu trúc đề THPT 12–4–6;
-- thang điểm Đúng/Sai;
-- phân quyền;
-- Knowledge Map V36.0;
-- Question Quality Engine V36.1;
-- Smart Exam Matrix V36.2.
-
-## Tương thích dữ liệu
-
-- Không tạo Firestore collection mới.
-- Không đổi `firestore.rules`.
-- Không đổi `firestore.indexes.json`.
-- Không đổi ID câu hỏi.
-- Không xóa lịch sử V35/V36.0–36.2.
-- Dữ liệu Mastery có thể tái tạo từ `questionHistory` hiện có.
+- module `37-ai-teaching-intelligence` đã nạp;
+- Privacy Guard loại tên/email/UID/classId/tên lớp khỏi payload AI;
+- Teaching Intelligence vẫn xác định được `knowledgeCode` ưu tiên từ dữ liệu Mastery mẫu.
 
 ## Build
 
-- `APP_VERSION = 36.3`
-- `app-build = 36.3-mastery-adaptive`
-- Service Worker cache: `math12hub-v36-shell-9`
-- Local assets: `?v=36.3`
-- New module: `assets/js/mastery-v36.3.js`
-- Smart Exam vẫn dùng build nội bộ: `36.2-smart-exam`
-- Quality Engine vẫn dùng build nội bộ: `36.1-quality-engine`
-- Knowledge Map vẫn dùng build nội bộ: `36.0-knowledge-map`
+- `APP_VERSION = 37`
+- `app-build = 37-ai-teaching-intelligence`
+- Service Worker: `sw-v37.js`
+- Cache: `math12hub-v37-shell-10`
+- Local assets: `?v=37`
+- New module: `assets/js/ai-intelligence-v37.js`
+- Mastery engine vẫn dùng build nội bộ `36.3-mastery-adaptive`
+- Smart Exam vẫn dùng `36.2-smart-exam`
+- Quality Engine vẫn dùng `36.1-quality-engine`
+- Knowledge Map vẫn dùng `36.0-knowledge-map`
 
 ## Sau khi triển khai GitHub Pages
 
-1. Thay toàn bộ package V36.2 bằng V36.3.
-2. Nhấn `Ctrl + F5` một lần để bỏ cache `shell-8`.
-3. Đăng nhập học sinh và làm ít nhất một bài có `knowledgeCode` để Mastery bắt đầu có bằng chứng.
-4. Mở **Trang chủ** hoặc **Phân tích năng lực** để xem Mastery Score.
-5. Bấm **Luyện theo Mastery / Luyện điểm yếu** để thử bộ chọn thích ứng V36.3.
-6. Với giáo viên, mở **Theo dõi lớp** sau khi học sinh đã đồng bộ progress để xem Mastery Class View.
-7. Admin vào **Production Center → Chạy kiểm tra**.
+1. Thay toàn bộ package V36.3 bằng V37.
+2. Nhấn `Ctrl + F5` một lần để bỏ cache `shell-9`.
+3. Đăng nhập giáo viên và mở **AI Teaching Intelligence**.
+4. Chọn lớp → **Phân tích lớp**.
+5. Xem các mã ưu tiên và nhóm học tập động.
+6. Nếu có Gemini API key, bấm **Tạo kế hoạch AI**; kiểm tra kỹ bản nháp trước khi dùng.
+7. Admin mở **Production Center → Chạy kiểm tra** để xác nhận Privacy Guard và các regression cũ.

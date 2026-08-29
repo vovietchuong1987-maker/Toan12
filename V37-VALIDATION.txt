@@ -1,0 +1,36 @@
+Math12 Hub V37 — AI Teaching Intelligence
+Build validation summary
+==========================================
+APP_VERSION: 37
+app-build: 37-ai-teaching-intelligence
+Service Worker: sw-v37.js
+Cache shell: math12hub-v37-shell-10
+
+Static validation
+- JavaScript files checked with node --check: 28 — PASS
+- HTML IDs: 309
+- Duplicate HTML IDs: 0 — PASS
+- Missing local HTML references: 0 — PASS
+- Missing Service Worker CORE references: 0 — PASS
+- Active references to old sw-v36.js: 0 — PASS
+- Version/meta/core/hardening consistency: PASS
+
+AI Teaching Intelligence V37 regression
+- Privacy Guard regression: PASS
+- Synthetic priority code: F1-01.K1
+- Anonymous AI payload size in regression: 552 bytes
+- Student name/email/UID/class identifiers excluded from AI payload: PASS
+- AI output is draft-only; no automatic publish/assignment path added: PASS
+
+Data compatibility
+- firestore.rules: unchanged from V36.3 — PASS
+- firestore.indexes.json: unchanged from V36.3 — PASS
+- No new Firestore collection required
+- Existing V36.0 Knowledge Map retained
+- Existing V36.1 Question Quality Engine retained
+- Existing V36.2 Smart Exam Matrix retained
+- Existing V36.3 Mastery & Adaptive retained
+
+Note
+Live Gemini network/API execution was not performed as part of this offline package validation.
+The local aggregation, privacy regression, adapter syntax, UI/static references and compatibility checks passed.

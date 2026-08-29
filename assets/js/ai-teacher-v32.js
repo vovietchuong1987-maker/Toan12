@@ -49,10 +49,10 @@ function v32AuditResponseSchema(){return {type:'object',properties:{status:{type
 function v32ExtractJsonText(data){
   const parts=data?.candidates?.[0]?.content?.parts||[];let text=parts.map(p=>p.text||'').join('').trim();if(!text)throw new Error(data?.promptFeedback?.blockReason?`Yêu cầu bị chặn: ${data.promptFeedback.blockReason}`:'Gemini không trả về nội dung.');text=text.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();try{return JSON.parse(text)}catch(err){throw new Error('Gemini trả dữ liệu không phải JSON hợp lệ. Hãy thử lại hoặc đổi model.')}
 }
-async function v32GeminiGenerate(parts,schema,{timeoutMs=90000}={}){
+async function v32GeminiGenerate(parts,schema,{timeoutMs=90000,systemInstruction=''}={}){
   if(v32AiBusy)throw new Error('AI đang xử lý một yêu cầu khác.');const key=v32AiGetKey();if(!key)throw new Error('Chưa có Gemini API key. Hãy lưu API key trong Cài đặt AI V32.');const s=v32AiSettings(),model=s.model||V32_AI_DEFAULT_MODEL,url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   v32AiBusy=true;v32RenderAiStatus();
-  const base={contents:[{role:'user',parts}],systemInstruction:{parts:[{text:v32AiSystemInstruction()}]},generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseFormat:{text:{mimeType:'application/json',schema}}}};
+  const base={contents:[{role:'user',parts}],systemInstruction:{parts:[{text:String(systemInstruction||v32AiSystemInstruction())}]},generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseFormat:{text:{mimeType:'application/json',schema}}}};
   let response,data;
   try{
     response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(base),signal:controller.signal});data=await response.json().catch(()=>({}));
