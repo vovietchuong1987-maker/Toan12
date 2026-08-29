@@ -1,78 +1,114 @@
-# Math12 Hub V36.1 — Question Quality Engine
+# Math12 Hub V36.2 — Smart Exam Matrix & Multiple Test Codes
 
-V36.1 được nâng trực tiếp từ V36.0. Knowledge Map 6 chương / 19 bài / 57 đơn vị kiến thức / 57 dạng toán được giữ nguyên; toàn bộ nền V34 Scale, V35 Production Hardening, Role-aware UI, UX Polish và Smart Navigation tiếp tục tương thích.
+V36.2 được nâng trực tiếp từ V36.1. Knowledge Map V36.0 và Question Quality Engine V36.1 được giữ nguyên; toàn bộ nền V34 Scale, V35 Production Hardening, Role-aware UI, UX Polish, Smart Navigation và Exam Engine Pro V30 tiếp tục tương thích.
 
-## Trọng tâm V36.1
+## Trọng tâm V36.2
 
-V36.1 bổ sung `assets/js/quality-engine-v36.1.js`, chạy cục bộ trên ngân hàng câu hỏi đã tải trong phiên. Module không tự tạo Firestore query mới.
+V36.2 bổ sung `assets/js/smart-exam-v36.2.js`, chạy cục bộ trên ngân hàng câu hỏi đã tải trong phiên. Module không tự tạo Firestore query mới và không tạo collection mới.
 
-Question Quality Engine kiểm tra:
+### 1. Smart Exam Matrix
 
-- Cấu trúc câu hỏi và loại câu `mcq / tf / tf4 / short`.
-- MCQ theo cấu trúc 4 phương án A–D; phát hiện phương án trống hoặc trùng sau chuẩn hóa.
-- Kiểm tra chỉ số đáp án MCQ và các dấu `\\True` còn sót/mâu thuẫn.
-- Câu Đúng/Sai 4 ý: đúng 4 mệnh đề, đáp án boolean, ý trùng, thiếu lời giải từng ý và dấu hiệu các ý ít liên kết với dữ kiện chung.
-- Câu trả lời ngắn thiếu đáp án.
-- LaTeX: cặp `$...$`, `\\(...\\)`, `\\[...\\]`, ngoặc nhọn, `\\begin/\\end`, `\\left/\\right`.
-- Dữ kiện: cảnh báo khi đề nhắc hình, đồ thị, bảng biến thiên… nhưng chưa có hình kèm theo; nhận diện placeholder như `...`, `___`, `[?]`, TODO.
-- Metadata Knowledge Map V36 đã lưu: `questionBankSchema`, `knowledgeMapVersion`, `formId`, `blueprintKey`.
-- Nguồn, trạng thái bản nháp và lời giải.
-- Near-duplicate: dùng lại bộ quét gần trùng V29 khi giáo viên chủ động chạy quét toàn bộ.
+Trang **Tạo đề kiểm tra** có thêm lớp chọn câu thông minh trước khi sinh đề:
 
-## Quality Center
+- Lọc theo QC V36.1:
+  - Không có lỗi nghiêm trọng (mặc định).
+  - Sạch lỗi + cảnh báo.
+  - Không lọc QC để tương thích dữ liệu cũ.
+- Tùy chọn chỉ lấy câu đã duyệt.
+- Tùy chọn bắt buộc metadata V36 đầy đủ.
+- Cân phủ `knowledgeCode` và `formId` để đề không dồn quá nhiều câu vào cùng một dạng.
+- Ưu tiên tránh câu đã xuất hiện trong 1 / 3 / 5 / 10 đề lưu gần nhất.
+- Phát hiện độ đủ của từng ô Chương × Mức độ sau khi áp dụng các bộ lọc.
+- Hiển thị số câu đủ điều kiện, số chuẩn kiến thức và số dạng toán phủ được.
 
-Trong **Ngân hàng câu hỏi** có khối **Question Quality Engine V36.1** với:
+Hệ thống vẫn giữ ma trận cũ của V21/V30; V36.2 chỉ nâng lớp chọn câu, không xóa hoặc thay cấu trúc đề cũ.
 
-- Điểm kỹ thuật trung bình.
-- Số câu có lỗi nghiêm trọng.
-- Số câu cần rà soát.
-- Số câu đạt sạch.
-- Nút `Quét toàn bộ` và `Mở Quality Center`.
-- Bộ lọc `QC V36.1: tất cả / Có lỗi kỹ thuật / Cần rà soát / Không lỗi-cảnh báo`.
-- Nhấn trực tiếp điểm QC của từng câu để xem chi tiết và mở trình sửa.
-- Xuất báo cáo audit JSON.
+### 2. Blueprint V36.2
 
-## Kiểm tra trực tiếp khi soạn câu
+Có thể:
 
-Khi mở **Thêm/Sửa câu hỏi**, V36.1 thêm bảng QC trực tiếp ngay trước phần xem trước. Kiểm tra cập nhật sau khi giáo viên nhập dữ liệu.
+- Kiểm tra blueprint trước khi sinh đề.
+- Xuất blueprint JSON.
+- Lưu tối đa 10 mẫu ma trận trên máy.
+- Nạp lại mẫu gồm: tên đề, thời gian, Chương × Mức độ, chính sách QC, cân bằng nội dung và số mã đề.
 
-Nếu câu đang được đặt `Đã duyệt` nhưng phát hiện lỗi kỹ thuật nghiêm trọng, khi lưu V36.1 tự chuyển câu về `Bản nháp`. Nội dung Toán, đáp án và lời giải không bị tự động sửa.
+### 3. Mã đề 101–108
 
-## Sửa an toàn
+V36.2 tiếp tục dùng seed xác định của Exam Engine Pro V30 nhưng hiển thị mã đề theo cách quen thuộc:
 
-Nút **Sửa an toàn** trong Quality Center chỉ:
+- 101
+- 102
+- 103
+- 104
+- tối đa 108
 
-1. Chuẩn hóa metadata Knowledge Map V36 nếu có thể.
-2. Chuyển câu có lỗi nghiêm trọng từ `Đã duyệt` về `Bản nháp`.
+Một đề chỉ lưu **một bộ câu gốc**. Các mã đề được tái tạo từ seed, không nhân bản 4–8 bản câu hỏi trong dữ liệu.
 
-Không thay nội dung câu hỏi, phương án, đáp án hoặc lời giải. Nếu Data Safety sẵn sàng, hệ thống tạo recovery snapshot trước khi ghi.
+### 4. Trộn an toàn
 
-## Giới hạn chuyên môn
+- Chỉ đảo phương án của câu MCQ.
+- Không đảo 4 ý bên trong một câu Đúng/Sai 4 ý.
+- Có thể khóa riêng một MCQ bằng `lockOptions=true` hoặc `shuffleOptions=false`.
+- Nếu các câu có `groupId`, `stimulusId`, `parentId` hoặc `sharedContextId`, V36.2 coi đó là một block và giữ các câu cùng dữ kiện cạnh nhau khi đảo thứ tự.
+- Khi giữ Phần I–II–III, hệ thống chỉ đảo trong từng phần.
 
-Quality Engine là lớp kiểm tra kỹ thuật và heuristic. V36.1 **không dùng CAS để chứng minh rằng mọi đáp án toán học là đúng/sai**, vì vậy không thay thế khâu duyệt chuyên môn của giáo viên. Cảnh báo liên kết giữa các ý Đúng/Sai hoặc thiếu dữ kiện là tín hiệu để rà soát, không phải kết luận tuyệt đối.
+### 5. Hạn chế lặp và câu gần trùng
+
+Khi chọn câu, V36.2:
+
+- Không chọn hai ID giống nhau.
+- Ưu tiên không chọn hai câu có stem giống nhau sau chuẩn hóa.
+- Giảm ưu tiên câu đã xuất hiện trong các đề gần nhất.
+- Nếu ngân hàng không đủ, hệ thống vẫn ưu tiên đáp ứng đúng quota Chương × Mức độ × Loại câu thay vì làm hỏng cấu trúc đề.
+
+### 6. Xuất bộ mã đề
+
+Từ đề xem trước có thể xuất một gói JSON gồm:
+
+- Blueprint.
+- Chính sách trộn.
+- Các mã 101–108.
+- Thứ tự câu của từng mã.
+- Thứ tự phương án MCQ sau trộn.
+- Answer key tương ứng từng mã.
+
+Gói này dành cho giáo viên; không tự công khai đáp án cho học sinh.
+
+## Production Center
+
+Regression V36.2 kiểm tra:
+
+- Module `36.2-smart-exam` đã nạp.
+- Mã đầu là 101 và mã thứ tư là 104.
+- Các câu có cùng group vẫn nằm cạnh nhau sau khi trộn.
+- Các regression cũ của THPT scoring, role access, Knowledge Map và Quality Engine vẫn giữ nguyên.
 
 ## Tương thích dữ liệu
 
 - Không tạo Firestore collection mới.
-- Không bắt buộc migration Firestore Rules.
+- Không yêu cầu migration Firestore Rules.
+- Không thay `firestore.indexes.json`.
 - Không đổi ID câu hỏi.
-- Không xóa dữ liệu V36.0/V35.x.
-- Knowledge Map V36.0 vẫn dùng build nội bộ `36.0-knowledge-map` để giữ tương thích metadata.
+- Không xóa đề V36.1/V35.x.
+- Đề cũ V30 vẫn mở được; nếu không có metadata V36.2 thì dùng policy tương thích.
 
 ## Build
 
-- `APP_VERSION = 36.1`
-- `app-build = 36.1-quality-engine`
-- Service Worker cache: `math12hub-v36-shell-7`
-- Local assets: `?v=36.1`
-- New module: `assets/js/quality-engine-v36.1.js`
+- `APP_VERSION = 36.2`
+- `app-build = 36.2-smart-exam`
+- Service Worker cache: `math12hub-v36-shell-8`
+- Local assets: `?v=36.2`
+- New module: `assets/js/smart-exam-v36.2.js`
+- Quality Engine vẫn dùng module: `assets/js/quality-engine-v36.1.js`
+- Knowledge Map vẫn dùng build nội bộ: `36.0-knowledge-map`
 
 ## Sau khi triển khai GitHub Pages
 
-Thực hiện `Ctrl + F5` một lần để trình duyệt bỏ shell V36.0. Sau đó:
-
-1. Đăng nhập Teacher/Admin.
-2. Mở **Ngân hàng câu hỏi**.
-3. Bấm **Quét toàn bộ** hoặc **Quality V36.1**.
-4. Rà các câu đỏ trước, sau đó các câu vàng.
-5. Vào **Production Center** và chạy regression check.
+1. Thay toàn bộ package cũ bằng V36.2.
+2. `Ctrl + F5` một lần để bỏ cache `shell-7`.
+3. Đăng nhập Teacher/Admin.
+4. Mở **Tạo đề kiểm tra**.
+5. Chọn ma trận hoặc mẫu `Cấu trúc THPT 12–4–6`.
+6. Kiểm tra khối **Smart Exam Matrix V36.2**.
+7. Bấm **Kiểm tra blueprint** trước khi **Sinh đề từ ma trận**.
+8. Vào **Production Center** và chạy regression check.

@@ -1,27 +1,27 @@
-Math12 Hub V36.1 — Question Quality Engine
-Build: 36.1-quality-engine
+Math12 Hub V36.2 — Smart Exam Matrix & Multiple Test Codes
+Build: 36.2-smart-exam
 
-Upgraded directly from V36.0.
+Upgraded directly from V36.1.
 
 Added:
-- Local Question Quality Engine (no automatic Firestore reads).
-- MCQ 4-option / answer / duplicate-option checks.
-- TF4 structure, per-statement explanation and coherence heuristic.
-- LaTeX delimiter, braces, environment and left/right validation.
-- Missing visual-reference and placeholder heuristics.
-- V36 persisted metadata checks.
-- Full-bank Quality Center, issue aggregation and JSON audit export.
-- QC filter in Question Bank.
-- Live quality panel in the question editor.
-- Safe Fix: metadata normalization + downgrade critical reviewed questions to draft only.
-- Production Center regression check for V36.1 engine.
+- QC-aware exam pool using Question Quality Engine V36.1.
+- Smart balancing by knowledgeCode + formId.
+- Recent-exam repetition penalty.
+- Duplicate stem avoidance within one generated exam.
+- Blueprint preflight, JSON export and local blueprint presets.
+- Numeric multiple test codes 101–108.
+- Deterministic variant engine preserving sections and shared-stimulus groups.
+- TF4 remains atomic; only MCQ options are shuffled.
+- Teacher export bundle with variants and answer keys.
+- Production Center regression for V36.2.
 
 Unchanged:
-- Firestore collections and rules.
+- Firestore collections, rules and indexes.
 - V36 Knowledge Map taxonomy.
+- V36.1 Question Quality Engine.
 - V35 UX / Smart Navigation.
 - V34 scale / low-read architecture.
 
 PWA:
-- Cache: math12hub-v36-shell-7
-- Asset query: ?v=36.1
+- Cache: math12hub-v36-shell-8
+- Asset query: ?v=36.2

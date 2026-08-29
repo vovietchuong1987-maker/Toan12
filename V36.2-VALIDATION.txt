@@ -1,0 +1,21 @@
+Math12 Hub V36.2 validation
+
+PASS
+- APP_VERSION = 36.2
+- app-build = 36.2-smart-exam
+- 25 local JavaScript files pass node --check
+- 295 static HTML IDs; 0 duplicates
+- Smart Exam regression: codes 101, 102, 103, 104
+- Shared-stimulus/grouped questions stay adjacent after shuffling
+- MCQ option shuffle preserves the correct-answer index
+- TF4 statement order remains unchanged
+- Smart selector avoids recent questions when enough fresh questions exist
+- Smart selector balances knowledge/form coverage in regression data
+- Firestore Rules unchanged from V36.1
+- Firestore indexes unchanged from V36.1
+- Knowledge Map module unchanged from V36.1 package
+- Quality Engine V36.1 module unchanged from V36.1 package
+- Service Worker cache = math12hub-v36-shell-8
+- All local index references exist
+
+No Firestore migration is required.
