@@ -616,3 +616,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:900px){.exam-body{grid-template-columns:1fr;padding:8px}.exam-question-scroll{padding:14px 13px 17px}.exam-app .v372-svg-wrap svg,.exam-app .v373-native-graph .v373-graph-svg{max-height:285px}.exam-app .latex-figure-frame.compact{height:min(285px,35vh)}}
 @media(max-width:620px){.exam-app .tkztab-native{--label:58px;min-width:520px}.exam-app .tkztab-row{grid-template-columns:var(--label) minmax(460px,1fr)}.exam-app .tkztab-x{height:39px}.exam-app .tkztab-d{height:38px}.exam-app .tkztab-y{height:88px}.exam-answer-list.v3735-answer-grid{grid-template-columns:1fr}.exam-answer-option{padding:9px 10px}.exam-question-text{line-height:1.58}}
 @media print{.latex-figure-code,.v372-tikz-status,.tkztab-validation{display:none!important}.v3735-tkztab{break-inside:avoid}}
+
+
+/* ==========================================================
+   V37.3.6 — Variation Arrow Rendering Fix
+   Arrow heads are explicit SVG polygons recalculated in screen pixels.
+   This keeps them visible at browser zoom, print scale and responsive widths.
+   ========================================================== */
+.v3736-tkztab .tkztab-trend{stroke:#111;stroke-width:1.24;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.v3736-tkztab .v3736-arrow-head{fill:#111;stroke:none;vector-effect:non-scaling-stroke}
+.v3736-tkztab .v3736-value{padding:0 5px;background:rgba(255,249,215,.96);border-radius:3px;line-height:1.15}
+.v3736-tkztab .tkztab-y .tkztab-data{overflow:visible}
+.v3736-tkztab .tkztab-arrows{overflow:visible}
+/* Keep extrema labels clear of the separator between f'(x) and f(x). */
+.v3736-tkztab .tkztab-y .v3736-value{z-index:4}
+@media print{.v3736-tkztab{break-inside:avoid}.v3736-tkztab .v3736-arrow-head{fill:#000!important}}

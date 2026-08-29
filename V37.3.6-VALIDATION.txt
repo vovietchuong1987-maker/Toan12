@@ -1,0 +1,13 @@
+Math12 Hub V37.3.6 — Variation Arrow Rendering Fix
+
+Scope:
+- Explicit SVG polygon arrowheads for tkz-tab variation arrows.
+- Arrowhead geometry recalculated in screen pixels after render, resize, browser zoom and before print.
+- Extrema labels moved away from row separators.
+- V37.3.5 compact exam layout retained.
+
+Expected regression:
+- 3 variation segments => 3 explicit arrowhead polygons.
+- Arrow head remains 10 x 9 CSS pixels in wide and narrow layouts.
+- No marker-end dependency.
+- No Firestore rules/index changes.

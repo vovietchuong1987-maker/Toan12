@@ -1,35 +1,27 @@
-# Math12 Hub V37.3.3 — Smart Graph Layout & Exam Presets
+# Math12 Hub V37.3.6 — Variation Arrow Rendering Fix
 
-Nâng trực tiếp từ V37.3.2, giữ nguyên toàn bộ dữ liệu, Firestore Rules/Indexes, TikZ V37.2, Backup V2 và các engine V36–V37 trước đó.
+Nâng trực tiếp từ V37.3.5, giữ nguyên toàn bộ dữ liệu, Firestore Rules/Indexes và các engine V36–V37.
 
-## Trọng tâm V37.3.3
+## Trọng tâm V37.3.6
 
-- Preset **Đề thi THPT** mặc định: hình sạch, không lưới, chỉ giữ các mốc cần thiết.
-- Preset **Khảo sát đặc trưng**: hiện cực trị, giao trục, tọa độ điểm và điểm uốn của hàm bậc ba.
-- Preset **Tiệm cận tối giản**: tập trung vào tiệm cận + giao trục cho các hàm phân thức.
-- Preset **Tùy chỉnh** cho giáo viên tự kiểm soát toàn bộ hiển thị.
-- **Smart Label Layout**: thử nhiều vị trí cho nhãn trục/điểm, ưu tiên vị trí ít đè lên đường cong và ít chồng nhãn khác.
-- Khối **Tùy chỉnh nâng cao** mặc định thu gọn: xMin/xMax/yMin/yMax, lưới, cực trị, tiệm cận, nét chiếu, giao trục, tọa độ điểm, điểm uốn, Smart Labels.
-- Nếu giáo viên thay đổi tùy chọn hiển thị thủ công, preset tự chuyển sang `Tùy chỉnh`.
-- Giữ tương thích cấu hình Graph V37.3/V37.3.2 cũ; các cấu hình cũ khác preset mặc định sẽ được nhận diện là `custom`.
-- Graph → TikZ tiếp tục hoạt động; preset khảo sát có thể xuất cả điểm uốn.
+- Bỏ phụ thuộc `marker-end` của SVG trong bảng biến thiên.
+- Mỗi mũi tên biến thiên gồm thân đường + đầu tam giác SVG riêng.
+- Đầu mũi tên được tính theo **pixel màn hình thật** (10 × 9 px), vì vậy không bị mất hoặc mảnh đi khi browser zoom, responsive hay in.
+- `ResizeObserver` tự vẽ lại đầu mũi tên khi kích thước bảng thay đổi.
+- Tự vẽ lại trước khi in.
+- Nhãn cực đại/cực tiểu và ±∞ được đẩy xa đường phân cách hơn để bảng sạch.
+- Giữ nguyên bố cục MCQ 2×2 của V37.3.5 trên desktop; đáp án dài/mobile vẫn 1 cột.
 
-## 3 họ hàm giữ nguyên
+## Tương thích
 
-1. `y = ax^3 + bx^2 + cx + d`
-2. `y = (ax+b)/(cx+d)`
-3. `y = (ax^2+bx+c)/(dx+e)`
-
-## Không thay đổi dữ liệu
-
-- Không tạo collection Firestore mới.
 - Không migration ngân hàng câu hỏi.
-- Không thay Firestore Rules.
-- Không thay Firestore Indexes.
+- Không tạo collection Firestore mới.
+- Không thay `firestore.rules`.
+- Không thay `firestore.indexes.json`.
+- Giữ nguyên TikZ V37.2, Graph Engine V37.3.x, Backup V2 V37.1 và các engine V36–V37.
 
-## V37.3.5 — Variation Table & Exam Layout Polish
-- Bảng biến thiên dùng mũi tên theo điểm neo của từng cột, đầu mũi tên và nhãn cực trị tách nhau rõ hơn.
-- Phòng thi ẩn mã TikZ/tkz-tab và nhãn kỹ thuật renderer.
-- Khung hình/đồ thị được co theo nội dung, giảm khoảng trắng dọc.
-- MCQ có 4 phương án ngắn tự chuyển 2 cột trên màn hình rộng; phương án dài và mobile vẫn 1 cột.
-- Không thay đổi Firestore Rules/Indexes hoặc dữ liệu câu hỏi.
+## Regression V37.3.6
+
+- 3 khoảng biến thiên → 3 thân mũi tên + 3 đầu mũi tên.
+- Không còn `marker-end` trong renderer V37.3.6.
+- Kích thước đầu mũi tên giữ 10 × 9 px ở bố cục rộng và hẹp.
