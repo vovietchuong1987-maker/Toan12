@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V35 — Production Hardening & Smart Loading
+   Math12 Hub V36.0 — Production Hardening inherited from V35
    Keeps the V34 data/query architecture intact while improving:
    - on-demand loading for heavy/role-specific features
    - PWA/offline shell readiness
@@ -9,10 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
-const V35_BUILD='35.4-smart-navigation';
+const V35_BUILD='36.0-knowledge-map';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=35.4',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js?v=35.4',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=36.0',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=36.0',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -43,8 +43,8 @@ function v35LoadScript(src,{crossOrigin=false}={}){
 async function v35EnsureFeature(name,{quiet=false}={}){
   if(v35FeatureReady(name))return true;
   if(v35FeaturePromises.has(name))return v35FeaturePromises.get(name);
-  let f=V35_FEATURES[name];if(!f)throw new Error(`Tính năng V35 không tồn tại: ${name}`);
-  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V35 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
+  let f=V35_FEATURES[name];if(!f)throw new Error(`Tính năng nền V35/V36 không tồn tại: ${name}`);
+  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V36.0 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
   v35FeaturePromises.set(name,p);try{return await p}catch(err){v35FeaturePromises.delete(name);throw err}
 }
 async function v35EnsureXlsx(){return v35EnsureFeature('xlsx')}
@@ -94,7 +94,7 @@ function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:St
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
   let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='35'&&meta==='35',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='36.0'&&meta==='36.0',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));
@@ -115,9 +115,10 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
   let appCheckKey=String(window.MATH12_APP_CHECK_SITE_KEY||'').trim();
   checks.push(v35Check('Firebase App Check',appCheckKey&&typeof firebaseAppCheckStatus!=='undefined'&&firebaseAppCheckStatus==='active',appCheckKey?(typeof firebaseAppCheckStatus==='undefined'?'Chờ Firebase khởi tạo':firebaseAppCheckStatus):'Chưa nhập reCAPTCHA site key','warn'));
   checks.push(v35Check('Smart Loading',!v35InitialFeatureState.xlsx&&!v35InitialFeatureState.ai&&!v35InitialFeatureState.reports,'Excel/AI/Báo cáo được hoãn tải ở trang đầu','warn'));
-  checks.push(v35Check('Smart Navigation V35.4',!!window.v354SmartNavigation&&window.v354SmartNavigation.build==='35.4-smart-navigation'&&!!document.getElementById('v354SearchTrigger'),'Tìm nhanh + ghim + gần đây + nhớ bộ lọc','warn'));
+  checks.push(v35Check('Smart Navigation',!!window.v354SmartNavigation&&!!document.getElementById('v354SearchTrigger'),'Tìm nhanh + ghim + gần đây + nhớ bộ lọc','warn'));
+  checks.push(v35Check('Knowledge Map V36.0',!!window.v360KnowledgeMap&&window.v360KnowledgeMap.build==='36.0-knowledge-map'&&window.v360KnowledgeMap.map().counts.knowledge===57&&window.v360KnowledgeMap.map().counts.lessons===19,'6 chương • 19 bài • 57 chuẩn • metadata câu hỏi','fail'));
   let fail=checks.filter(x=>x.level==='fail').length,warn=checks.filter(x=>x.level==='warn').length,pass=checks.filter(x=>x.level==='pass').length;
-  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V35: còn ${fail} lỗi kiểm tra`:`V35: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
+  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V36.0: còn ${fail} lỗi kiểm tra`:`V36.0: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
 }
 
 function v35StatusChip(level,text){return `<span class="v35-status ${level}">${esc(text)}</span>`}
@@ -144,7 +145,7 @@ function v35Diagnostics(){
   return {...base,appVersion:APP_VERSION,hardeningSchema:V35_HARDENING_SCHEMA,build:V35_BUILD,v35:{createdAt:v35Now(),serviceWorker:v35ServiceWorkerState,features:{xlsx:v35FeatureReady('xlsx'),ai:v35FeatureReady('ai'),reports:v35FeatureReady('reports')},regression:v35RegressionLast,runtimeIssues:v35RuntimeIssues.slice(0,20)}}
 }
 function v35ExportDiagnostics(){
-  let payload=v35Diagnostics(),name=`math12hub-v35-diagnostics-${new Date().toISOString().slice(0,10)}.json`;
+  let payload=v35Diagnostics(),name=`math12hub-v36-diagnostics-${new Date().toISOString().slice(0,10)}.json`;
   if(typeof triggerJsonDownload==='function')return triggerJsonDownload(payload,name);
   let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
 }
@@ -172,7 +173,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v35.js?v=35.4',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v36.js?v=36.0',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

@@ -1,10 +1,10 @@
-/* Math12 Hub V35.4 — Smart Navigation
+/* Math12 Hub V36.0 — Smart Navigation inherited from V35.4
    Global search • recent items • pins • remembered filters • keyboard navigation.
    Client-side only: uses data already loaded in the current session and adds no Firestore reads by itself.
 */
 (function(){
   'use strict';
-  const BUILD='35.4-smart-navigation';
+  const BUILD='36.0-smart-navigation';
   const KEYS={
     recent:'math12hub:v35.4:recent',
     pins:'math12hub:v35.4:pins',
@@ -29,7 +29,7 @@
     teacher:{title:'Theo dõi lớp',subtitle:'Dashboard lớp và học sinh',icon:'♙',keywords:'theo dõi lớp học sinh dashboard'},
     admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản, lớp và Production Center',icon:'🛡',keywords:'admin quản trị hệ thống'}
   };
-  const FILTER_IDS=['lessonSearch','bankSearch','bankChapter','bankLesson','bankKnowledge','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankSort','bankPageSize'];
+  const FILTER_IDS=['lessonSearch','bankSearch','bankChapter','bankLesson','bankKnowledge','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankSort','bankPageSize'];
   let paletteOpen=false,currentResults=[],activeIndex=0,restoreBusy=false;
 
   function role(){try{return typeof currentSecureRole==='function'?currentSecureRole():'student'}catch(_){return 'student'}}
@@ -45,10 +45,11 @@
   function itemPage(page){const m=PAGE_META[page]||{title:page,subtitle:'',icon:'•',keywords:''};return {type:'page',id:page,page,title:m.title,subtitle:m.subtitle,icon:m.icon,keywords:m.keywords,pinnable:page!=='dashboard'}}
   function itemLesson(id){let l=null;try{l=typeof getLesson==='function'?getLesson(id):null}catch(_){};if(!l)return null;const m=typeof getLessonMeta==='function'?getLessonMeta(id):null;return {type:'lesson',id,page:'lesson-detail',title:l.common||id,subtitle:`${id} • Chương ${l.chapter?.id||''}`,icon:'▤',keywords:[id,l.common,l.chapter?.title,...(m?.goals||[]),...(m?.knowledge||[]).flatMap(k=>[k.code,k.title])].join(' '),pinnable:true}}
   function itemChapter(c){return {type:'chapter',id:String(c.id),page:'lessons',title:`Chương ${c.id}. ${c.title}`,subtitle:`${c.lessons?.length||0} bài • ${c.desc||''}`,icon:'◫',keywords:[c.title,c.desc,...(c.lessons||[]).map(l=>l.common)].join(' '),pinnable:true}}
-  function itemQuestion(q){return {type:'question',id:String(q.id),page:'question-bank',title:`${q.id} • ${String(q.question||'').replace(/<[^>]+>/g,' ').slice(0,110)}`,subtitle:`${q.lessonId||''}${q.knowledgeCode?' • '+q.knowledgeCode:''}`,icon:'▦',keywords:[q.id,q.question,q.explanation,q.knowledgeCode,q.lessonId,q.form,q.sourceName,(q.tags||[]).join(' ')].join(' '),pinnable:true}}
+  function itemQuestion(q){return {type:'question',id:String(q.id),page:'question-bank',title:`${q.id} • ${String(q.question||'').replace(/<[^>]+>/g,' ').slice(0,110)}`,subtitle:`${q.lessonId||''}${q.knowledgeCode?' • '+q.knowledgeCode:''}${q.formId?' • '+q.formId:''}`,icon:'▦',keywords:[q.id,q.question,q.explanation,q.knowledgeCode,q.lessonId,q.formId,q.formTitle,q.form,q.sourceName,(q.tags||[]).join(' ')].join(' '),pinnable:true}}
   function itemExam(e){return {type:'exam',id:String(e.id),page:'exam-builder',title:e.title||'Đề kiểm tra',subtitle:`${e.questions?.length||0} câu • ${e.durationMinutes||45} phút`,icon:'▧',keywords:[e.title,e.id].join(' '),pinnable:true}}
   function itemClass(c){return {type:'class',id:String(c.id||c.classId||''),page:'teacher',title:c.name||c.className||'Lớp học',subtitle:c.joinCode?`Mã lớp ${c.joinCode}`:'Lớp học online',icon:'☁',keywords:[c.name,c.className,c.joinCode,c.teacherName].join(' '),pinnable:true}}
   function itemKnowledge(k){let l=null;try{l=typeof getLesson==='function'?getLesson(k.lessonId):null}catch(_){};return {type:'knowledge',id:String(k.code),page:'lesson-detail',lessonId:k.lessonId,title:`${k.code} • ${k.title}`,subtitle:l?`${k.lessonId} • ${l.common}`:k.lessonId,icon:'◇',keywords:[k.code,k.title,k.lessonId,k.summary].join(' '),pinnable:true}}
+  function itemForm(f){return {type:'form',id:String(f.id),page:'question-bank',knowledgeCode:f.knowledgeCode||'',lessonId:f.lessonId||'',title:`${f.id} • ${f.title}`,subtitle:`${f.knowledgeCode||''} • ${f.lessonId||''}`,icon:'◆',keywords:[f.id,f.title,f.knowledgeCode,f.lessonId,f.tip].join(' '),pinnable:true}}
 
   function resolveStored(s){
     if(!s||!s.type)return null;
@@ -57,6 +58,7 @@
       if(s.type==='lesson')return itemLesson(s.id);
       if(s.type==='chapter'){const c=(typeof chapters!=='undefined'?chapters:[]).find(x=>String(x.id)===String(s.id));return c?itemChapter(c):null}
       if(s.type==='knowledge'){const k=(typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).find(x=>String(x.code)===String(s.id));return k?itemKnowledge(k):null}
+      if(s.type==='form'){const f=(typeof v360AllForms==='function'?v360AllForms():[]).find(x=>String(x.id)===String(s.id));return f?itemForm(f):null}
       if(s.type==='question'&&allowed('question-bank')){const q=(typeof state!=='undefined'?state.questionBank||[]:[]).find(x=>String(x.id)===String(s.id));return q?itemQuestion(q):null}
       if(s.type==='exam'&&allowed('exam-builder')){const e=(typeof state!=='undefined'?state.customExams||[]:[]).find(x=>String(x.id)===String(s.id));return e?itemExam(e):null}
       if(s.type==='class'&&allowed('teacher')){const rows=[...(typeof firebaseOwnedClasses!=='undefined'?firebaseOwnedClasses:[]),...(typeof firebaseMemberships!=='undefined'?firebaseMemberships:[])];const c=rows.find(x=>String(x.id||x.classId)===String(s.id));return c?itemClass(c):null}
@@ -79,11 +81,12 @@
       else if(item.type==='lesson')openLesson(item.id);
       else if(item.type==='chapter'){selectChapter(Number(item.id));goPage('lessons')}
       else if(item.type==='knowledge'){openLesson(item.lessonId);setTimeout(()=>document.getElementById('lessonKnowledge')?.scrollIntoView({behavior:'smooth',block:'start'}),180)}
+      else if(item.type==='form'){goPage('question-bank');setTimeout(()=>typeof v360ApplyKnowledgeFilter==='function'&&v360ApplyKnowledgeFilter(item.knowledgeCode||'',item.id),180)}
       else if(item.type==='question'){goPage('question-bank');setTimeout(()=>typeof previewBankQuestion==='function'&&previewBankQuestion(item.id),180)}
       else if(item.type==='exam'){goPage('exam-builder');setTimeout(()=>typeof previewSavedCustomExam==='function'&&previewSavedCustomExam(item.id),180)}
       else if(item.type==='class'){goPage('teacher');setTimeout(()=>typeof firebaseSelectTeacherClass==='function'&&firebaseSelectTeacherClass(item.id),180)}
       addRecent(item);
-    }catch(err){console.warn('V35.4 navigation',err)}
+    }catch(err){console.warn('V36.0 navigation',err)}
   }
 
   function score(item,q,tokens){
@@ -97,6 +100,7 @@
     Object.keys(PAGE_META).forEach(p=>{if(allowed(p))out.push(itemPage(p))});
     try{(chapters||[]).forEach(c=>{out.push(itemChapter(c));(c.lessons||[]).forEach(l=>{const x=itemLesson(l.id);if(x)out.push(x)})})}catch(_){}
     try{(typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).forEach(k=>out.push(itemKnowledge(k)))}catch(_){}
+    try{if(allowed('question-bank')&&typeof v360AllForms==='function')v360AllForms().forEach(f=>out.push(itemForm(f)))}catch(_){}
     if(allowed('exam-builder'))try{(state.customExams||[]).forEach(e=>out.push(itemExam(e)))}catch(_){}
     if(allowed('teacher'))try{const seen=new Set();[...(firebaseOwnedClasses||[]),...(firebaseMemberships||[])].forEach(c=>{let id=String(c.id||c.classId||'');if(id&&!seen.has(id)){seen.add(id);out.push(itemClass(c))}})}catch(_){}
     return out;
@@ -111,13 +115,13 @@
   function injectUI(){
     const right=document.querySelector('.topbar-right');
     if(right&&!document.getElementById('v354SearchTrigger')){const b=document.createElement('button');b.id='v354SearchTrigger';b.className='v354-search-trigger';b.type='button';b.innerHTML='<span class="v354-search-icon">⌕</span><span class="v354-search-label">Tìm nhanh</span><kbd>Ctrl K</kbd>';b.setAttribute('aria-label','Tìm nhanh toàn hệ thống');b.addEventListener('click',()=>openPalette());right.prepend(b)}
-    if(!document.getElementById('v354Palette')){const wrap=document.createElement('div');wrap.id='v354Palette';wrap.className='v354-palette-backdrop hidden';wrap.setAttribute('aria-hidden','true');wrap.innerHTML=`<div class="v354-palette" role="dialog" aria-modal="true" aria-labelledby="v354PaletteTitle"><div class="v354-search-head"><span>⌕</span><input id="v354SearchInput" autocomplete="off" spellcheck="false" placeholder="Tìm trang, bài học, mã kiến thức, câu hỏi, lớp…" aria-label="Tìm nhanh toàn hệ thống"><button id="v354CloseSearch" type="button" aria-label="Đóng tìm kiếm">Esc</button></div><div class="v354-search-caption"><b id="v354PaletteTitle">Tìm nhanh Math12 Hub</b><span id="v354SearchHint">Không phát sinh Firestore Reads mới</span></div><div id="v354SearchResults" class="v354-search-results"></div><div class="v354-search-foot"><span><kbd>↑</kbd><kbd>↓</kbd> chọn</span><span><kbd>Enter</kbd> mở</span><span><kbd>☆</kbd> ghim</span><span><kbd>/</kbd> tìm nhanh</span></div></div>`;document.body.appendChild(wrap);wrap.addEventListener('mousedown',e=>{if(e.target===wrap)closePalette()});document.getElementById('v354CloseSearch').addEventListener('click',closePalette);document.getElementById('v354SearchInput').addEventListener('input',e=>renderResults(e.target.value));document.getElementById('v354SearchResults').addEventListener('click',e=>{const pin=e.target.closest('[data-v354-pin]');if(pin){e.stopPropagation();let x=currentResults[Number(pin.dataset.v354Pin)];if(x)togglePin(x);return}const row=e.target.closest('[data-v354-result]');if(row){let x=currentResults[Number(row.dataset.v354Result)];if(x)execute(x)}})}
+    if(!document.getElementById('v354Palette')){const wrap=document.createElement('div');wrap.id='v354Palette';wrap.className='v354-palette-backdrop hidden';wrap.setAttribute('aria-hidden','true');wrap.innerHTML=`<div class="v354-palette" role="dialog" aria-modal="true" aria-labelledby="v354PaletteTitle"><div class="v354-search-head"><span>⌕</span><input id="v354SearchInput" autocomplete="off" spellcheck="false" placeholder="Tìm trang, bài học, mã kiến thức, dạng toán, câu hỏi, lớp…" aria-label="Tìm nhanh toàn hệ thống"><button id="v354CloseSearch" type="button" aria-label="Đóng tìm kiếm">Esc</button></div><div class="v354-search-caption"><b id="v354PaletteTitle">Tìm nhanh Math12 Hub</b><span id="v354SearchHint">Không phát sinh Firestore Reads mới</span></div><div id="v354SearchResults" class="v354-search-results"></div><div class="v354-search-foot"><span><kbd>↑</kbd><kbd>↓</kbd> chọn</span><span><kbd>Enter</kbd> mở</span><span><kbd>☆</kbd> ghim</span><span><kbd>/</kbd> tìm nhanh</span></div></div>`;document.body.appendChild(wrap);wrap.addEventListener('mousedown',e=>{if(e.target===wrap)closePalette()});document.getElementById('v354CloseSearch').addEventListener('click',closePalette);document.getElementById('v354SearchInput').addEventListener('input',e=>renderResults(e.target.value));document.getElementById('v354SearchResults').addEventListener('click',e=>{const pin=e.target.closest('[data-v354-pin]');if(pin){e.stopPropagation();let x=currentResults[Number(pin.dataset.v354Pin)];if(x)togglePin(x);return}const row=e.target.closest('[data-v354-result]');if(row){let x=currentResults[Number(row.dataset.v354Result)];if(x)execute(x)}})}
     const crumbBar=document.querySelector('.v353-breadcrumb-bar');if(crumbBar&&!document.getElementById('v354PinCurrent')){const b=document.createElement('button');b.id='v354PinCurrent';b.className='v354-pin-current';b.type='button';b.addEventListener('click',()=>{const item=getCurrentItem();if(item?.pinnable)togglePin(item)});crumbBar.appendChild(b)}
     ensureSmartDock();
   }
   function ensureSmartDock(){
     const dash=document.getElementById('page-dashboard');if(!dash||document.getElementById('v354SmartDock'))return;
-    const dock=document.createElement('div');dock.id='v354SmartDock';dock.className='card mt v354-smart-dock';dock.innerHTML=`<div class="v354-dock-head"><div><span class="v354-kicker">V35.4 • SMART NAVIGATION</span><h3>Truy cập nhanh</h3><p>Ghim mục thường dùng và quay lại công việc gần đây mà không phải tìm lại trong menu.</p></div><button class="btn btn-soft" type="button" data-v354-open-search>⌕ Tìm nhanh <kbd>Ctrl K</kbd></button></div><div class="v354-dock-grid"><div><div class="v354-dock-title"><b>★ Đã ghim</b><small>Tối đa ${MAX_PINS} mục</small></div><div id="v354PinnedList" class="v354-chip-list"></div></div><div><div class="v354-dock-title"><b>↶ Vừa truy cập</b><button type="button" id="v354ClearRecent">Xóa lịch sử</button></div><div id="v354RecentList" class="v354-chip-list"></div></div></div>`;
+    const dock=document.createElement('div');dock.id='v354SmartDock';dock.className='card mt v354-smart-dock';dock.innerHTML=`<div class="v354-dock-head"><div><span class="v354-kicker">V36.0 • SMART NAVIGATION</span><h3>Truy cập nhanh</h3><p>Ghim mục thường dùng và quay lại công việc gần đây mà không phải tìm lại trong menu.</p></div><button class="btn btn-soft" type="button" data-v354-open-search>⌕ Tìm nhanh <kbd>Ctrl K</kbd></button></div><div class="v354-dock-grid"><div><div class="v354-dock-title"><b>★ Đã ghim</b><small>Tối đa ${MAX_PINS} mục</small></div><div id="v354PinnedList" class="v354-chip-list"></div></div><div><div class="v354-dock-title"><b>↶ Vừa truy cập</b><button type="button" id="v354ClearRecent">Xóa lịch sử</button></div><div id="v354RecentList" class="v354-chip-list"></div></div></div>`;
     const anchor=dash.querySelector('.v353-admin-strip')||dash.querySelector('.v353-role-dashboard')||dash.querySelector('.teacher-only.hero')||dash.querySelector('.student-only.hero');if(anchor)anchor.insertAdjacentElement('afterend',dock);else dash.prepend(dock);
     dock.querySelector('[data-v354-open-search]').addEventListener('click',()=>openPalette());dock.querySelector('#v354ClearRecent').addEventListener('click',()=>{writeJSON(KEYS.recent,[]);renderSmartDock();notify('Đã xóa danh sách vừa truy cập.')});dock.addEventListener('click',e=>{const b=e.target.closest('[data-v354-dock]');if(!b)return;const source=b.dataset.v354Source==='pin'?pins():recents(),item=source[Number(b.dataset.v354Dock)];if(item)execute(item)});
   }
@@ -127,7 +131,7 @@
   function renderResults(query=''){
     currentResults=searchItems(query);activeIndex=Math.min(activeIndex,Math.max(0,currentResults.length-1));const box=document.getElementById('v354SearchResults'),hint=document.getElementById('v354SearchHint');if(!box)return;if(hint)hint.textContent=query?`${currentResults.length} kết quả phù hợp`:'Gợi ý từ mục đã ghim, gần đây và điều hướng';
     if(!currentResults.length){box.innerHTML='<div class="v354-no-result"><b>Không tìm thấy nội dung phù hợp</b><span>Thử tên bài, mã như F1-01, mã kiến thức hoặc một từ khóa ngắn hơn.</span></div>';return}
-    box.innerHTML=currentResults.map((x,i)=>`<div class="v354-result ${i===activeIndex?'active':''}" data-v354-result="${i}" role="option" aria-selected="${i===activeIndex?'true':'false'}"><span class="v354-result-icon">${escText(x.icon||'•')}</span><span class="v354-result-copy"><b>${escText(x.title)}</b><small>${escText(x.subtitle||'')}</small></span><span class="v354-result-type">${escText(({page:'Trang',lesson:'Bài học',chapter:'Chương',knowledge:'Kiến thức',question:'Câu hỏi',exam:'Đề',class:'Lớp'})[x.type]||x.type)}</span>${x.pinnable?`<button type="button" class="v354-result-pin ${isPinned(x)?'pinned':''}" data-v354-pin="${i}" aria-label="${isPinned(x)?'Bỏ ghim':'Ghim'} ${escText(x.title)}">${isPinned(x)?'★':'☆'}</button>`:''}</div>`).join('');
+    box.innerHTML=currentResults.map((x,i)=>`<div class="v354-result ${i===activeIndex?'active':''}" data-v354-result="${i}" role="option" aria-selected="${i===activeIndex?'true':'false'}"><span class="v354-result-icon">${escText(x.icon||'•')}</span><span class="v354-result-copy"><b>${escText(x.title)}</b><small>${escText(x.subtitle||'')}</small></span><span class="v354-result-type">${escText(({page:'Trang',lesson:'Bài học',chapter:'Chương',knowledge:'Kiến thức',form:'Dạng toán',question:'Câu hỏi',exam:'Đề',class:'Lớp'})[x.type]||x.type)}</span>${x.pinnable?`<button type="button" class="v354-result-pin ${isPinned(x)?'pinned':''}" data-v354-pin="${i}" aria-label="${isPinned(x)?'Bỏ ghim':'Ghim'} ${escText(x.title)}">${isPinned(x)?'★':'☆'}</button>`:''}</div>`).join('');
     box.querySelector('.v354-result.active')?.scrollIntoView({block:'nearest'});
   }
   function openPalette(seed=''){
@@ -140,14 +144,14 @@
   function updatePinCurrent(){const b=document.getElementById('v354PinCurrent');if(!b)return;const x=getCurrentItem();if(!x?.pinnable){b.classList.add('hidden');return}b.classList.remove('hidden');const on=isPinned(x);b.classList.toggle('pinned',on);b.innerHTML=on?'★ Đã ghim':'☆ Ghim';b.title=on?'Bỏ khỏi truy cập nhanh':'Ghim mục hiện tại vào truy cập nhanh'}
 
   function readFilters(){return readJSON(KEYS.filters,{})}
-  function rememberFilter(el){if(restoreBusy||!FILTER_IDS.includes(el.id))return;let f=readFilters();f[el.id]=el.value;if(el.id==='bankChapter'){delete f.bankLesson;delete f.bankKnowledge}else if(el.id==='bankLesson')delete f.bankKnowledge;writeJSON(KEYS.filters,f)}
+  function rememberFilter(el){if(restoreBusy||!FILTER_IDS.includes(el.id))return;let f=readFilters();f[el.id]=el.value;if(el.id==='bankChapter'){delete f.bankLesson;delete f.bankKnowledge;delete f.bankFormV36}else if(el.id==='bankLesson'){delete f.bankKnowledge;delete f.bankFormV36}else if(el.id==='bankKnowledge')delete f.bankFormV36;writeJSON(KEYS.filters,f)}
   function setIfOption(el,value){if(!el)return false;if(el.tagName==='SELECT'&&![...el.options].some(o=>o.value===String(value)))return false;el.value=String(value??'');return true}
   function restoreLessonFilter(){const f=readFilters(),el=document.getElementById('lessonSearch');if(el&&typeof f.lessonSearch==='string'&&el.value!==f.lessonSearch){el.value=f.lessonSearch;try{renderLessons()}catch(_){}}}
   function restoreBankFilters(){if(!allowed('question-bank'))return;const f=readFilters();if(!Object.keys(f).some(k=>k.startsWith('bank')))return;restoreBusy=true;try{
-    const ch=document.getElementById('bankChapter');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(true);setIfOption(ch,f.bankChapter||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankLesson'),f.bankLesson||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankKnowledge'),f.bankKnowledge||'');
-    ['bankSearch','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankSort','bankPageSize'].forEach(id=>{if(Object.prototype.hasOwnProperty.call(f,id))setIfOption(document.getElementById(id),f[id])});
+    const ch=document.getElementById('bankChapter');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(true);setIfOption(ch,f.bankChapter||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankLesson'),f.bankLesson||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankKnowledge'),f.bankKnowledge||'');if(typeof v360RefreshFormFilter==='function')v360RefreshFormFilter();
+    ['bankSearch','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankSort','bankPageSize'].forEach(id=>{if(Object.prototype.hasOwnProperty.call(f,id))setIfOption(document.getElementById(id),f[id])});
     if(typeof renderQuestionBank==='function')renderQuestionBank(false);
-  }catch(err){console.warn('V35.4 restore filters',err)}finally{restoreBusy=false}}
+  }catch(err){console.warn('V36.0 restore filters',err)}finally{restoreBusy=false}}
   function restoreChapter(){const f=readFilters(),c=Number(f.activeChapter);if(c&&typeof chapters!=='undefined'&&chapters.some(x=>Number(x.id)===c)){try{activeChapter=c}catch(_){}}}
 
   function installHooks(){

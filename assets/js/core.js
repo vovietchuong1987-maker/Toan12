@@ -1,4 +1,4 @@
-const APP_VERSION='35'; // V35 Production Hardening & Smart Loading; V34 Scale and all earlier data layers remain compatible.
+const APP_VERSION='36.0'; // V36.0 Knowledge Map & Question Bank Engine; V35 UX/production and V34 scale layers remain compatible.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Tính đơn điệu và cực trị của hàm số'},

@@ -1,107 +1,84 @@
-# Math12 Hub V35.4 — Smart Navigation • UX Polish • Production Hardening
+# Math12 Hub V36.0 — Knowledge Map & Question Bank Engine
 
-V35 nâng trực tiếp từ V34 và **giữ nguyên kiến trúc/dữ liệu cũ**: Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32, Reports V33 và Performance & Scale V34.
+V36.0 được nâng trực tiếp từ V35.4. Toàn bộ nền V34 Scale, V35 Production Hardening, Role-aware UI, UX Polish và Smart Navigation được giữ nguyên.
 
-## Nâng cấp chính của V35
+## Trọng tâm V36.0
 
-- **Sửa đồng bộ phiên bản**: `APP_VERSION`, `meta app-version`, tiêu đề và giao diện đều là V35.
-- **Smart Loading**:
-  - Không tải thư viện XLSX ở lần mở trang đầu; chỉ tải khi giáo viên thực sự chọn file `.xlsx/.xls` để import.
-  - Không tải `ai-teacher-v32.js` cho tới khi mở trang **Trợ lý AI**.
-  - Không tải `reports-v33.js` cho tới khi mở **Báo cáo học tập** hoặc truy cập trực tiếp link báo cáo phụ huynh.
-- **MathJax không còn chặn quá trình parse HTML**: config và runtime chuyển sang `defer` nhưng vẫn tự typeset khi trang tải xong.
-- **PWA / Offline shell**:
-  - thêm `manifest.webmanifest`, icon 192/512 và `sw-v35.js`;
-  - cache các tài nguyên same-origin cốt lõi, không can thiệp request Firestore/Firebase cross-origin;
-  - navigation có fallback về `index.html` khi offline.
-- **Production Center V35 trong trang Admin**:
-  - Regression check ngay trên trình duyệt;
-  - kiểm tra version, ID trùng, cấu trúc đề THPT 12/4/6, 90 phút, thang Đ/S 0.1/0.25/0.5/1, phân quyền, Data Safety, Firebase core, Scale engine, PWA, App Check và Smart Loading;
-  - ghi nhận lỗi JavaScript trong phiên với nội dung đã làm mờ email/ID dài;
-  - xuất diagnostics V35 không chủ động thu thập UID/email/đáp án.
-- **Accessibility**:
-  - focus ring `:focus-visible`;
-  - bổ sung ARIA cơ bản cho modal/nav/form theo runtime;
-  - hỗ trợ `prefers-reduced-motion`.
-- **Offline UX**: có thông báo nhỏ khi mất mạng, dữ liệu local vẫn dùng được và Firebase sẽ đồng bộ lại khi có kết nối.
+V36.0 tạo một taxonomy thống nhất cho Toán 12 GDPT 2018:
 
-## Firestore / dữ liệu
+**Chương → Bài → Đơn vị kiến thức → Dạng toán chuẩn → Câu hỏi**
 
-V35 **không tạo collection Firestore mới và không yêu cầu migration dữ liệu mới**. `firestore.rules` và `firestore.indexes.json` kế thừa V34.
+- 6 chương.
+- 19 bài.
+- 57 đơn vị kiến thức (`F1-01.K1`...).
+- 57 dạng toán chuẩn (`F1-01.D1`...).
+- Dạng toán được ánh xạ về đúng bài, chuẩn kiến thức và mức độ NB/TH/VD.
+- Câu hỏi mới/sửa bằng trình soạn được bổ sung metadata V36 tự động.
+- Câu hỏi cũ vẫn đọc/chấm/sync bình thường; giáo viên có nút **Chuẩn hóa metadata V36** để bổ sung metadata theo yêu cầu.
+- Trước khi chuẩn hóa hàng loạt, V36 cố gắng tạo Recovery Snapshot trong Data Safety Vault nếu chức năng này khả dụng.
 
-Các marker `scaleV34` và tên hàm `v34*` được giữ nguyên có chủ đích để tránh phá tương thích dữ liệu/code cũ. V35 chỉ bọc thêm lớp hardening phía trên.
+## Metadata bổ sung cho câu hỏi
 
-## App Check
+V36.0 không thay trường `schemaVersion: 29` của Question Bank Pro V29 để tránh xung đột với bộ chuẩn hóa cũ. Các trường mới là additive:
 
-Gói vẫn để:
+- `questionBankSchema: 36`
+- `curriculumId: MATH12-GDPT2018-2026`
+- `knowledgeMapVersion: 36`
+- `grade: 12`
+- `knowledgeTitle`
+- `formId`
+- `formTitle`
+- `blueprintKey`
+- `taxonomyPath`
+- `metadataStatusV36`
 
-```html
-<script>window.MATH12_APP_CHECK_SITE_KEY = window.MATH12_APP_CHECK_SITE_KEY || '';</script>
-```
+Không tạo Firestore collection mới. `firestore.rules` không cần migration cho V36.0.
 
-Điều này có nghĩa **App Check chưa được bật thực sự** cho tới khi nhập reCAPTCHA v3 site key. Sau khi nhập key, nên kiểm tra request metrics trong Firebase App Check trước rồi mới bật Enforcement.
+## Giao diện mới trong Ngân hàng câu hỏi
 
-## Cách triển khai
+- Knowledge Map dạng cây theo 6 chương.
+- Mỗi bài hiển thị 3 chuẩn kiến thức và dạng toán tương ứng.
+- Màu độ phủ dạng toán: chưa có / 1–2 câu / từ 3 câu.
+- Nhấn chuẩn/dạng để lọc ngân hàng ngay.
+- Bộ lọc mới **Dạng toán**.
+- Trình soạn câu hỏi có select **Dạng toán chuẩn V36** nhưng vẫn cho phép nhập dạng riêng.
+- CSV xuất từ ngân hàng bổ sung `formId`, `formTitle`, `knowledgeTitle`, `blueprintKey`, `questionBankSchema`.
+- Có thể xuất toàn bộ Knowledge Map + coverage thành JSON.
 
-1. Sao lưu bản V34 đang chạy.
-2. Giữ `firestore.rules` và `firestore.indexes.json` hiện tại nếu V34 đã deploy thành công.
-3. Upload toàn bộ V35.4 (`index.html`, `assets/`, `manifest.webmanifest`, `sw-v35.js`) lên cùng thư mục GitHub Pages.
-4. Tải lại trang bằng `Ctrl+F5` một lần để nhận service worker/cache V35 mới.
-5. Đăng nhập Admin → **Quản trị hệ thống → Production Center V35** → bấm **Chạy kiểm tra**.
-6. Nếu dùng import Excel, lần đầu mở file `.xlsx` cần Internet để tải XLSX từ jsDelivr; CSV không cần thư viện này.
-7. Nếu muốn bật App Check, cấu hình site key rồi kiểm tra trạng thái **Đang bảo vệ** trước khi bật Enforcement.
+## Smart Navigation
 
-## Kiểm tra tối thiểu trước khi dùng thật
+Tìm nhanh V35.4 được giữ nguyên dữ liệu ghim/gần đây trên máy và nâng để tìm thêm:
 
-- Học sinh: đăng nhập, học theo bài, làm đề THPT, xem tiến độ, lớp online.
-- Giáo viên: ngân hàng câu hỏi, tạo đề, giao bài, dashboard lớp, import CSV/XLSX, AI, báo cáo.
-- Admin: quản lý tài khoản/lớp, Scale Center, Production Center.
-- Mở lại trang khi offline để xác nhận shell PWA hiển thị; các tác vụ cloud đương nhiên cần mạng.
+- mã dạng toán như `F1-01.D2`;
+- tên dạng toán;
+- `formId` / `formTitle` của câu hỏi.
 
+Tìm kiếm vẫn dùng dữ liệu đã có trong phiên, không tự tạo Firestore Reads mới.
 
+## Version / cache
 
-## Hotfix 35.1 (28/08/2026)
-- Sửa Production Center báo sai **Data Safety** do kiểm tra nhầm `saveState` thay vì hàm thực tế `save`.
-- Chống trộn asset V34/V35 do cache bằng cache-busting `?v=35.1`, Service Worker cache mới và network-first cho asset ứng dụng.
-- Health Scan V26 tự fallback sang đọc từng nhánh khi Firestore Rules từ chối `collectionGroup`, nên Admin vẫn quét được mà không bắt buộc đổi Rules.
-- Thêm nút **Xóa lỗi phiên** và bỏ qua lỗi do extension trình duyệt chèn vào trang.
+- `APP_VERSION = 36.0`
+- `app-build = 36.0-knowledge-map`
+- Service Worker cache: `math12hub-v36-shell-6`
+- Local assets dùng query `?v=36.0`
 
-## UI Update 35.2 (28/08/2026)
+Sau khi upload lên GitHub Pages nên Ctrl+F5 một lần để bỏ cache V35.4.
 
-- Thiết kế lại sidebar theo vai trò, giữ nguyên toàn bộ page và quyền truy cập cũ.
-- Học sinh chỉ thấy các nhóm: Học tập, Luyện & thi, Cá nhân, Kết nối; không hiện công cụ Giáo viên/Admin.
-- Giáo viên ưu tiên: Lớp học online, Theo dõi lớp, Thông báo, Báo cáo, Ngân hàng câu hỏi, Tạo đề, Trợ lý AI; nhóm nội dung học sinh mặc định thu gọn.
-- Admin kế thừa menu giáo viên và có nhóm Hệ thống riêng.
-- Các nhóm menu có thể đóng/mở và ghi nhớ lựa chọn trên thiết bị.
-- Desktop có nút thu gọn sidebar thành icon; trạng thái được ghi nhớ. Mobile luôn dùng drawer đầy đủ chữ.
-- Menu có vùng cuộn riêng và footer rút gọn để không bị tràn chiều cao.
-- Cache-busting + Service Worker tăng lên build 35.2 để tránh dùng nhầm giao diện 35.1 từ cache.
+## Các lớp tương thích được giữ nguyên
 
-## UX Update 35.3 (28/08/2026)
+- V18 Secure Exam / scoring.
+- V21 Data Safety Vault / sync.
+- V26 Integrity / Trash / recovery.
+- V27 Teacher Operations.
+- V28 Student UX.
+- V29 Question Bank Pro.
+- V30 Exam Pro.
+- V31 Analytics Pro.
+- V32 AI Teacher.
+- V33 Reports.
+- V34 Scale.
+- V35 Production Hardening / role UI / UX / Smart Navigation.
 
-V35.3 nâng trực tiếp từ V35.2 và giữ nguyên cấu trúc dữ liệu/Firestore hiện có.
+## Hướng tiếp theo
 
-- Dashboard theo vai trò: giáo viên/admin có thẻ tác vụ nhanh; nội dung 6 chương trên dashboard chỉ ưu tiên học sinh.
-- Mobile bottom navigation 5 mục, tự đổi theo Học sinh / Giáo viên / Admin.
-- Breadcrumb trên desktop để biết vị trí hiện tại và quay nhanh về Tổng quan.
-- Trạng thái tự lưu trên topbar; khi mất mạng hiển thị rõ dữ liệu đã được giữ trên máy.
-- Skeleton loading cho các trang dữ liệu nặng (lớp học, theo dõi lớp, báo cáo, quản trị, ngân hàng, AI).
-- Empty state thân thiện cho các vùng học tập chưa có dữ liệu.
-- Toast thống nhất cho thông báo thành công; lỗi/cảnh báo quan trọng vẫn dùng hộp thoại cũ để không làm mất ngữ nghĩa.
-- Bảng dữ liệu trên mobile có gợi ý vuốt ngang và cuộn mượt hơn.
-- Bổ sung focus-visible, ARIA cho điều hướng và prefers-reduced-motion.
-- Cache build: `35.3-ux-polish`, Service Worker shell-4.
-
-## Smart Navigation Update 35.4 (29/08/2026)
-
-V35.4 nâng trực tiếp từ V35.3, không thay đổi cấu trúc Firestore và không phát sinh migration dữ liệu.
-
-- **Tìm nhanh toàn hệ thống** bằng `Ctrl/Cmd + K` hoặc phím `/`: tìm trang, chương, bài học, mã kiến thức, đề tự tạo, lớp đã tải và câu hỏi trong ngân hàng (chỉ với giáo viên/admin).
-- Search V35.4 chỉ dùng dữ liệu đã có trong phiên/local state; bản thân tính năng tìm kiếm **không tạo thêm Firestore Reads**.
-- **Ghim mục hay dùng** từ breadcrumb hoặc ngay trong kết quả tìm kiếm; tối đa 8 mục, lưu cục bộ trên thiết bị.
-- **Vừa truy cập**: tự nhớ tối đa 8 trang/bài gần nhất và hiển thị ngay trên Dashboard.
-- **Nhớ bộ lọc** của Học theo bài và Ngân hàng câu hỏi; quay lại trang vẫn giữ từ khóa, chương, bài, mã kiến thức, mức độ, loại câu, trạng thái duyệt, nguồn, thẻ, sắp xếp và số câu/trang.
-- Tìm kiếm hỗ trợ điều hướng bàn phím: `↑/↓`, `Enter`, `Esc`; kết quả tự tuân thủ quyền Student / Teacher / Admin.
-- Production Center bổ sung check **Smart Navigation V35.4**.
-- Cache build: `35.4-smart-navigation`, Service Worker `shell-5`.
-
+V36.1 nên xây **Question Quality Engine** trên taxonomy V36.0: kiểm tra cấu trúc, đáp án, LaTeX, phương án trùng, thiếu dữ kiện và tính liên kết của câu Đúng/Sai 4 ý.

@@ -1,0 +1,13 @@
+Math12 Hub V36.0 — Knowledge Map & Question Bank Engine
+Build: 36.0-knowledge-map
+Date: 2026-08-29
+
+Changes:
+- Added assets/js/knowledge-map-v36.js.
+- Added 6-chapter / 19-lesson / 57-knowledge / 57-form taxonomy.
+- Added additive V36 question metadata and explicit migration tool.
+- Added Knowledge Map coverage UI and standard-form filter.
+- Enhanced question editor with standard form selection.
+- Enhanced CSV export and Smart Navigation for forms.
+- Kept Firestore collections/rules architecture unchanged.
+- Updated PWA shell to math12hub-v36-shell-6.
