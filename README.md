@@ -1,152 +1,154 @@
-# Math12 Hub V37 — AI Teaching Intelligence
+# Math12 Hub V37.1 — Question Bank Backup V2
 
-V37 được nâng trực tiếp từ V36.3, không viết lại nền tảng. Toàn bộ Knowledge Map V36.0, Question Quality Engine V36.1, Smart Exam Matrix V36.2, Mastery & Adaptive V36.3, Exam Engine Pro V30, Analytics V31, Scale V34 và UX V35.x được giữ nguyên.
+V37.1 được nâng trực tiếp từ V37. Toàn bộ AI Teaching Intelligence V37, Mastery & Adaptive V36.3, Smart Exam Matrix V36.2, Question Quality Engine V36.1, Knowledge Map V36.0, Firestore, phân quyền và UX V35.x được giữ nguyên.
 
-## Trọng tâm V37
+## Mục tiêu V37.1
 
-V37 bổ sung `assets/js/ai-intelligence-v37.js` để biến dữ liệu lớp + Mastery thành **Teaching Intelligence** cho giáo viên. AI không được phép tự giao bài, tự sửa điểm, tự duyệt câu hỏi hay tự xuất bản nội dung.
-
-### 1. Teaching Brief cục bộ theo lớp
-
-Khi giáo viên bấm **Phân tích lớp**, V37 dùng dữ liệu lớp đã có để dựng:
-
-- số học sinh;
-- điểm trung bình đã xác minh;
-- tỷ lệ hoàn thành bài;
-- độ phủ Mastery snapshot;
-- số bài/lượt nộp cần xử lý;
-- các mã kiến thức cần ưu tiên;
-- nhóm học tập động.
-
-Teaching Brief cục bộ không cần Gemini API key.
-
-### 2. Xếp ưu tiên mã kiến thức
-
-V37 kết hợp:
-
-- Mastery Score V36.3;
-- Confidence;
-- số học sinh có bằng chứng;
-- tỷ lệ học sinh dưới ngưỡng cần củng cố;
-- độ phủ bằng chứng trong lớp.
-
-Mỗi mã ưu tiên có thể chuyển trực tiếp sang:
-
-- **Soạn câu AI**: chỉ chuẩn bị yêu cầu trong AI Editor, giáo viên vẫn phải bấm tạo nháp;
-- **Tạo bài**: dùng luồng bài củng cố hiện có, giáo viên vẫn phải xem lại và bấm Giao bài.
-
-### 3. Nhóm học tập động
-
-V37 tiếp tục dùng cơ chế phân nhóm hiện có:
-
-- Cần hỗ trợ;
-- Đang củng cố;
-- Khá / tốt;
-- Đang trễ bài;
-- Chưa đủ dữ liệu.
-
-Nhấn một nhóm để xem học sinh cục bộ. Không gửi danh sách tên học sinh sang AI.
-
-### 4. Privacy Guard V37
-
-Đây là thay đổi quan trọng của V37.
-
-Khi giáo viên bấm **Tạo kế hoạch AI**, payload gửi sang Gemini chỉ chứa số liệu tổng hợp:
-
-- số học sinh;
-- điểm trung bình lớp;
-- tỷ lệ hoàn thành;
-- độ phủ Mastery;
-- số lượng từng nhóm;
-- các `knowledgeCode` ưu tiên và Mastery trung bình tương ứng.
-
-Payload AI **không chứa**:
-
-- tên học sinh;
-- email;
-- UID;
-- tên lớp;
-- classId.
-
-Production Center có regression riêng để kiểm tra Privacy Guard.
-
-### 5. Kế hoạch dạy học AI — luôn là bản nháp
-
-Gemini có thể tạo JSON có cấu trúc gồm:
-
-- tóm tắt lớp;
-- ưu tiên kiến thức;
-- mục tiêu và mức NB/TH/VD đề xuất;
-- phân hóa hoạt động theo nhóm;
-- tiến trình dạy học theo pha và thời lượng;
-- minh chứng cần quan sát;
-- bài về nhà;
-- các mục giáo viên cần kiểm tra;
-- cảnh báo của AI.
-
-Kế hoạch được lưu tối đa 20 bản **trên thiết bị** để giáo viên xem lại. Không tạo collection Firestore mới.
-
-### 6. Kết nối V37 với V36
-
-Luồng dữ liệu hiện tại:
+Khi ngân hàng tăng lên hàng nghìn hoặc hàng chục nghìn câu, một file JSON duy nhất trở nên khó kiểm tra và rủi ro khi khôi phục. V37.1 **không tách collection Firestore**; dữ liệu online vẫn là một ngân hàng thống nhất. Chỉ lớp sao lưu/khôi phục được tổ chức theo:
 
 ```text
-Knowledge Map V36.0
-        ↓
-Question Quality Engine V36.1
-        ↓
-Smart Exam Matrix V36.2
-        ↓
-Mastery & Adaptive V36.3
-        ↓
-AI Teaching Intelligence V37
+TOÀN BỘ
+  → CHƯƠNG
+     → CHUNK 250 / 500 / 1000 CÂU
 ```
 
-V37 không thay thế các engine cũ mà dùng kết quả của chúng để đưa ra gợi ý dạy học.
+## 1. Backup V2 theo chương
 
-### 7. AI Question Authoring V32 vẫn được giữ
+Trong **Ngân hàng câu hỏi → Backup V2**, giáo viên có thể:
 
-Adapter Gemini V32 vẫn là module tải theo nhu cầu. V37 chỉ mở rộng `v32GeminiGenerate()` để cho phép truyền system instruction riêng cho kế hoạch dạy học; toàn bộ chức năng cũ đọc ảnh/PDF/LaTeX, kiểm định câu và tạo biến thể vẫn giữ nguyên.
+- xuất **ZIP toàn bộ ngân hàng**;
+- xuất **ZIP riêng từng chương**;
+- xuất **JSON riêng từng chương**;
+- xuất **JSON tương thích V37** khi cần dùng với bản cũ.
 
-## Firestore và dữ liệu
+Mặc định mỗi chunk chứa 500 câu; có thể chọn 250 hoặc 1000 câu/chunk.
 
-V37:
+## 2. Cấu trúc ZIP
 
-- không tạo collection Firestore mới;
+Ví dụ:
+
+```text
+math12-question-bank-v37.1-YYYYMMDD-HHMM.zip
+├── manifest.json
+└── questions/
+    ├── F1/
+    │   ├── F1-001.json
+    │   ├── F1-002.json
+    │   └── F1-003.json
+    ├── F2/
+    │   └── F2-001.json
+    └── ...
+```
+
+`manifest.json` chứa:
+
+- phiên bản ứng dụng;
+- thời điểm sao lưu;
+- curriculum/Knowledge Map version;
+- tổng số câu;
+- số câu theo chương;
+- kích thước chunk;
+- danh sách file chunk;
+- số byte;
+- SHA-256;
+- CRC32;
+- global checksum.
+
+ZIP được tạo hoàn toàn trên trình duyệt bằng chuẩn ZIP **STORE**, không phụ thuộc CDN và không gửi nội dung câu hỏi sang dịch vụ nén bên ngoài.
+
+## 3. Kiểm tra toàn vẹn
+
+Khi khôi phục ZIP V37.1, hệ thống kiểm tra:
+
+1. CRC32 của từng entry ZIP;
+2. CRC32 trong manifest;
+3. SHA-256 từng chunk;
+4. global checksum;
+5. cấu trúc từng câu hỏi trước khi ghi.
+
+Nếu thiếu chunk hoặc checksum sai, quá trình khôi phục bị dừng trước khi thay đổi ngân hàng.
+
+## 4. Khôi phục theo phạm vi
+
+Giáo viên có thể chọn:
+
+- **Toàn bộ phạm vi trong file**;
+- **một chương cụ thể** như F1, F2, ...
+
+Ba chế độ:
+
+### Chỉ thêm câu chưa có
+
+An toàn nhất. ID đã tồn tại được giữ nguyên.
+
+### Gộp — câu file cập nhật nếu trùng ID
+
+Câu cùng ID trong file thay câu hiện có; câu mới được thêm.
+
+### Ghi đè phạm vi đã chọn
+
+Chỉ xóa câu hiện tại trong phạm vi đang chọn, rồi nạp câu của phạm vi đó từ backup. Ví dụ chọn F1 thì F2–F6 không bị chạm tới.
+
+Chế độ ghi đè yêu cầu nhập `THAYTHE` để xác nhận.
+
+## 5. Recovery Snapshot trước thao tác nguy hiểm
+
+Trước khi ghi dữ liệu, V37.1 gọi Data Safety V26/V21 để tạo **Recovery Snapshot trong IndexedDB**. ID snapshot được ghi vào metadata của lần khôi phục.
+
+Nút **Hoàn tác** của V37.1 ưu tiên phục hồi snapshot trước lần khôi phục gần nhất. Nếu không có snapshot V37.1 thì vẫn giữ fallback hoàn tác kiểu JSON cũ.
+
+## 6. Tương thích ngược
+
+V37.1 đọc được:
+
+- ZIP Backup V2 của V37.1;
+- JSON Backup V2 theo chương;
+- file `{ questionBank: [...] }` của V37/V36/V35;
+- mảng JSON câu hỏi kiểu legacy.
+
+Do đó không bắt buộc chuyển đổi các file backup cũ ngay.
+
+## 7. Firestore giữ nguyên
+
+V37.1:
+
+- không tạo collection mới;
+- không tách `questionBanks` thành `questionsF1`, `questionsF2`, ...;
 - không sửa `firestore.rules`;
 - không sửa `firestore.indexes.json`;
-- không migration dữ liệu;
+- không migration dữ liệu cloud;
 - không thay ID câu hỏi;
-- không thay cơ chế Secure Exam;
-- không ghi kế hoạch AI lên Firestore mặc định.
+- không thay Knowledge Map/Quality/Mastery/AI engine.
 
-## Production Center
+## 8. Production Center
 
-V37 giữ tất cả regression cũ và bổ sung:
+Regression V37.1 bổ sung kiểm tra:
 
-- module `37-ai-teaching-intelligence` đã nạp;
-- Privacy Guard loại tên/email/UID/classId/tên lớp khỏi payload AI;
-- Teaching Intelligence vẫn xác định được `knowledgeCode` ưu tiên từ dữ liệu Mastery mẫu.
+- module Backup V2 đã nạp;
+- ZIP writer/reader round-trip hoạt động;
+- hỗ trợ JSON cũ;
+- build đúng `37.1-question-bank-backup-v2`.
 
 ## Build
 
-- `APP_VERSION = 37`
-- `app-build = 37-ai-teaching-intelligence`
-- Service Worker: `sw-v37.js`
-- Cache: `math12hub-v37-shell-10`
-- Local assets: `?v=37`
-- New module: `assets/js/ai-intelligence-v37.js`
-- Mastery engine vẫn dùng build nội bộ `36.3-mastery-adaptive`
+- `APP_VERSION = 37.1`
+- `app-build = 37.1-question-bank-backup-v2`
+- Service Worker: `sw-v37.1.js`
+- Cache: `math12hub-v37-1-shell-11`
+- Local assets: `?v=37.1`
+- New module: `assets/js/bank-backup-v37.1.js`
+- AI Teaching Intelligence engine vẫn dùng build nội bộ `37-ai-teaching-intelligence`
+- Mastery engine vẫn dùng `36.3-mastery-adaptive`
 - Smart Exam vẫn dùng `36.2-smart-exam`
 - Quality Engine vẫn dùng `36.1-quality-engine`
 - Knowledge Map vẫn dùng `36.0-knowledge-map`
 
 ## Sau khi triển khai GitHub Pages
 
-1. Thay toàn bộ package V36.3 bằng V37.
-2. Nhấn `Ctrl + F5` một lần để bỏ cache `shell-9`.
-3. Đăng nhập giáo viên và mở **AI Teaching Intelligence**.
-4. Chọn lớp → **Phân tích lớp**.
-5. Xem các mã ưu tiên và nhóm học tập động.
-6. Nếu có Gemini API key, bấm **Tạo kế hoạch AI**; kiểm tra kỹ bản nháp trước khi dùng.
-7. Admin mở **Production Center → Chạy kiểm tra** để xác nhận Privacy Guard và các regression cũ.
+1. Thay toàn bộ package V37 bằng V37.1.
+2. Nhấn `Ctrl + F5` một lần để bỏ cache `shell-10`.
+3. Đăng nhập tài khoản giáo viên → **Ngân hàng câu hỏi**.
+4. Bấm **Backup V2**.
+5. Thử **ZIP toàn bộ** và giữ file ở nơi an toàn.
+6. Admin mở **Production Center → Chạy kiểm tra**.
+7. Khi cần khôi phục, ưu tiên thử **Chỉ thêm** hoặc **Cập nhật ID** trước; chỉ dùng **Ghi đè** khi thật sự cần.

@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V37 — Production Hardening inherited from V35
+   Math12 Hub V37.1 — Production Hardening inherited from V35
    Keeps the V34 data/query architecture intact while improving:
    - on-demand loading for heavy/role-specific features
    - PWA/offline shell readiness
@@ -9,10 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
-const V35_BUILD='37-ai-teaching-intelligence';
+const V35_BUILD='37.1-question-bank-backup-v2';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=37',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js?v=37',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=37.1',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=37.1',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -94,7 +94,7 @@ function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:St
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
   let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='37'&&meta==='37',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='37.1'&&meta==='37.1',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));
@@ -133,8 +133,12 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
     const ti=window.v37TeachingIntelligence,rr=ti?.privacyRegression?.();
     checks.push(v35Check('AI Teaching Intelligence V37',ti?.build==='37-ai-teaching-intelligence'&&rr?.ok===true,rr?.ok?`Privacy Guard đạt • payload ${rr.bytes} bytes • ưu tiên ${rr.priority}`:'V37 privacy regression chưa đạt','fail'))
   }catch(err){checks.push(v35Check('AI Teaching Intelligence V37',false,v35SanitizeErrorText(err?.message),'fail'))}
+  try{
+    const bk=window.v371BackupV2,rt=bk?._test,zip=rt?.makeZip?.([{name:'manifest.json',data:new TextEncoder().encode('{\"ok\":true}')}]),files=zip?rt.readZip(zip):null;
+    checks.push(v35Check('Question Bank Backup V37.1',bk?.build==='37.1-question-bank-backup-v2'&&files?.has('manifest.json')&&window.V371_BACKUP_STATUS?.legacyJson===true,'ZIP chunk + checksum + khôi phục theo chương + JSON cũ','fail'))
+  }catch(err){checks.push(v35Check('Question Bank Backup V37.1',false,v35SanitizeErrorText(err?.message),'fail'))}
   let fail=checks.filter(x=>x.level==='fail').length,warn=checks.filter(x=>x.level==='warn').length,pass=checks.filter(x=>x.level==='pass').length;
-  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V37: còn ${fail} lỗi kiểm tra`:`V37: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
+  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V37.1: còn ${fail} lỗi kiểm tra`:`V37.1: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
 }
 
 function v35StatusChip(level,text){return `<span class="v35-status ${level}">${esc(text)}</span>`}
@@ -189,7 +193,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v37.js?v=37',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v37.1.js?v=37.1',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

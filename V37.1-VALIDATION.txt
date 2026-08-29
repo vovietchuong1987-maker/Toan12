@@ -1,0 +1,29 @@
+Math12 Hub V37.1 — Question Bank Backup V2
+Validation summary
+
+- APP_VERSION: 37.1
+- app-build: 37.1-question-bank-backup-v2
+- Service Worker: sw-v37.1.js
+- Cache: math12hub-v37-1-shell-11
+- New module: assets/js/bank-backup-v37.1.js
+- Backup format: math12hub-question-bank-backup-v2
+- Backup schema: 2
+- Default chunk: 500 questions
+- Available chunk sizes: 250 / 500 / 1000
+- Integrity: SHA-256 + CRC32 + global checksum
+- Restore scopes: ALL or individual chapter
+- Restore modes: add / update / replace selected scope
+- Legacy JSON compatibility: YES
+- Firestore Rules changed: NO
+- Firestore Indexes changed: NO
+- New Firestore collection: NO
+
+Regression fixture:
+- 1,203 questions
+- F1: 1,002 questions -> 3 chunks at 500/chunk
+- F2: 201 questions -> 1 chunk
+- ZIP entries: 5 including manifest.json
+- unzip integrity test: PASS
+- add mode: PASS
+- update-by-ID mode: PASS
+- replace-chapter mode: PASS
