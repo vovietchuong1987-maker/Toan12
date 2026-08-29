@@ -1,231 +1,29 @@
-# Math12 Hub V37.2 — TikZ Figure Support
+# Math12 Hub V37.3 — Native Function Graph Engine
 
-V37.2 nâng trực tiếp từ V37.1.1. Toàn bộ Knowledge Map V36.0, Question Quality V36.1, Smart Exam V36.2, Mastery V36.3, AI Teaching Intelligence V37, Backup V2 V37.1 và giao diện ngân hàng gọn V37.1.1 được giữ nguyên.
+V37.3 nâng trực tiếp từ V37.2 và giữ nguyên TikZ Figure Support, Backup V2, AI Teaching Intelligence, Mastery, Smart Exam, Quality Engine và Knowledge Map.
 
-## Mục tiêu
+## Điểm mới
 
-Hỗ trợ câu hỏi LaTeX có hình `tikzpicture` theo hướng an toàn và phù hợp ngân hàng lớn:
+V37.3 có bộ dựng SVG cục bộ cho 3 họ đồ thị thường gặp trong Toán 12:
 
-- tự tách `\begin{tikzpicture}...\end{tikzpicture}` khỏi phần thân câu hỏi khi import;
-- luôn giữ nguyên mã TikZ gốc trong `figureLatex` để sửa và export LaTeX vòng kín;
-- dựng SVG trực tiếp trên trình duyệt cho các hình THPT phổ biến: trục tọa độ, đường thẳng/đường gấp khúc, nét đứt, mũi tên, node, điểm tròn và `plot(\x,{...})` với biểu thức số an toàn;
-- nếu hình vượt bộ dựng nhanh, tự dùng TikZJax dự phòng khi có mạng;
-- SVG TikZJax sau khi dựng được cache trong IndexedDB, không nhồi hàng loạt SVG vào document câu hỏi hoặc state localStorage;
-- học sinh xem cùng một renderer trong xem trước, phòng thi và chữa bài;
-- `tkz-tab`, Graph2D và Oxyz cũ vẫn dùng renderer riêng đã có từ các bản trước.
+1. `y = ax^3 + bx^2 + cx + d`
+2. `y = (ax+b)/(cx+d)`
+3. `y = (ax^2+bx+c)/(dx+e)`
 
-## Với mẫu đồ thị cực trị
+Trong trình soạn câu hỏi, chọn **Hình vẽ kèm theo → Đồ thị chuẩn THPT V37.3**, sau đó bấm **Trình tạo đồ thị**. Có thể nhập hệ số hoặc nhập nhanh công thức để hệ thống tự nhận dạng.
 
-Mẫu:
+Graph Engine tự tính các đặc trưng phù hợp: cực trị, giao trục, tiệm cận đứng/ngang/xiên, tâm và miền hiển thị. Giáo viên có thể bật/tắt lưới, điểm cực trị, đường chiếu trục, nhãn tọa độ và giao trục.
 
-```latex
-\begin{tikzpicture}[scale=0.8, >=stealth]
-\draw[->] (-2.2,0) -- (2.2,0) node[below]{$x$};
-\draw[->] (0,-4.5) -- (0,1) node[right]{$y$};
-\node[below left] at (0,0) {$O$};
-\draw[dashed] (1,0) -- (1,-4) -- (0,-4);
-\draw[smooth, samples=100, domain=-2.1:1.75, thick] plot(\x, {(\x)^3 - 3*(\x) - 2});
-\node[above] at (-1,0) {$-1$};
-\node[above] at (1,0) {$1$};
-\node[left] at (0,-2) {$-2$};
-\node[left] at (0,-4) {$-4$};
-\fill (-1,0) circle (1.5pt) (1,-4) circle (1.5pt);
-\end{tikzpicture}
-```
+Với phân thức có nhân tử chung làm gián đoạn có thể khử, V37.3 vẽ **điểm khuyết** thay vì báo sai thành tiệm cận đứng.
 
-được V37.2 nhận diện bằng renderer `native-svg`, không cần Internet. Regression đóng gói xác nhận có đường đồ thị, đường gạch, 2 điểm tô và các nhãn tọa độ.
+## SVG offline + TikZ round-trip
 
-## Luồng sử dụng
+Đồ thị V37.3 được dựng bằng SVG ngay trên trình duyệt nên không cần Internet. Khi xuất ngân hàng sang LaTeX, cấu hình Graph Engine được tự chuyển thành mã TikZ để tiếp tục dùng trong tài liệu `.tex`.
 
-1. Vào **Ngân hàng câu hỏi → Công cụ → Import LaTeX / .tex**.
-2. Dán câu `ex` có `tikzpicture` và bấm **Phân tích & xem trước**.
-3. Nếu hình thuộc bộ dựng nhanh, nhãn **SVG nhanh V37.2** xuất hiện.
-4. Với TikZ nâng cao, hệ thống hiển thị **TikZJax dự phòng**; khi dựng xong SVG được cache trong IndexedDB.
-5. Khi sửa từng câu, nút **Kiểm tra TikZ** nằm cạnh nút Chèn mẫu/Hướng dẫn.
-6. Có thể chạy **Ngân hàng câu hỏi → Công cụ → Kiểm tra TikZ V37.2** để thống kê các câu có hình.
+TikZ V37.2 vẫn được giữ nguyên cho các hình đã có sẵn hoặc hình phức tạp hơn.
 
-## Bảo toàn dữ liệu
+## Kiểm tra
 
-V37.2 không tạo collection Firestore mới, không đổi Rules và không đổi indexes. `figureLatex` vẫn là nguồn chuẩn để export LaTeX. SVG cache chỉ là lớp hiển thị tăng tốc và có thể tạo lại từ TikZ gốc.
+Vào **Ngân hàng câu hỏi → Công cụ → Kiểm tra Graph V37.3** để thống kê các câu đang dùng Graph Engine và chạy regression 3 họ hàm.
 
-## Build
-
-- APP_VERSION: `37.2`
-- app-build: `37.2-tikz-figure-support`
-- module mới: `assets/js/tikz-support-v37.2.js`
-- Service Worker: `sw-v37.2.js`
-- cache shell: `math12hub-v37-2-shell-13`
-- TikZJax fallback được pin phiên bản `1.6.0` qua jsDelivr và chỉ dùng cho hình không dựng được bằng SVG nhanh.
-
----
-
-# Math12 Hub V37.1.1 — Compact Question Bank UI
-
-Bản vá giao diện nâng trực tiếp từ V37.1. Không thay đổi Firestore, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery, AI Teaching Intelligence hay Backup V2.
-
-## Thay đổi giao diện Ngân hàng câu hỏi
-
-- Chỉ giữ 6 thao tác chính ở đầu trang: Thêm câu hỏi, Tạo đề, Quality, Knowledge Map, Quét trùng và Công cụ.
-- Gom Import/AI/Chuẩn hóa, Backup/Khôi phục, Export và Bảo trì vào menu Công cụ.
-- 4 chỉ số chính hiển thị dạng thẻ gọn; 4 chỉ số phụ nằm trong “Xem thêm thống kê”.
-- Knowledge Map Overview được thu chiều cao và Knowledge Map chi tiết mặc định đóng.
-- Quality strip được thu gọn.
-- Mobile chuyển công cụ phụ thành panel nổi phía dưới, tránh kéo ngang dãy nút.
-
-## Tương thích
-
-Dữ liệu và Backup V2 vẫn dùng schema/build V37.1; đây chỉ là patch UI.
-# Math12 Hub V37.1 — Question Bank Backup V2
-
-V37.1 được nâng trực tiếp từ V37. Toàn bộ AI Teaching Intelligence V37, Mastery & Adaptive V36.3, Smart Exam Matrix V36.2, Question Quality Engine V36.1, Knowledge Map V36.0, Firestore, phân quyền và UX V35.x được giữ nguyên.
-
-## Mục tiêu V37.1
-
-Khi ngân hàng tăng lên hàng nghìn hoặc hàng chục nghìn câu, một file JSON duy nhất trở nên khó kiểm tra và rủi ro khi khôi phục. V37.1 **không tách collection Firestore**; dữ liệu online vẫn là một ngân hàng thống nhất. Chỉ lớp sao lưu/khôi phục được tổ chức theo:
-
-```text
-TOÀN BỘ
-  → CHƯƠNG
-     → CHUNK 250 / 500 / 1000 CÂU
-```
-
-## 1. Backup V2 theo chương
-
-Trong **Ngân hàng câu hỏi → Backup V2**, giáo viên có thể:
-
-- xuất **ZIP toàn bộ ngân hàng**;
-- xuất **ZIP riêng từng chương**;
-- xuất **JSON riêng từng chương**;
-- xuất **JSON tương thích V37** khi cần dùng với bản cũ.
-
-Mặc định mỗi chunk chứa 500 câu; có thể chọn 250 hoặc 1000 câu/chunk.
-
-## 2. Cấu trúc ZIP
-
-Ví dụ:
-
-```text
-math12-question-bank-v37.1-YYYYMMDD-HHMM.zip
-├── manifest.json
-└── questions/
-    ├── F1/
-    │   ├── F1-001.json
-    │   ├── F1-002.json
-    │   └── F1-003.json
-    ├── F2/
-    │   └── F2-001.json
-    └── ...
-```
-
-`manifest.json` chứa:
-
-- phiên bản ứng dụng;
-- thời điểm sao lưu;
-- curriculum/Knowledge Map version;
-- tổng số câu;
-- số câu theo chương;
-- kích thước chunk;
-- danh sách file chunk;
-- số byte;
-- SHA-256;
-- CRC32;
-- global checksum.
-
-ZIP được tạo hoàn toàn trên trình duyệt bằng chuẩn ZIP **STORE**, không phụ thuộc CDN và không gửi nội dung câu hỏi sang dịch vụ nén bên ngoài.
-
-## 3. Kiểm tra toàn vẹn
-
-Khi khôi phục ZIP V37.1, hệ thống kiểm tra:
-
-1. CRC32 của từng entry ZIP;
-2. CRC32 trong manifest;
-3. SHA-256 từng chunk;
-4. global checksum;
-5. cấu trúc từng câu hỏi trước khi ghi.
-
-Nếu thiếu chunk hoặc checksum sai, quá trình khôi phục bị dừng trước khi thay đổi ngân hàng.
-
-## 4. Khôi phục theo phạm vi
-
-Giáo viên có thể chọn:
-
-- **Toàn bộ phạm vi trong file**;
-- **một chương cụ thể** như F1, F2, ...
-
-Ba chế độ:
-
-### Chỉ thêm câu chưa có
-
-An toàn nhất. ID đã tồn tại được giữ nguyên.
-
-### Gộp — câu file cập nhật nếu trùng ID
-
-Câu cùng ID trong file thay câu hiện có; câu mới được thêm.
-
-### Ghi đè phạm vi đã chọn
-
-Chỉ xóa câu hiện tại trong phạm vi đang chọn, rồi nạp câu của phạm vi đó từ backup. Ví dụ chọn F1 thì F2–F6 không bị chạm tới.
-
-Chế độ ghi đè yêu cầu nhập `THAYTHE` để xác nhận.
-
-## 5. Recovery Snapshot trước thao tác nguy hiểm
-
-Trước khi ghi dữ liệu, V37.1 gọi Data Safety V26/V21 để tạo **Recovery Snapshot trong IndexedDB**. ID snapshot được ghi vào metadata của lần khôi phục.
-
-Nút **Hoàn tác** của V37.1 ưu tiên phục hồi snapshot trước lần khôi phục gần nhất. Nếu không có snapshot V37.1 thì vẫn giữ fallback hoàn tác kiểu JSON cũ.
-
-## 6. Tương thích ngược
-
-V37.1 đọc được:
-
-- ZIP Backup V2 của V37.1;
-- JSON Backup V2 theo chương;
-- file `{ questionBank: [...] }` của V37/V36/V35;
-- mảng JSON câu hỏi kiểu legacy.
-
-Do đó không bắt buộc chuyển đổi các file backup cũ ngay.
-
-## 7. Firestore giữ nguyên
-
-V37.1:
-
-- không tạo collection mới;
-- không tách `questionBanks` thành `questionsF1`, `questionsF2`, ...;
-- không sửa `firestore.rules`;
-- không sửa `firestore.indexes.json`;
-- không migration dữ liệu cloud;
-- không thay ID câu hỏi;
-- không thay Knowledge Map/Quality/Mastery/AI engine.
-
-## 8. Production Center
-
-Regression V37.1 bổ sung kiểm tra:
-
-- module Backup V2 đã nạp;
-- ZIP writer/reader round-trip hoạt động;
-- hỗ trợ JSON cũ;
-- build đúng `37.1-question-bank-backup-v2`.
-
-## Build
-
-- `APP_VERSION = 37.1`
-- `app-build = 37.1-question-bank-backup-v2`
-- Service Worker: `sw-v37.1.1.js`
-- Cache: `math12hub-v37-1-shell-11`
-- Local assets: `?v=37.1`
-- New module: `assets/js/bank-backup-v37.1.js`
-- AI Teaching Intelligence engine vẫn dùng build nội bộ `37-ai-teaching-intelligence`
-- Mastery engine vẫn dùng `36.3-mastery-adaptive`
-- Smart Exam vẫn dùng `36.2-smart-exam`
-- Quality Engine vẫn dùng `36.1-quality-engine`
-- Knowledge Map vẫn dùng `36.0-knowledge-map`
-
-## Sau khi triển khai GitHub Pages
-
-1. Thay toàn bộ package V37 bằng V37.1.
-2. Nhấn `Ctrl + F5` một lần để bỏ cache `shell-10`.
-3. Đăng nhập tài khoản giáo viên → **Ngân hàng câu hỏi**.
-4. Bấm **Backup V2**.
-5. Thử **ZIP toàn bộ** và giữ file ở nơi an toàn.
-6. Admin mở **Production Center → Chạy kiểm tra**.
-7. Khi cần khôi phục, ưu tiên thử **Chỉ thêm** hoặc **Cập nhật ID** trước; chỉ dùng **Ghi đè** khi thật sự cần.
+Xem `V37.3-VALIDATION.txt` để biết kết quả kiểm tra bản đóng gói.

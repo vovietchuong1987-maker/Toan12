@@ -516,3 +516,30 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* V37.1.1 final compact alignment */
 .v371-bank-head{justify-content:flex-start}.v371-bank-primary-actions{width:100%;justify-content:flex-start}.v371-tools-menu>summary{display:inline-flex;align-items:center;justify-content:center}.v371-version-chip{display:none}
+
+/* ==========================================================
+   V37.2 — TikZ Figure Support
+   ========================================================== */
+.v372-tikz{position:relative;overflow:hidden}.v372-svg-wrap{display:flex;align-items:center;justify-content:center;min-height:150px;padding:6px;background:#fff;border:1px solid #e3eaf7;border-radius:12px;overflow:auto}.v372-svg-wrap svg{display:block;width:min(100%,720px);height:auto;max-height:520px;color:#111}.v372-tikz.compact .v372-svg-wrap{min-height:120px}.v372-tikz-status{display:flex;align-items:center;gap:7px;margin:-2px 0 7px;font-size:9px;font-weight:850;color:#64748b}.v372-tikz-status span{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;background:#f2f4f8}.v372-tikz-status small{font-size:8.5px;font-weight:650;color:#8a94a5}.v372-tikz-status.ok span{background:#eaf8f0;color:#18734a}.v372-tikz-status.wait span{background:#fff6df;color:#8c6500}.v372-tikz-status.warn span{background:#fff0f0;color:#a33}.v372-inline-state{display:inline-flex;margin-left:5px;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:850}.v372-inline-state.ok{background:#eaf8f0;color:#18734a}.v372-inline-state.wait{background:#fff6df;color:#8c6500}.v372-audit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.v372-audit-grid>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:#f9fbff}.v372-audit-grid b,.v372-audit-grid small{display:block}.v372-audit-grid b{font-size:24px}.v372-audit-grid small{font-size:9px;color:var(--muted);margin-top:2px}.v372-tikz-frame{min-height:230px}.v372-native-svg{shape-rendering:geometricPrecision;text-rendering:geometricPrecision}
+@media(max-width:760px){.v372-audit-grid{grid-template-columns:1fr 1fr}.v372-svg-wrap{min-height:110px;padding:3px}.v372-svg-wrap svg{max-height:390px}.v372-tikz-frame{min-height:190px}.v372-tikz-status small{display:none}}
+
+/* ==========================================================
+   V37.3 — Native Function Graph Engine
+   ========================================================== */
+.v373-native-graph{border:1px solid #dbe5f3;border-radius:16px;background:#fff;overflow:hidden}
+.v373-graph-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;background:#f7faff;border-bottom:1px solid #e4ebf5;font-size:12px;color:#31517d}
+.v373-graph-head span{font-weight:800}.v373-graph-head small{color:#64748b;text-align:right}
+.v373-graph-wrap{padding:8px;display:flex;justify-content:center;overflow:auto;background:#fff}.v373-graph-svg{width:min(100%,680px);height:auto;display:block}
+.v373-graph-error{padding:10px}.v373-builder .field-grid{gap:12px}.v373-coeff-grid{display:grid;grid-template-columns:repeat(5,minmax(85px,1fr));gap:10px}
+.v373-coeff-grid label{display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #dbe5f3;border-radius:10px;padding:8px 10px}
+.v373-coeff-grid label span{font-weight:800;min-width:14px}.v373-coeff-grid input{width:100%;min-width:0;border:0;background:transparent;font:inherit;outline:none}
+.v373-checks{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;border:1px solid #dbe5f3;border-radius:12px;background:#f8fafc}.v373-checks label{font-size:13px;display:flex;align-items:center;gap:6px}
+.v373-formula{min-height:42px;display:flex;align-items:center;padding:8px 10px;border:1px solid #dbe5f3;border-radius:10px;background:#fff;font-weight:800;color:#17356a}
+.v373-builder-preview{min-height:300px;border:1px solid #dbe5f3;border-radius:14px;background:#fff;padding:8px;display:flex;align-items:center;justify-content:center;overflow:auto}
+@media(max-width:700px){.v373-coeff-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v373-graph-head{align-items:flex-start;flex-direction:column}.v373-builder-preview{min-height:220px}}
+.v373-builder-overlay{position:fixed;inset:0;z-index:1400;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:18px}
+.v373-builder-modal{width:min(1040px,96vw);max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 28px 80px rgba(15,23,42,.28);display:flex;flex-direction:column;overflow:hidden}
+.v373-builder-head,.v373-builder-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #e5eaf2}.v373-builder-head h3{margin:0}.v373-builder-head small{color:#64748b}.v373-builder-foot{justify-content:flex-end;border-bottom:0;border-top:1px solid #e5eaf2}.v373-builder-body{padding:16px 18px;overflow:auto}
+@media(max-width:700px){.v373-builder-overlay{padding:6px}.v373-builder-modal{width:100%;max-height:97vh;border-radius:14px}.v373-builder-head,.v373-builder-foot{padding:11px 12px}.v373-builder-body{padding:12px}.v373-builder-foot{flex-wrap:wrap}}
+.v373-formula-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.v373-formula-entry input{width:100%;border:1px solid #dbe5f3;border-radius:10px;padding:10px 12px;font:inherit;outline:none}.v373-formula-entry input:focus{border-color:#9bb3f3;box-shadow:0 0 0 3px rgba(49,87,213,.1)}
+@media(max-width:600px){.v373-formula-entry{grid-template-columns:1fr}.v373-formula-entry .btn{width:100%}}

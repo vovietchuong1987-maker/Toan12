@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V37.1.1 — Production Hardening inherited from V35
+   Math12 Hub V37.3 — Production Hardening inherited from V35
    Keeps the V34 data/query architecture intact while improving:
    - on-demand loading for heavy/role-specific features
    - PWA/offline shell readiness
@@ -9,10 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
-const V35_BUILD='37.1.1-compact-question-bank-ui';
+const V35_BUILD='37.3-native-function-graph';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=37.1.1',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js?v=37.1.1',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=37.3',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=37.3',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -44,7 +44,7 @@ async function v35EnsureFeature(name,{quiet=false}={}){
   if(v35FeatureReady(name))return true;
   if(v35FeaturePromises.has(name))return v35FeaturePromises.get(name);
   let f=V35_FEATURES[name];if(!f)throw new Error(`Tính năng nền V35/V36 không tồn tại: ${name}`);
-  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V37 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
+  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V37.3 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
   v35FeaturePromises.set(name,p);try{return await p}catch(err){v35FeaturePromises.delete(name);throw err}
 }
 async function v35EnsureXlsx(){return v35EnsureFeature('xlsx')}
@@ -94,7 +94,7 @@ function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:St
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
   let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='37.1.1'&&meta==='37.1.1',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='37.3'&&meta==='37.3',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));
@@ -137,8 +137,16 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
     const bk=window.v371BackupV2,rt=bk?._test,zip=rt?.makeZip?.([{name:'manifest.json',data:new TextEncoder().encode('{\"ok\":true}')}]),files=zip?rt.readZip(zip):null;
     checks.push(v35Check('Question Bank Backup V37.1',bk?.build==='37.1-question-bank-backup-v2'&&files?.has('manifest.json')&&window.V371_BACKUP_STATUS?.legacyJson===true,'ZIP chunk + checksum + khôi phục theo chương + JSON cũ','fail'))
   }catch(err){checks.push(v35Check('Question Bank Backup V37.1',false,v35SanitizeErrorText(err?.message),'fail'))}
+  try{
+    const rr=window.v372TikzRegression?.();
+    checks.push(v35Check('TikZ Figure Support V37.2',window.V372Tikz?.version==='37.2'&&rr?.ok===true,rr?.ok?`SVG ${rr.engine} • ${rr.bytes} bytes`:'TikZ regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('TikZ Figure Support V37.2',false,v35SanitizeErrorText(err?.message),'fail'))}
+  try{
+    const ge=window.V373Graph,rr=window.v373GraphRegression?.();
+    checks.push(v35Check('Native Function Graph V37.3',ge?.build==='37.3-native-function-graph'&&rr?.ok===true,rr?.ok?`3/3 họ hàm • nhận dạng công thức ${rr.formulaOk?'đạt':'chưa đạt'}`:'Graph regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('Native Function Graph V37.3',false,v35SanitizeErrorText(err?.message),'fail'))}
   let fail=checks.filter(x=>x.level==='fail').length,warn=checks.filter(x=>x.level==='warn').length,pass=checks.filter(x=>x.level==='pass').length;
-  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V37.1.1: còn ${fail} lỗi kiểm tra`:`V37.1.1: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
+  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V37.3: còn ${fail} lỗi kiểm tra`:`V37.3: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
 }
 
 function v35StatusChip(level,text){return `<span class="v35-status ${level}">${esc(text)}</span>`}
@@ -165,7 +173,7 @@ function v35Diagnostics(){
   return {...base,appVersion:APP_VERSION,hardeningSchema:V35_HARDENING_SCHEMA,build:V35_BUILD,v35:{createdAt:v35Now(),serviceWorker:v35ServiceWorkerState,features:{xlsx:v35FeatureReady('xlsx'),ai:v35FeatureReady('ai'),reports:v35FeatureReady('reports')},regression:v35RegressionLast,runtimeIssues:v35RuntimeIssues.slice(0,20)}}
 }
 function v35ExportDiagnostics(){
-  let payload=v35Diagnostics(),name=`math12hub-v37-diagnostics-${new Date().toISOString().slice(0,10)}.json`;
+  let payload=v35Diagnostics(),name=`math12hub-v37.3-diagnostics-${new Date().toISOString().slice(0,10)}.json`;
   if(typeof triggerJsonDownload==='function')return triggerJsonDownload(payload,name);
   let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
 }
@@ -193,7 +201,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v37.1.1.js?v=37.1.1',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v37.3.js?v=37.3',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

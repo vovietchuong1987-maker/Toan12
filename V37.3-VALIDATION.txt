@@ -1,0 +1,29 @@
+Math12 Hub V37.3 — Native Function Graph Engine
+Validation date: 2026-08-29
+
+BUILD
+- APP_VERSION: 37.3
+- app-build: 37.3-native-function-graph
+- Service Worker: sw-v37.3.js
+- Cache: math12hub-v37-3-shell-14
+- New module: assets/js/graph-engine-v37.3.js
+
+SUPPORTED NATIVE GRAPH FAMILIES
+1. Cubic: y = ax^3 + bx^2 + cx + d
+2. Rational 1/1: y = (ax+b)/(cx+d)
+3. Rational 2/1: y = (ax^2+bx+c)/(dx+e)
+
+REGRESSION
+- 30 JavaScript files: syntax PASS
+- 309 static HTML IDs: 0 duplicates
+- Index local assets: complete
+- Service Worker core assets: complete
+- Formula recognition: PASS for all 3 families
+- Native SVG rendering: 3/3 PASS
+- User sample y=x^3-3x-2: extrema (-1,0) and (1,-4) PASS
+- Rational 1/1: vertical + horizontal asymptotes PASS
+- Rational 2/1: vertical + oblique asymptotes + extrema PASS
+- Removable discontinuity (common factor): detected as open hole, not false vertical asymptote
+- Native graph -> TikZ export: PASS
+- Firestore rules/indexes: unchanged from V37.2
+- No Firestore migration or new collection
