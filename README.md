@@ -1,3 +1,19 @@
+# Math12 Hub V37.1.1 — Compact Question Bank UI
+
+Bản vá giao diện nâng trực tiếp từ V37.1. Không thay đổi Firestore, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery, AI Teaching Intelligence hay Backup V2.
+
+## Thay đổi giao diện Ngân hàng câu hỏi
+
+- Chỉ giữ 6 thao tác chính ở đầu trang: Thêm câu hỏi, Tạo đề, Quality, Knowledge Map, Quét trùng và Công cụ.
+- Gom Import/AI/Chuẩn hóa, Backup/Khôi phục, Export và Bảo trì vào menu Công cụ.
+- 4 chỉ số chính hiển thị dạng thẻ gọn; 4 chỉ số phụ nằm trong “Xem thêm thống kê”.
+- Knowledge Map Overview được thu chiều cao và Knowledge Map chi tiết mặc định đóng.
+- Quality strip được thu gọn.
+- Mobile chuyển công cụ phụ thành panel nổi phía dưới, tránh kéo ngang dãy nút.
+
+## Tương thích
+
+Dữ liệu và Backup V2 vẫn dùng schema/build V37.1; đây chỉ là patch UI.
 # Math12 Hub V37.1 — Question Bank Backup V2
 
 V37.1 được nâng trực tiếp từ V37. Toàn bộ AI Teaching Intelligence V37, Mastery & Adaptive V36.3, Smart Exam Matrix V36.2, Question Quality Engine V36.1, Knowledge Map V36.0, Firestore, phân quyền và UX V35.x được giữ nguyên.
@@ -133,7 +149,7 @@ Regression V37.1 bổ sung kiểm tra:
 
 - `APP_VERSION = 37.1`
 - `app-build = 37.1-question-bank-backup-v2`
-- Service Worker: `sw-v37.1.js`
+- Service Worker: `sw-v37.1.1.js`
 - Cache: `math12hub-v37-1-shell-11`
 - Local assets: `?v=37.1`
 - New module: `assets/js/bank-backup-v37.1.js`

@@ -155,7 +155,7 @@
     const l=buildMap().lessons.find(x=>x.id===lessonId);if(!l)return;const ch=document.getElementById('bankChapter'),ls=document.getElementById('bankLesson');
     if(ch)ch.value=String(l.chapterId);if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);if(ls)ls.value=l.id;if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);refreshFormFilter();try{v29BankPage=1}catch(_){};renderQuestionBank?.(false);document.getElementById('bankFiltersV36Anchor')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
-  function scrollMap(){document.getElementById('v360KnowledgeMapCard')?.scrollIntoView({behavior:'smooth',block:'start'})}
+  function scrollMap(){const el=document.getElementById('v360KnowledgeMapCard');if(el&&el.tagName==='DETAILS')el.open=true;el?.scrollIntoView({behavior:'smooth',block:'start'})}
 
   function exportMap(){
     if(typeof requireTeacher==='function'&&!requireTeacher('Xuất Knowledge Map'))return;

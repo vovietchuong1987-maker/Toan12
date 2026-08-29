@@ -3,7 +3,7 @@ Validation summary
 
 - APP_VERSION: 37.1
 - app-build: 37.1-question-bank-backup-v2
-- Service Worker: sw-v37.1.js
+- Service Worker: sw-v37.1.1.js
 - Cache: math12hub-v37-1-shell-11
 - New module: assets/js/bank-backup-v37.1.js
 - Backup format: math12hub-question-bank-backup-v2

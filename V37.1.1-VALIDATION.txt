@@ -1,0 +1,10 @@
+Math12 Hub V37.1.1 — Compact Question Bank UI
+
+Expected:
+- APP_VERSION: 37.1.1
+- app-build: 37.1.1-compact-question-bank-ui
+- Service Worker: sw-v37.1.1.js
+- Cache: math12hub-v37-1-1-shell-12
+- Firestore rules/indexes unchanged from V37.1
+- Backup V2 engine remains build 37.1-question-bank-backup-v2
+- Question bank top UI compacted; no data migration.

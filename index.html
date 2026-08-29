@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V37.1 2026–2027 - AI Teaching Intelligence</title>
+<title>Math12 Hub V37.1.1 2026–2027 - Compact Question Bank UI</title>
 <meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
-<meta name="app-version" content="37.1" />
-<meta name="app-build" content="37.1-question-bank-backup-v2" />
+<meta name="app-version" content="37.1.1" />
+<meta name="app-build" content="37.1.1-compact-question-bank-ui" />
 <meta name="app-architecture" content="modular-static-github-pages" />
 <meta name="theme-color" content="#172033" />
-<link rel="manifest" href="manifest.webmanifest?v=37.1" />
-<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=37.1" />
+<link rel="manifest" href="manifest.webmanifest?v=37.1.1" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=37.1.1" />
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-<script defer src="assets/js/mathjax-config.js?v=37.1"></script>
-<script defer src="assets/vendor/mathjax.js?v=37.1"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=37.1">
+<script defer src="assets/js/mathjax-config.js?v=37.1.1"></script>
+<script defer src="assets/vendor/mathjax.js?v=37.1.1"></script>
+<link rel="stylesheet" href="assets/css/app.css?v=37.1.1">
 </head>
 <body>
 <div id="v33PublicReportShell" class="v33-public-shell hidden"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập V33</small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -101,7 +101,7 @@
     </div>
     <div class="sidebar-foot" title="Math12 Hub • Chương trình Toán 12 GDPT 2018">
       <div class="sidebar-foot-title">Toán 12 • GDPT 2018</div>
-      <div class="tiny">V37.1 • AI Teaching Intelligence</div>
+      <div class="tiny">V37.1.1 • Compact Bank UI</div>
     </div>
   </aside>
   <main class="main">
@@ -318,53 +318,92 @@
       </section>
 
       <section class="section teacher-only" id="page-question-bank">
-        <div class="question-bank-head">
-          <div><h3 style="margin:0">Ngân hàng câu hỏi • V37.1</h3><p style="color:var(--muted);font-size:13px;max-width:860px;line-height:1.55">Knowledge Map V36 kết hợp Quality Engine V36.1; V37.1 bổ sung Backup V2 theo chương và chunk có checksum. Firestore vẫn là một ngân hàng thống nhất, còn file sao lưu có thể khôi phục theo phạm vi an toàn.</p></div>
-          <div class="toolbar"><button class="btn btn-soft" onclick="openBulkLatexImport()">⇧ Import LaTeX / .tex</button><button class="btn btn-soft" onclick="goPage('ai-teacher')">✦ Trợ lý AI V32</button><button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">◇ Knowledge Map V36</button><button class="btn btn-soft" onclick="v360NormalizeBank(true)">↻ Chuẩn hóa V36</button><button class="btn btn-soft" onclick="v361OpenQualityCenter()">✓ Quality V36.1</button><button class="btn btn-soft" onclick="v29OpenDuplicateCenter()">≈ Quét trùng</button><button class="btn btn-soft" onclick="exportQuestionBankCSVV29()">CSV</button><button class="btn btn-soft" onclick="exportQuestionBankLatexV29()">LaTeX</button><button class="btn btn-soft" data-v371-backup="1" onclick="v371OpenBackupCenter()">⬇ Backup V2</button><button class="btn btn-soft" onclick="v371ChooseRestore()">↥ Khôi phục V2</button><button class="btn btn-soft" onclick="v371UndoLastRestore()">↶ Hoàn tác</button><button class="btn btn-soft" onclick="v26OpenContentTrash()">🗑 Thùng rác</button><button class="btn btn-soft" onclick="exportQuestionBank()">JSON</button><button class="btn btn-soft" onclick="resetQuestionBank()">Ngân hàng mẫu</button><button class="btn btn-soft" onclick="goPage('exam-builder')">▧ Tạo đề</button><button class="btn btn-blue" onclick="openQuestionEditor()">+ Thêm câu hỏi</button></div>
+        <div class="question-bank-head v371-bank-head">
+          <div class="v371-bank-primary-actions" aria-label="Thao tác chính ngân hàng câu hỏi">
+            <button class="btn btn-blue" onclick="openQuestionEditor()">+ Thêm câu hỏi</button>
+            <button class="btn btn-soft" onclick="goPage('exam-builder')">▧ Tạo đề</button>
+            <button class="btn btn-soft" onclick="v361OpenQualityCenter()">✓ Quality</button>
+            <button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">◇ Knowledge Map</button>
+            <button class="btn btn-soft" onclick="v29OpenDuplicateCenter()">≈ Quét trùng</button>
+            <details class="v371-tools-menu">
+              <summary class="btn btn-soft" role="button">⋯ Công cụ</summary>
+              <div class="v371-tools-panel">
+                <div class="v371-tool-group"><b>Nhập & hỗ trợ</b>
+                  <button onclick="openBulkLatexImport()">⇧ Import LaTeX / .tex</button>
+                  <button onclick="goPage('ai-teacher')">✦ Trợ lý AI</button>
+                  <button onclick="v360NormalizeBank(true)">↻ Chuẩn hóa metadata V36</button>
+                </div>
+                <div class="v371-tool-group"><b>Sao lưu & khôi phục</b>
+                  <button data-v371-backup="1" onclick="v371OpenBackupCenter()">⬇ Backup V2</button>
+                  <button onclick="v371ChooseRestore()">↥ Khôi phục V2</button>
+                  <button onclick="v371UndoLastRestore()">↶ Hoàn tác khôi phục</button>
+                </div>
+                <div class="v371-tool-group"><b>Xuất dữ liệu</b>
+                  <button onclick="exportQuestionBankCSVV29()">CSV</button>
+                  <button onclick="exportQuestionBankLatexV29()">LaTeX</button>
+                  <button onclick="exportQuestionBank()">JSON</button>
+                  <button onclick="v360ExportKnowledgeMap()">Knowledge Map JSON</button>
+                </div>
+                <div class="v371-tool-group"><b>Bảo trì</b>
+                  <button onclick="v26OpenContentTrash()">🗑 Thùng rác</button>
+                  <button onclick="resetQuestionBank()">↺ Ngân hàng mẫu</button>
+                </div>
+              </div>
+            </details>
+          </div>
         </div>
-        <div class="grid grid-4 mt">
+
+        <div class="v371-bank-metrics mt">
           <div class="card metric"><div><strong id="bankTotal">0</strong><small>Tổng câu hỏi</small></div><div class="icon">▦</div></div>
           <div class="card metric"><div><strong id="bankCoverage">0%</strong><small>Phủ chuẩn kiến thức</small></div><div class="icon">✓</div></div>
-          <div class="card metric"><div><strong id="bankV29Quality">0%</strong><small>Chất lượng dữ liệu TB</small></div><div class="icon">★</div></div>
-          <div class="card metric"><div><strong id="bankV29Reviewed">0/0</strong><small>Đã duyệt chuyên môn</small></div><div class="icon">☑</div></div>
+          <div class="card metric"><div><strong id="bankV29Quality">0%</strong><small>Chất lượng dữ liệu</small></div><div class="icon">★</div></div>
+          <div class="card metric"><div><strong id="bankV29Reviewed">0/0</strong><small>Đã duyệt</small></div><div class="icon">☑</div></div>
         </div>
-        <div class="grid grid-4 mt v29-bank-secondary">
-          <div class="card metric"><div><strong id="bankLessons">0</strong><small>Bài có câu hỏi</small></div><div class="icon">▤</div></div>
-          <div class="card metric"><div><strong id="bankCustom">0</strong><small>Câu tự thêm/sửa</small></div><div class="icon">✎</div></div>
-          <div class="card metric"><div><strong id="bankV29Duplicates">0</strong><small>Cặp nghi trùng</small></div><div class="icon">≈</div></div>
-          <div class="card metric"><div><strong id="bankV29Versioned">0</strong><small>Câu có lịch sử sửa</small></div><div class="icon">↶</div></div>
-        </div>
-        <div class="card mt v360-hero" id="v360KnowledgeOverview">
-          <div class="v360-hero-top">
-            <div><span class="v360-kicker">V36.0 • KNOWLEDGE MAP ENGINE</span><h3>Bản đồ kiến thức Toán 12</h3><p>Chuẩn hóa một trục dữ liệu duy nhất: <b>Chương → Bài → Đơn vị kiến thức → Dạng toán → Câu hỏi</b>. V36.3 tiếp tục dùng metadata V36 và chỉ bổ sung metadata vào document câu hỏi hiện có, không tạo collection Firestore mới và không thay nội dung/đáp án cũ.</p></div>
-            <div class="v360-actions"><button class="btn btn-soft" onclick="v360ExportKnowledgeMap()">⬇ Xuất Knowledge Map</button><button class="btn btn-blue" onclick="v360NormalizeBank(true)">↻ Chuẩn hóa metadata V36</button></div>
+
+        <details class="v371-secondary-stats mt">
+          <summary><span>＋ Xem thêm thống kê</span><small>Bài có câu • Câu tự thêm • Nghi trùng • Lịch sử sửa</small></summary>
+          <div class="grid grid-4 v29-bank-secondary v371-secondary-grid">
+            <div class="card metric"><div><strong id="bankLessons">0</strong><small>Bài có câu hỏi</small></div><div class="icon">▤</div></div>
+            <div class="card metric"><div><strong id="bankCustom">0</strong><small>Câu tự thêm/sửa</small></div><div class="icon">✎</div></div>
+            <div class="card metric"><div><strong id="bankV29Duplicates">0</strong><small>Cặp nghi trùng</small></div><div class="icon">≈</div></div>
+            <div class="card metric"><div><strong id="bankV29Versioned">0</strong><small>Câu có lịch sử sửa</small></div><div class="icon">↶</div></div>
           </div>
-          <div class="v360-metrics">
+        </details>
+
+        <div class="card mt v360-hero v371-knowledge-summary" id="v360KnowledgeOverview">
+          <div class="v371-knowledge-top">
+            <div><span class="v360-kicker">KNOWLEDGE MAP V36</span><h3>Bản đồ kiến thức Toán 12</h3><p>Chương → Bài → Đơn vị kiến thức → Dạng toán → Câu hỏi.</p></div>
+            <div class="v371-knowledge-actions"><button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">Mở bản đồ</button><button class="btn btn-soft" onclick="v360NormalizeBank(true)">↻ Chuẩn hóa</button></div>
+          </div>
+          <div class="v360-metrics v371-knowledge-metrics">
             <div class="v360-metric"><b id="v360MetricChapters">6</b><small>Chương</small></div>
-            <div class="v360-metric"><b id="v360MetricLessons">19</b><small>Bài học</small></div>
-            <div class="v360-metric"><b id="v360MetricKnowledge">57</b><small>Đơn vị kiến thức</small></div>
-            <div class="v360-metric"><b id="v360MetricForms">57</b><small>Dạng toán chuẩn</small></div>
-            <div class="v360-metric"><b id="v360MetricMetadata">—</b><small>Metadata V36 hoàn chỉnh</small></div>
-            <div class="v360-metric"><b id="v360MetricFormCoverage">—</b><small>Dạng toán đã có câu</small></div>
+            <div class="v360-metric"><b id="v360MetricLessons">19</b><small>Bài</small></div>
+            <div class="v360-metric"><b id="v360MetricKnowledge">57</b><small>Chuẩn</small></div>
+            <div class="v360-metric"><b id="v360MetricForms">57</b><small>Dạng toán</small></div>
+            <div class="v360-metric"><b id="v360MetricMetadata">—</b><small>Metadata</small></div>
+            <div class="v360-metric"><b id="v360MetricFormCoverage">—</b><small>Dạng đã có câu</small></div>
           </div>
-          <div class="v360-migration"><div id="v360MigrationState"><span class="v360-status warn">Đang kiểm tra metadata…</span></div><small>Chuẩn hóa được thực hiện theo yêu cầu của giáo viên và có điểm cứu hộ Data Safety nếu khả dụng.</small></div>
+          <div class="v360-migration v371-migration"><div id="v360MigrationState"><span class="v360-status warn">Đang kiểm tra metadata…</span></div><small>Chỉ chuẩn hóa khi giáo viên yêu cầu.</small></div>
         </div>
 
-        <div class="card mt v360-map-card" id="v360KnowledgeMapCard">
-          <div class="section-head" style="margin:0 0 10px"><div><h3>Knowledge Map • 6 chương / 19 bài / 57 chuẩn</h3><p>Nhấn vào một chuẩn hoặc dạng toán để lọc ngay ngân hàng. Màu trạng thái dựa trên số câu hiện có, không phải đánh giá chất lượng chuyên môn.</p></div><div class="v360-map-legend"><span class="good">≥ 3 câu</span><span class="partial">1–2 câu</span><span class="missing">Chưa có</span></div></div>
-          <div id="v360KnowledgeMap"><div class="online-empty">Đang dựng Knowledge Map V36…</div></div>
-        </div>
+        <details class="card mt v360-map-card v371-map-details" id="v360KnowledgeMapCard">
+          <summary class="v371-section-summary">
+            <div><b>Knowledge Map chi tiết</b><small>6 chương • 19 bài • 57 chuẩn — nhấn để mở/đóng</small></div>
+            <div class="v360-map-legend"><span class="good">≥ 3 câu</span><span class="partial">1–2 câu</span><span class="missing">Chưa có</span></div>
+          </summary>
+          <div class="v371-details-body"><div id="v360KnowledgeMap"><div class="online-empty">Đang dựng Knowledge Map V36…</div></div></div>
+        </details>
 
-        <div class="card mt v361-quality-strip" id="v361QualityStrip">
+        <div class="card mt v361-quality-strip v371-quality-strip" id="v361QualityStrip">
           <div class="v361-strip-head">
-            <div><span class="v360-kicker">V36.1 • QUESTION QUALITY ENGINE</span><h3>Kiểm tra chất lượng ngân hàng</h3><p>Quét cục bộ trên dữ liệu đã tải trong phiên; không tự phát sinh Firestore Reads và không tự sửa nội dung Toán.</p></div>
-            <div class="v361-strip-actions"><button class="btn btn-soft" onclick="v361ScanBank()">↻ Quét toàn bộ</button><button class="btn btn-blue" onclick="v361OpenQualityCenter()">Mở Quality Center</button></div>
+            <div><span class="v360-kicker">QUALITY V36.1</span><h3>Chất lượng ngân hàng</h3><p>Quét cục bộ, không tự phát sinh Firestore Reads.</p></div>
+            <div class="v361-strip-actions"><button class="btn btn-soft" onclick="v361ScanBank()">↻ Quét</button><button class="btn btn-soft" onclick="v361OpenQualityCenter()">Chi tiết</button></div>
           </div>
-          <div class="v361-strip-metrics">
-            <div><b id="v361MetricScore">—</b><small>Điểm kỹ thuật TB</small></div>
-            <div><b id="v361MetricCritical">—</b><small>Câu có lỗi</small></div>
-            <div><b id="v361MetricWarning">—</b><small>Câu cần rà soát</small></div>
-            <div><b id="v361MetricPass">—</b><small>Câu đạt sạch</small></div>
+          <div class="v361-strip-metrics v371-quality-metrics">
+            <div><b id="v361MetricScore">—</b><small>Điểm TB</small></div>
+            <div><b id="v361MetricCritical">—</b><small>Có lỗi</small></div>
+            <div><b id="v361MetricWarning">—</b><small>Cần rà soát</small></div>
+            <div><b id="v361MetricPass">—</b><small>Đạt sạch</small></div>
           </div>
           <div class="v361-last-scan" id="v361LastScan">Chưa quét toàn bộ. Kiểm tra từng câu vẫn chạy khi hiển thị/biên tập.</div>
         </div>
@@ -682,8 +721,8 @@
 
   <div class="card mt v35-production-card">
     <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Production Center • V37.1</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1. Không gửi telemetry ra ngoài.</p></div>
-      <div class="online-actions"><button class="btn btn-soft" onclick="v35RunRegressionChecks({render:true,toast:true})">✓ Chạy kiểm tra</button><button class="btn btn-soft" onclick="v35ClearRuntimeIssues()">Xóa lỗi phiên</button><button class="btn btn-blue" onclick="v35ExportDiagnostics()">Xuất V37.1 diagnostics</button></div>
+      <div><h3>Production Center • V37.1.1</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1. Không gửi telemetry ra ngoài.</p></div>
+      <div class="online-actions"><button class="btn btn-soft" onclick="v35RunRegressionChecks({render:true,toast:true})">✓ Chạy kiểm tra</button><button class="btn btn-soft" onclick="v35ClearRuntimeIssues()">Xóa lỗi phiên</button><button class="btn btn-blue" onclick="v35ExportDiagnostics()">Xuất V37.1.1 diagnostics</button></div>
     </div>
     <div class="grid grid-5 v35-production-metrics">
       <div class="card"><small>Regression</small><h2 id="v35MetricRegression">Chưa chạy</h2></div>
@@ -835,30 +874,30 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=37.1"></script>
-<script src="assets/js/authoring.js?v=37.1"></script>
-<script src="assets/js/data-vault.js?v=37.1"></script>
-<script src="assets/js/exam.js?v=37.1"></script>
-<script src="assets/js/firebase.js?v=37.1"></script>
-<script src="assets/js/dashboard-v22.js?v=37.1"></script>
-<script src="assets/js/admin-v25.js?v=37.1"></script>
-<script src="assets/js/integrity-v26.js?v=37.1"></script>
-<script src="assets/js/teacher-ops-v27.js?v=37.1"></script>
-<script src="assets/js/student-ux-v28.js?v=37.1"></script>
-<script src="assets/js/question-bank-v29.js?v=37.1"></script>
-<script src="assets/js/exam-pro-v30.js?v=37.1"></script>
-<script src="assets/js/analytics-pro-v31.js?v=37.1"></script>
-<script src="assets/js/scale-v34.js?v=37.1"></script>
-<script src="assets/js/hardening-v35.js?v=37.1"></script>
-<script src="assets/js/ui-v35.js?v=37.1"></script>
-<script src="assets/js/bootstrap.js?v=37.1"></script>
-<script src="assets/js/ux-v35.3.js?v=37.1"></script>
-<script src="assets/js/smart-nav-v35.4.js?v=37.1"></script>
-<script src="assets/js/knowledge-map-v36.js?v=37.1"></script>
-<script src="assets/js/quality-engine-v36.1.js?v=37.1"></script>
-<script src="assets/js/smart-exam-v36.2.js?v=37.1"></script>
-<script src="assets/js/mastery-v36.3.js?v=37.1"></script>
-<script src="assets/js/ai-intelligence-v37.js?v=37.1"></script>
-<script src="assets/js/bank-backup-v37.1.js?v=37.1"></script>
+<script src="assets/js/core.js?v=37.1.1"></script>
+<script src="assets/js/authoring.js?v=37.1.1"></script>
+<script src="assets/js/data-vault.js?v=37.1.1"></script>
+<script src="assets/js/exam.js?v=37.1.1"></script>
+<script src="assets/js/firebase.js?v=37.1.1"></script>
+<script src="assets/js/dashboard-v22.js?v=37.1.1"></script>
+<script src="assets/js/admin-v25.js?v=37.1.1"></script>
+<script src="assets/js/integrity-v26.js?v=37.1.1"></script>
+<script src="assets/js/teacher-ops-v27.js?v=37.1.1"></script>
+<script src="assets/js/student-ux-v28.js?v=37.1.1"></script>
+<script src="assets/js/question-bank-v29.js?v=37.1.1"></script>
+<script src="assets/js/exam-pro-v30.js?v=37.1.1"></script>
+<script src="assets/js/analytics-pro-v31.js?v=37.1.1"></script>
+<script src="assets/js/scale-v34.js?v=37.1.1"></script>
+<script src="assets/js/hardening-v35.js?v=37.1.1"></script>
+<script src="assets/js/ui-v35.js?v=37.1.1"></script>
+<script src="assets/js/bootstrap.js?v=37.1.1"></script>
+<script src="assets/js/ux-v35.3.js?v=37.1.1"></script>
+<script src="assets/js/smart-nav-v35.4.js?v=37.1.1"></script>
+<script src="assets/js/knowledge-map-v36.js?v=37.1.1"></script>
+<script src="assets/js/quality-engine-v36.1.js?v=37.1.1"></script>
+<script src="assets/js/smart-exam-v36.2.js?v=37.1.1"></script>
+<script src="assets/js/mastery-v36.3.js?v=37.1.1"></script>
+<script src="assets/js/ai-intelligence-v37.js?v=37.1.1"></script>
+<script src="assets/js/bank-backup-v37.1.js?v=37.1.1"></script>
 </body>
 </html>
