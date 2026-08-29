@@ -1,4 +1,4 @@
-# Math12 Hub V35.3 — UX Polish • Production Hardening & Smart Loading
+# Math12 Hub V35.4 — Smart Navigation • UX Polish • Production Hardening
 
 V35 nâng trực tiếp từ V34 và **giữ nguyên kiến trúc/dữ liệu cũ**: Secure Exam V18, Low Reads V19, Data Safety V21/V26, Teacher Ops V27, Student UX V28, Question Bank V29, Exam Engine V30, Analytics V31, AI V32, Reports V33 và Performance & Scale V34.
 
@@ -45,7 +45,7 @@ Gói vẫn để:
 
 1. Sao lưu bản V34 đang chạy.
 2. Giữ `firestore.rules` và `firestore.indexes.json` hiện tại nếu V34 đã deploy thành công.
-3. Upload toàn bộ V35 (`index.html`, `assets/`, `manifest.webmanifest`, `sw-v35.js`) lên cùng thư mục GitHub Pages.
+3. Upload toàn bộ V35.4 (`index.html`, `assets/`, `manifest.webmanifest`, `sw-v35.js`) lên cùng thư mục GitHub Pages.
 4. Tải lại trang bằng `Ctrl+F5` một lần để nhận service worker/cache V35 mới.
 5. Đăng nhập Admin → **Quản trị hệ thống → Production Center V35** → bấm **Chạy kiểm tra**.
 6. Nếu dùng import Excel, lần đầu mở file `.xlsx` cần Internet để tải XLSX từ jsDelivr; CSV không cần thư viện này.
@@ -91,3 +91,17 @@ V35.3 nâng trực tiếp từ V35.2 và giữ nguyên cấu trúc dữ liệu/F
 - Bảng dữ liệu trên mobile có gợi ý vuốt ngang và cuộn mượt hơn.
 - Bổ sung focus-visible, ARIA cho điều hướng và prefers-reduced-motion.
 - Cache build: `35.3-ux-polish`, Service Worker shell-4.
+
+## Smart Navigation Update 35.4 (29/08/2026)
+
+V35.4 nâng trực tiếp từ V35.3, không thay đổi cấu trúc Firestore và không phát sinh migration dữ liệu.
+
+- **Tìm nhanh toàn hệ thống** bằng `Ctrl/Cmd + K` hoặc phím `/`: tìm trang, chương, bài học, mã kiến thức, đề tự tạo, lớp đã tải và câu hỏi trong ngân hàng (chỉ với giáo viên/admin).
+- Search V35.4 chỉ dùng dữ liệu đã có trong phiên/local state; bản thân tính năng tìm kiếm **không tạo thêm Firestore Reads**.
+- **Ghim mục hay dùng** từ breadcrumb hoặc ngay trong kết quả tìm kiếm; tối đa 8 mục, lưu cục bộ trên thiết bị.
+- **Vừa truy cập**: tự nhớ tối đa 8 trang/bài gần nhất và hiển thị ngay trên Dashboard.
+- **Nhớ bộ lọc** của Học theo bài và Ngân hàng câu hỏi; quay lại trang vẫn giữ từ khóa, chương, bài, mã kiến thức, mức độ, loại câu, trạng thái duyệt, nguồn, thẻ, sắp xếp và số câu/trang.
+- Tìm kiếm hỗ trợ điều hướng bàn phím: `↑/↓`, `Enter`, `Esc`; kết quả tự tuân thủ quyền Student / Teacher / Admin.
+- Production Center bổ sung check **Smart Navigation V35.4**.
+- Cache build: `35.4-smart-navigation`, Service Worker `shell-5`.
+

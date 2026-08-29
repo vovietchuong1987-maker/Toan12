@@ -9,10 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
-const V35_BUILD='35.3-ux-polish';
+const V35_BUILD='35.4-smart-navigation';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=35.3',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js?v=35.3',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=35.4',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=35.4',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -115,6 +115,7 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
   let appCheckKey=String(window.MATH12_APP_CHECK_SITE_KEY||'').trim();
   checks.push(v35Check('Firebase App Check',appCheckKey&&typeof firebaseAppCheckStatus!=='undefined'&&firebaseAppCheckStatus==='active',appCheckKey?(typeof firebaseAppCheckStatus==='undefined'?'Chờ Firebase khởi tạo':firebaseAppCheckStatus):'Chưa nhập reCAPTCHA site key','warn'));
   checks.push(v35Check('Smart Loading',!v35InitialFeatureState.xlsx&&!v35InitialFeatureState.ai&&!v35InitialFeatureState.reports,'Excel/AI/Báo cáo được hoãn tải ở trang đầu','warn'));
+  checks.push(v35Check('Smart Navigation V35.4',!!window.v354SmartNavigation&&window.v354SmartNavigation.build==='35.4-smart-navigation'&&!!document.getElementById('v354SearchTrigger'),'Tìm nhanh + ghim + gần đây + nhớ bộ lọc','warn'));
   let fail=checks.filter(x=>x.level==='fail').length,warn=checks.filter(x=>x.level==='warn').length,pass=checks.filter(x=>x.level==='pass').length;
   v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V35: còn ${fail} lỗi kiểm tra`:`V35: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
 }
@@ -171,7 +172,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v35.js?v=35.3',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v35.js?v=35.4',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

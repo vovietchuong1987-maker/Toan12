@@ -54,3 +54,12 @@ UX UPDATE 35.3:
 - Responsive table swipe hint trên mobile.
 - Accessibility: focus-visible, aria-label nav, reduced motion.
 - Cache build 35.3 / shell-4.
+
+SMART NAVIGATION UPDATE 35.4:
+- Global Search / Command Palette: Ctrl/Cmd+K hoặc /.
+- Search theo quyền, không tự tạo thêm Firestore Reads.
+- Pins + Recent Items trên Dashboard.
+- Nhớ bộ lọc Học theo bài / Ngân hàng câu hỏi.
+- Keyboard navigation trong kết quả tìm kiếm.
+- Production Center check Smart Navigation V35.4.
+- Cache build 35.4 / shell-5.
