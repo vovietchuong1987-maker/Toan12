@@ -1,3 +1,64 @@
+# Math12 Hub V37.2 — TikZ Figure Support
+
+V37.2 nâng trực tiếp từ V37.1.1. Toàn bộ Knowledge Map V36.0, Question Quality V36.1, Smart Exam V36.2, Mastery V36.3, AI Teaching Intelligence V37, Backup V2 V37.1 và giao diện ngân hàng gọn V37.1.1 được giữ nguyên.
+
+## Mục tiêu
+
+Hỗ trợ câu hỏi LaTeX có hình `tikzpicture` theo hướng an toàn và phù hợp ngân hàng lớn:
+
+- tự tách `\begin{tikzpicture}...\end{tikzpicture}` khỏi phần thân câu hỏi khi import;
+- luôn giữ nguyên mã TikZ gốc trong `figureLatex` để sửa và export LaTeX vòng kín;
+- dựng SVG trực tiếp trên trình duyệt cho các hình THPT phổ biến: trục tọa độ, đường thẳng/đường gấp khúc, nét đứt, mũi tên, node, điểm tròn và `plot(\x,{...})` với biểu thức số an toàn;
+- nếu hình vượt bộ dựng nhanh, tự dùng TikZJax dự phòng khi có mạng;
+- SVG TikZJax sau khi dựng được cache trong IndexedDB, không nhồi hàng loạt SVG vào document câu hỏi hoặc state localStorage;
+- học sinh xem cùng một renderer trong xem trước, phòng thi và chữa bài;
+- `tkz-tab`, Graph2D và Oxyz cũ vẫn dùng renderer riêng đã có từ các bản trước.
+
+## Với mẫu đồ thị cực trị
+
+Mẫu:
+
+```latex
+\begin{tikzpicture}[scale=0.8, >=stealth]
+\draw[->] (-2.2,0) -- (2.2,0) node[below]{$x$};
+\draw[->] (0,-4.5) -- (0,1) node[right]{$y$};
+\node[below left] at (0,0) {$O$};
+\draw[dashed] (1,0) -- (1,-4) -- (0,-4);
+\draw[smooth, samples=100, domain=-2.1:1.75, thick] plot(\x, {(\x)^3 - 3*(\x) - 2});
+\node[above] at (-1,0) {$-1$};
+\node[above] at (1,0) {$1$};
+\node[left] at (0,-2) {$-2$};
+\node[left] at (0,-4) {$-4$};
+\fill (-1,0) circle (1.5pt) (1,-4) circle (1.5pt);
+\end{tikzpicture}
+```
+
+được V37.2 nhận diện bằng renderer `native-svg`, không cần Internet. Regression đóng gói xác nhận có đường đồ thị, đường gạch, 2 điểm tô và các nhãn tọa độ.
+
+## Luồng sử dụng
+
+1. Vào **Ngân hàng câu hỏi → Công cụ → Import LaTeX / .tex**.
+2. Dán câu `ex` có `tikzpicture` và bấm **Phân tích & xem trước**.
+3. Nếu hình thuộc bộ dựng nhanh, nhãn **SVG nhanh V37.2** xuất hiện.
+4. Với TikZ nâng cao, hệ thống hiển thị **TikZJax dự phòng**; khi dựng xong SVG được cache trong IndexedDB.
+5. Khi sửa từng câu, nút **Kiểm tra TikZ** nằm cạnh nút Chèn mẫu/Hướng dẫn.
+6. Có thể chạy **Ngân hàng câu hỏi → Công cụ → Kiểm tra TikZ V37.2** để thống kê các câu có hình.
+
+## Bảo toàn dữ liệu
+
+V37.2 không tạo collection Firestore mới, không đổi Rules và không đổi indexes. `figureLatex` vẫn là nguồn chuẩn để export LaTeX. SVG cache chỉ là lớp hiển thị tăng tốc và có thể tạo lại từ TikZ gốc.
+
+## Build
+
+- APP_VERSION: `37.2`
+- app-build: `37.2-tikz-figure-support`
+- module mới: `assets/js/tikz-support-v37.2.js`
+- Service Worker: `sw-v37.2.js`
+- cache shell: `math12hub-v37-2-shell-13`
+- TikZJax fallback được pin phiên bản `1.6.0` qua jsDelivr và chỉ dùng cho hình không dựng được bằng SVG nhanh.
+
+---
+
 # Math12 Hub V37.1.1 — Compact Question Bank UI
 
 Bản vá giao diện nâng trực tiếp từ V37.1. Không thay đổi Firestore, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery, AI Teaching Intelligence hay Backup V2.

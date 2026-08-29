@@ -1,0 +1,49 @@
+Math12 Hub V37.2 — TikZ Figure Support
+Validation date: 2026-08-29
+
+BUILD
+- APP_VERSION: 37.2
+- app-build: 37.2-tikz-figure-support
+- Service Worker: sw-v37.2.js
+- Cache: math12hub-v37-2-shell-13
+- New module: assets/js/tikz-support-v37.2.js
+
+STATIC VALIDATION
+- JavaScript modules: 29
+- node --check: PASS for all application JS + service worker
+- HTML IDs: 309
+- Duplicate IDs: 0
+- Missing local assets referenced by index/service worker: 0
+- firestore.rules unchanged from V37.1.1: YES
+- firestore.indexes.json unchanged from V37.1.1: YES
+
+TIKZ V37.2 REGRESSION — USER GRAPH SAMPLE
+Input contains:
+- x/y arrow axes
+- dashed guide line
+- cubic plot: (x)^3 - 3*x - 2
+- nodes O, x, y, -1, 1, -2, -4
+- filled points (-1,0) and (1,-4)
+Result:
+- ok: true
+- engine: native-svg
+- SVG size: 3579 bytes
+- unsupported commands: 0
+- filled circles: 2
+- text labels: 7
+- path/polyline elements: 6
+
+DATA / ROUND-TRIP
+- figureLatex remains the source of truth.
+- LaTeX export continues to emit original TikZ code.
+- Native SVG is generated on demand; it is not duplicated into every question document.
+- Complex TikZ can fall back to TikZJax; successful fallback SVG is cached in IndexedDB.
+- Cached SVG is sanitized before DOM insertion.
+- Fallback iframe runs sandboxed with allow-scripts only.
+
+COMPATIBILITY
+- Existing tkz-tab native renderer unchanged.
+- Existing graph2d renderer unchanged.
+- Existing Oxyz renderer unchanged.
+- V37.1 Backup V2 unchanged and remains backward compatible.
+- No Firestore migration required.
