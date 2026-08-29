@@ -1,84 +1,78 @@
-# Math12 Hub V36.0 — Knowledge Map & Question Bank Engine
+# Math12 Hub V36.1 — Question Quality Engine
 
-V36.0 được nâng trực tiếp từ V35.4. Toàn bộ nền V34 Scale, V35 Production Hardening, Role-aware UI, UX Polish và Smart Navigation được giữ nguyên.
+V36.1 được nâng trực tiếp từ V36.0. Knowledge Map 6 chương / 19 bài / 57 đơn vị kiến thức / 57 dạng toán được giữ nguyên; toàn bộ nền V34 Scale, V35 Production Hardening, Role-aware UI, UX Polish và Smart Navigation tiếp tục tương thích.
 
-## Trọng tâm V36.0
+## Trọng tâm V36.1
 
-V36.0 tạo một taxonomy thống nhất cho Toán 12 GDPT 2018:
+V36.1 bổ sung `assets/js/quality-engine-v36.1.js`, chạy cục bộ trên ngân hàng câu hỏi đã tải trong phiên. Module không tự tạo Firestore query mới.
 
-**Chương → Bài → Đơn vị kiến thức → Dạng toán chuẩn → Câu hỏi**
+Question Quality Engine kiểm tra:
 
-- 6 chương.
-- 19 bài.
-- 57 đơn vị kiến thức (`F1-01.K1`...).
-- 57 dạng toán chuẩn (`F1-01.D1`...).
-- Dạng toán được ánh xạ về đúng bài, chuẩn kiến thức và mức độ NB/TH/VD.
-- Câu hỏi mới/sửa bằng trình soạn được bổ sung metadata V36 tự động.
-- Câu hỏi cũ vẫn đọc/chấm/sync bình thường; giáo viên có nút **Chuẩn hóa metadata V36** để bổ sung metadata theo yêu cầu.
-- Trước khi chuẩn hóa hàng loạt, V36 cố gắng tạo Recovery Snapshot trong Data Safety Vault nếu chức năng này khả dụng.
+- Cấu trúc câu hỏi và loại câu `mcq / tf / tf4 / short`.
+- MCQ theo cấu trúc 4 phương án A–D; phát hiện phương án trống hoặc trùng sau chuẩn hóa.
+- Kiểm tra chỉ số đáp án MCQ và các dấu `\\True` còn sót/mâu thuẫn.
+- Câu Đúng/Sai 4 ý: đúng 4 mệnh đề, đáp án boolean, ý trùng, thiếu lời giải từng ý và dấu hiệu các ý ít liên kết với dữ kiện chung.
+- Câu trả lời ngắn thiếu đáp án.
+- LaTeX: cặp `$...$`, `\\(...\\)`, `\\[...\\]`, ngoặc nhọn, `\\begin/\\end`, `\\left/\\right`.
+- Dữ kiện: cảnh báo khi đề nhắc hình, đồ thị, bảng biến thiên… nhưng chưa có hình kèm theo; nhận diện placeholder như `...`, `___`, `[?]`, TODO.
+- Metadata Knowledge Map V36 đã lưu: `questionBankSchema`, `knowledgeMapVersion`, `formId`, `blueprintKey`.
+- Nguồn, trạng thái bản nháp và lời giải.
+- Near-duplicate: dùng lại bộ quét gần trùng V29 khi giáo viên chủ động chạy quét toàn bộ.
 
-## Metadata bổ sung cho câu hỏi
+## Quality Center
 
-V36.0 không thay trường `schemaVersion: 29` của Question Bank Pro V29 để tránh xung đột với bộ chuẩn hóa cũ. Các trường mới là additive:
+Trong **Ngân hàng câu hỏi** có khối **Question Quality Engine V36.1** với:
 
-- `questionBankSchema: 36`
-- `curriculumId: MATH12-GDPT2018-2026`
-- `knowledgeMapVersion: 36`
-- `grade: 12`
-- `knowledgeTitle`
-- `formId`
-- `formTitle`
-- `blueprintKey`
-- `taxonomyPath`
-- `metadataStatusV36`
+- Điểm kỹ thuật trung bình.
+- Số câu có lỗi nghiêm trọng.
+- Số câu cần rà soát.
+- Số câu đạt sạch.
+- Nút `Quét toàn bộ` và `Mở Quality Center`.
+- Bộ lọc `QC V36.1: tất cả / Có lỗi kỹ thuật / Cần rà soát / Không lỗi-cảnh báo`.
+- Nhấn trực tiếp điểm QC của từng câu để xem chi tiết và mở trình sửa.
+- Xuất báo cáo audit JSON.
 
-Không tạo Firestore collection mới. `firestore.rules` không cần migration cho V36.0.
+## Kiểm tra trực tiếp khi soạn câu
 
-## Giao diện mới trong Ngân hàng câu hỏi
+Khi mở **Thêm/Sửa câu hỏi**, V36.1 thêm bảng QC trực tiếp ngay trước phần xem trước. Kiểm tra cập nhật sau khi giáo viên nhập dữ liệu.
 
-- Knowledge Map dạng cây theo 6 chương.
-- Mỗi bài hiển thị 3 chuẩn kiến thức và dạng toán tương ứng.
-- Màu độ phủ dạng toán: chưa có / 1–2 câu / từ 3 câu.
-- Nhấn chuẩn/dạng để lọc ngân hàng ngay.
-- Bộ lọc mới **Dạng toán**.
-- Trình soạn câu hỏi có select **Dạng toán chuẩn V36** nhưng vẫn cho phép nhập dạng riêng.
-- CSV xuất từ ngân hàng bổ sung `formId`, `formTitle`, `knowledgeTitle`, `blueprintKey`, `questionBankSchema`.
-- Có thể xuất toàn bộ Knowledge Map + coverage thành JSON.
+Nếu câu đang được đặt `Đã duyệt` nhưng phát hiện lỗi kỹ thuật nghiêm trọng, khi lưu V36.1 tự chuyển câu về `Bản nháp`. Nội dung Toán, đáp án và lời giải không bị tự động sửa.
 
-## Smart Navigation
+## Sửa an toàn
 
-Tìm nhanh V35.4 được giữ nguyên dữ liệu ghim/gần đây trên máy và nâng để tìm thêm:
+Nút **Sửa an toàn** trong Quality Center chỉ:
 
-- mã dạng toán như `F1-01.D2`;
-- tên dạng toán;
-- `formId` / `formTitle` của câu hỏi.
+1. Chuẩn hóa metadata Knowledge Map V36 nếu có thể.
+2. Chuyển câu có lỗi nghiêm trọng từ `Đã duyệt` về `Bản nháp`.
 
-Tìm kiếm vẫn dùng dữ liệu đã có trong phiên, không tự tạo Firestore Reads mới.
+Không thay nội dung câu hỏi, phương án, đáp án hoặc lời giải. Nếu Data Safety sẵn sàng, hệ thống tạo recovery snapshot trước khi ghi.
 
-## Version / cache
+## Giới hạn chuyên môn
 
-- `APP_VERSION = 36.0`
-- `app-build = 36.0-knowledge-map`
-- Service Worker cache: `math12hub-v36-shell-6`
-- Local assets dùng query `?v=36.0`
+Quality Engine là lớp kiểm tra kỹ thuật và heuristic. V36.1 **không dùng CAS để chứng minh rằng mọi đáp án toán học là đúng/sai**, vì vậy không thay thế khâu duyệt chuyên môn của giáo viên. Cảnh báo liên kết giữa các ý Đúng/Sai hoặc thiếu dữ kiện là tín hiệu để rà soát, không phải kết luận tuyệt đối.
 
-Sau khi upload lên GitHub Pages nên Ctrl+F5 một lần để bỏ cache V35.4.
+## Tương thích dữ liệu
 
-## Các lớp tương thích được giữ nguyên
+- Không tạo Firestore collection mới.
+- Không bắt buộc migration Firestore Rules.
+- Không đổi ID câu hỏi.
+- Không xóa dữ liệu V36.0/V35.x.
+- Knowledge Map V36.0 vẫn dùng build nội bộ `36.0-knowledge-map` để giữ tương thích metadata.
 
-- V18 Secure Exam / scoring.
-- V21 Data Safety Vault / sync.
-- V26 Integrity / Trash / recovery.
-- V27 Teacher Operations.
-- V28 Student UX.
-- V29 Question Bank Pro.
-- V30 Exam Pro.
-- V31 Analytics Pro.
-- V32 AI Teacher.
-- V33 Reports.
-- V34 Scale.
-- V35 Production Hardening / role UI / UX / Smart Navigation.
+## Build
 
-## Hướng tiếp theo
+- `APP_VERSION = 36.1`
+- `app-build = 36.1-quality-engine`
+- Service Worker cache: `math12hub-v36-shell-7`
+- Local assets: `?v=36.1`
+- New module: `assets/js/quality-engine-v36.1.js`
 
-V36.1 nên xây **Question Quality Engine** trên taxonomy V36.0: kiểm tra cấu trúc, đáp án, LaTeX, phương án trùng, thiếu dữ kiện và tính liên kết của câu Đúng/Sai 4 ý.
+## Sau khi triển khai GitHub Pages
+
+Thực hiện `Ctrl + F5` một lần để trình duyệt bỏ shell V36.0. Sau đó:
+
+1. Đăng nhập Teacher/Admin.
+2. Mở **Ngân hàng câu hỏi**.
+3. Bấm **Quét toàn bộ** hoặc **Quality V36.1**.
+4. Rà các câu đỏ trước, sau đó các câu vàng.
+5. Vào **Production Center** và chạy regression check.

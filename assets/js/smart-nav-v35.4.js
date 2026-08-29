@@ -29,7 +29,7 @@
     teacher:{title:'Theo dõi lớp',subtitle:'Dashboard lớp và học sinh',icon:'♙',keywords:'theo dõi lớp học sinh dashboard'},
     admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản, lớp và Production Center',icon:'🛡',keywords:'admin quản trị hệ thống'}
   };
-  const FILTER_IDS=['lessonSearch','bankSearch','bankChapter','bankLesson','bankKnowledge','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankSort','bankPageSize'];
+  const FILTER_IDS=['lessonSearch','bankSearch','bankChapter','bankLesson','bankKnowledge','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankQualityV361','bankSort','bankPageSize'];
   let paletteOpen=false,currentResults=[],activeIndex=0,restoreBusy=false;
 
   function role(){try{return typeof currentSecureRole==='function'?currentSecureRole():'student'}catch(_){return 'student'}}
@@ -149,7 +149,7 @@
   function restoreLessonFilter(){const f=readFilters(),el=document.getElementById('lessonSearch');if(el&&typeof f.lessonSearch==='string'&&el.value!==f.lessonSearch){el.value=f.lessonSearch;try{renderLessons()}catch(_){}}}
   function restoreBankFilters(){if(!allowed('question-bank'))return;const f=readFilters();if(!Object.keys(f).some(k=>k.startsWith('bank')))return;restoreBusy=true;try{
     const ch=document.getElementById('bankChapter');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(true);setIfOption(ch,f.bankChapter||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankLesson'),f.bankLesson||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankKnowledge'),f.bankKnowledge||'');if(typeof v360RefreshFormFilter==='function')v360RefreshFormFilter();
-    ['bankSearch','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankSort','bankPageSize'].forEach(id=>{if(Object.prototype.hasOwnProperty.call(f,id))setIfOption(document.getElementById(id),f[id])});
+    ['bankSearch','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankQualityV361','bankSort','bankPageSize'].forEach(id=>{if(Object.prototype.hasOwnProperty.call(f,id))setIfOption(document.getElementById(id),f[id])});
     if(typeof renderQuestionBank==='function')renderQuestionBank(false);
   }catch(err){console.warn('V36.0 restore filters',err)}finally{restoreBusy=false}}
   function restoreChapter(){const f=readFilters(),c=Number(f.activeChapter);if(c&&typeof chapters!=='undefined'&&chapters.some(x=>Number(x.id)===c)){try{activeChapter=c}catch(_){}}}

@@ -1,13 +1,27 @@
-Math12 Hub V36.0 — Knowledge Map & Question Bank Engine
-Build: 36.0-knowledge-map
-Date: 2026-08-29
+Math12 Hub V36.1 — Question Quality Engine
+Build: 36.1-quality-engine
 
-Changes:
-- Added assets/js/knowledge-map-v36.js.
-- Added 6-chapter / 19-lesson / 57-knowledge / 57-form taxonomy.
-- Added additive V36 question metadata and explicit migration tool.
-- Added Knowledge Map coverage UI and standard-form filter.
-- Enhanced question editor with standard form selection.
-- Enhanced CSV export and Smart Navigation for forms.
-- Kept Firestore collections/rules architecture unchanged.
-- Updated PWA shell to math12hub-v36-shell-6.
+Upgraded directly from V36.0.
+
+Added:
+- Local Question Quality Engine (no automatic Firestore reads).
+- MCQ 4-option / answer / duplicate-option checks.
+- TF4 structure, per-statement explanation and coherence heuristic.
+- LaTeX delimiter, braces, environment and left/right validation.
+- Missing visual-reference and placeholder heuristics.
+- V36 persisted metadata checks.
+- Full-bank Quality Center, issue aggregation and JSON audit export.
+- QC filter in Question Bank.
+- Live quality panel in the question editor.
+- Safe Fix: metadata normalization + downgrade critical reviewed questions to draft only.
+- Production Center regression check for V36.1 engine.
+
+Unchanged:
+- Firestore collections and rules.
+- V36 Knowledge Map taxonomy.
+- V35 UX / Smart Navigation.
+- V34 scale / low-read architecture.
+
+PWA:
+- Cache: math12hub-v36-shell-7
+- Asset query: ?v=36.1
