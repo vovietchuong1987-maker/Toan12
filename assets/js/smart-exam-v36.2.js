@@ -49,7 +49,7 @@
   }
   function metadataReady(q){return Number(q?.questionBankSchema)===36&&Number(q?.knowledgeMapVersion)===36&&q?.metadataStatusV36==='complete'&&!!String(q?.knowledgeCode||'').trim()&&!!String(q?.formId||'').trim()}
   function isEligible(q,p=controls()){
-    if(!q||!q.question||!['NB','TH','VD'].includes(q.level)||!['mcq','tf','tf4','short'].includes(q.type))return false;
+    if(!q||!q.question||!['NB','TH','VD','VDC'].includes(q.level)||!['mcq','tf','tf4','short'].includes(q.type))return false;
     if(p.metadata&&!metadataReady(q))return false;
     if(p.review==='reviewed'&&q.reviewStatus!=='reviewed')return false;
     const a=audit(q);
@@ -68,7 +68,7 @@
     exams.forEach(e=>(e.questions||[]).forEach(q=>q?.id&&s.add(q.id)));return s;
   }
   function fingerprint(q){return normalize(q?.question||'').replace(/\s+/g,' ').slice(0,500)}
-  function slotKey(q){return `${Number(q?.chapterId)||0}|${q?.level||''}|${q?.type||''}`}
+  function slotKey(q){const lv=q?.level==='VDC'?'VD':(q?.level||'');return `${Number(q?.chapterId)||0}|${lv}|${q?.type||''}`}
   function seededNoise(seed,key){return (hash(`${seed}|${key}`)%100000)/100000}
   function candidateScore(q,ctx){
     const a=audit(q),k=q.knowledgeCode||'?',f=q.formId||q.form||'?',recent=ctx.recent.has(q.id),kc=ctx.knowledge.get(k)||0,fc=ctx.forms.get(f)||0;
@@ -119,7 +119,7 @@
   }
   function matrixPreflight(){
     const p=controls(),pool=eligiblePool(),cells=typeof readExamBuilderMatrix==='function'?readExamBuilderMatrix():[],short=[];
-    cells.forEach(c=>{const n=pool.filter(q=>Number(q.chapterId)===Number(c.chapterId)&&q.level===c.level).length;if(n<c.quota)short.push({...c,available:n})});
+    cells.forEach(c=>{const n=pool.filter(q=>Number(q.chapterId)===Number(c.chapterId)&&(q.level===c.level||(c.level==='VD'&&q.level==='VDC'))).length;if(n<c.quota)short.push({...c,available:n})});
     const all=(baseBankPool?baseBankPool():(state?.questionBank||[])),clean=all.filter(q=>{const a=audit(q);return !(a.counts?.critical||a.counts?.warning)}).length,safe=all.filter(q=>(audit(q).counts?.critical||0)===0).length,recent=recentQuestionIds(p);
     const metadata=pool.filter(metadataReady).length,knowledge=new Set(pool.map(q=>q.knowledgeCode).filter(Boolean)).size,forms=new Set(pool.map(q=>q.formId).filter(Boolean)).size;
     return {policy:p,totalBank:all.length,eligible:pool.length,safe,clean,metadata,knowledge,forms,recent:recent.size,short,cells};
@@ -134,7 +134,7 @@
     return {format:'math12hub-exam-blueprint',version:'36.2',build:BUILD,createdAt:new Date().toISOString(),title,durationMinutes:int(document.getElementById('ebDuration')?.value||45,5,180),matrix:r.cells,exactTypes:!!v.exact,typeQuota:v.exact?{...v.types}:null,policy:r.policy,availability:{eligible:r.eligible,safe:r.safe,clean:r.clean,knowledge:r.knowledge,forms:r.forms,short:r.short},variantPolicy:{count:int(document.getElementById('ebV30VariantCount')?.value||1,1,8),codes:Array.from({length:int(document.getElementById('ebV30VariantCount')?.value||1,1,8)},(_,i)=>examCode(i)),shuffleQuestions:!!document.getElementById('ebV30ShuffleQuestions')?.checked,shuffleOptions:!!document.getElementById('ebV30ShuffleOptions')?.checked,preserveSections:!!document.getElementById('ebV30PreserveSections')?.checked}};
   }
   function openBlueprint(){
-    if(typeof requireTeacher==='function'&&!requireTeacher('Xem ma trận thông minh V36.2'))return;const b=blueprint(),rows=b.matrix.map(c=>`<tr><td>Chương ${c.chapterId}</td><td>${typeof levelName==='function'?levelName(c.level):c.level}</td><td>${c.quota}</td><td>${eligiblePool().filter(q=>Number(q.chapterId)===Number(c.chapterId)&&q.level===c.level).length}</td></tr>`).join('');
+    if(typeof requireTeacher==='function'&&!requireTeacher('Xem ma trận thông minh V36.2'))return;const b=blueprint(),rows=b.matrix.map(c=>`<tr><td>Chương ${c.chapterId}</td><td>${typeof levelName==='function'?levelName(c.level):c.level}</td><td>${c.quota}</td><td>${eligiblePool().filter(q=>Number(q.chapterId)===Number(c.chapterId)&&(q.level===c.level||(c.level==='VD'&&q.level==='VDC'))).length}</td></tr>`).join('');
     const body=`<div class="v362-modal-hero"><span>V36.2 • SMART BLUEPRINT</span><h3>${escHtml(b.title)}</h3><p>${b.durationMinutes} phút • ${b.matrix.reduce((s,x)=>s+x.quota,0)} câu • mã ${b.variantPolicy.codes.join(', ')}</p></div><div class="grid grid-4 mt"><div class="card"><small>QC đủ điều kiện</small><h2>${b.availability.eligible}</h2></div><div class="card"><small>Chuẩn phủ được</small><h2>${b.availability.knowledge}</h2></div><div class="card"><small>Dạng toán</small><h2>${b.availability.forms}</h2></div><div class="card"><small>Ô thiếu</small><h2>${b.availability.short.length}</h2></div></div><div class="table-wrap mt"><table class="table"><thead><tr><th>Phạm vi</th><th>Mức độ</th><th>Cần</th><th>Đủ điều kiện</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Chưa thiết lập ma trận.</td></tr>'}</tbody></table></div><div class="math-help mt"><b>Quy tắc chọn V36.2:</b> giữ đúng Chương × Mức độ × Loại câu; ưu tiên phủ nhiều mã kiến thức/dạng toán; tránh câu vừa dùng nếu ngân hàng đủ; loại câu có lỗi QC theo chính sách đã chọn. Câu Đúng/Sai 4 ý được coi là một đơn vị nguyên vẹn.</div>`;
     if(typeof openModal==='function')openModal('Ma trận thông minh • V36.2',`${b.availability.eligible} câu đủ điều kiện`,body,`<button class="btn btn-soft" onclick="v362ExportBlueprint()">⬇ Xuất blueprint</button><button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
   }

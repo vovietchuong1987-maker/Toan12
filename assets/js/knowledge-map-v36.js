@@ -30,7 +30,7 @@
         }));
         const forms=(meta.forms||[]).map((f,i)=>{
           const paired=knowledge[Math.min(i,Math.max(0,knowledge.length-1))]||null;
-          return {chapterId:Number(c.id)||0,lessonId:l.id,id:`${l.id}.D${i+1}`,title:f.title||`Dạng ${i+1}`,level:f.level||paired?.level||'TH',tip:f.tip||'',knowledgeCode:paired?.code||'',order:i+1};
+          return {chapterId:Number(c.id)||0,lessonId:l.id,id:f.id||f.id6Pattern||`${l.id}.D${i+1}`,id6Pattern:f.id6Pattern||'',title:f.title||`Dạng ${i+1}`,officialLessonTitle:f.officialLessonTitle||'',level:f.level||'',tip:f.tip||'',knowledgeCode:f.knowledgeCode||paired?.code||'',order:i+1};
         });
         return {chapterId:Number(c.id)||0,id:l.id,title:l.common||l.id,minutes:Number(meta.minutes)||45,goals:meta.goals||[],knowledge,forms};
       });
@@ -45,6 +45,7 @@
   function getForm(id=''){return buildMap().forms.find(f=>f.id===id)||null}
   function lessonForms(lessonId=''){return buildMap().forms.filter(f=>f.lessonId===lessonId)}
   function formForQuestion(q={}){
+    const id6p=window.ID6V374?.inferPattern?.(q)||'';if(id6p){const f=getForm(id6p);if(f)return f}
     if(q.formId){const f=getForm(q.formId);if(f)return f}
     const forms=lessonForms(q.lessonId);
     if(!forms.length)return null;
@@ -62,7 +63,7 @@
     const l=buildMap().lessons.find(x=>x.id===lesson)||null;
     const c=buildMap().chapters.find(x=>x.id===Number(l?.chapterId||q.chapterId))||null;
     const f=(preferredFormId&&getForm(preferredFormId))||formForQuestion({...q,lessonId:lesson});
-    const level=['NB','TH','VD'].includes(q.level)?q.level:(k?.level||f?.level||'TH');
+    const level=['NB','TH','VD','VDC'].includes(q.level)?q.level:(k?.level||f?.level||'TH');
     const type=['mcq','tf','tf4','short'].includes(q.type)?q.type:'';
     const complete=!!(c&&l&&k&&f&&level&&type);
     return {
@@ -75,10 +76,13 @@
       knowledgeCode:k?.code||q.knowledgeCode||'',
       knowledgeTitle:k?.title||q.knowledgeTitle||'',
       formId:f?.id||q.formId||'',
+      id6Pattern:f?.id6Pattern||q.id6Pattern||'',
+      id6:(window.ID6V374?.buildId6?.(f?.id6Pattern||q.id6Pattern||q.formId||'',level))||q.id6||'',
+      id6Title:f?.title||q.id6Title||q.formTitle||q.form||'',
       formTitle:f?.title||q.formTitle||q.form||'',
       form:q.form||f?.title||'',
       level,
-      blueprintKey:[k?.code||q.knowledgeCode||'',f?.id||q.formId||'',level,type].join('|'),
+      blueprintKey:[k?.code||q.knowledgeCode||'',(window.ID6V374?.buildId6?.(f?.id6Pattern||q.id6Pattern||q.formId||'',level))||f?.id||q.formId||'',level,type].join('|'),
       taxonomyPath:[c?`C${c.id}`:'',l?.id||'',k?.code||'',f?.id||''].filter(Boolean).join(' > '),
       metadataStatusV36:complete?'complete':'incomplete'
     };
@@ -138,7 +142,7 @@
   function refreshFormFilter(){
     const el=document.getElementById('bankFormV36');if(!el)return;
     const lessonId=document.getElementById('bankLesson')?.value||'',knowledgeCode=document.getElementById('bankKnowledge')?.value||'',old=el.value;
-    let forms=allForms();if(lessonId)forms=forms.filter(f=>f.lessonId===lessonId);if(knowledgeCode)forms=forms.filter(f=>f.knowledgeCode===knowledgeCode);
+    let forms=allForms();if(lessonId)forms=forms.filter(f=>f.lessonId===lessonId);
     el.innerHTML='<option value="">Tất cả dạng toán</option>'+forms.map(f=>`<option value="${attr(f.id)}">${escHtml(f.id)} • ${escHtml(f.title)}</option>`).join('');
     if(forms.some(f=>f.id===old))el.value=old;
   }
@@ -171,13 +175,13 @@
     input.placeholder='Có thể nhập dạng riêng nếu chưa có trong Knowledge Map';input.classList.add('v360-custom-form-input');
     const hint=document.createElement('div');hint.className='math-help v360-editor-path';hint.id='v360EditorPath';field.appendChild(hint);
     const refresh=()=>{
-      const lid=document.getElementById('qeLesson')?.value||'',kid=document.getElementById('qeKnowledge')?.value||'';let forms=lessonForms(lid);if(kid)forms=forms.filter(f=>f.knowledgeCode===kid);
-      const currentForm=formForQuestion({lessonId:lid,knowledgeCode:kid,level:document.getElementById('qeLevel')?.value,form:input.value,formId:q?.formId||''});
+      const lid=document.getElementById('qeLesson')?.value||'',kid=document.getElementById('qeKnowledge')?.value||'';let forms=lessonForms(lid);
+      const currentForm=(q?.formId||q?.id6||input.value)?formForQuestion({lessonId:lid,knowledgeCode:kid,level:document.getElementById('qeLevel')?.value,form:input.value,formId:q?.formId||'',id6:q?.id6||'',id6Pattern:q?.id6Pattern||''}):null;
       select.innerHTML='<option value="">Dạng tự nhập / chưa phân loại</option>'+forms.map(f=>`<option value="${attr(f.id)}">${escHtml(f.id)} • ${escHtml(f.title)}</option>`).join('');
       if(currentForm&&forms.some(f=>f.id===currentForm.id)){select.value=currentForm.id;if(!input.value)input.value=currentForm.title}
       renderEditorPath();
     };
-    const renderEditorPath=()=>{const k=getKnowledge(document.getElementById('qeKnowledge')?.value||''),f=getForm(select.value);hint.innerHTML=`<b>V36 taxonomy:</b> ${escHtml(k?.code||'Chưa chọn chuẩn')} → ${escHtml(f?.id||'Dạng tự nhập')}${f?` • ${escHtml(f.title)}`:''}`};
+    const renderEditorPath=()=>{const k=getKnowledge(document.getElementById('qeKnowledge')?.value||''),f=getForm(select.value);hint.innerHTML=`<b>ID6 chính thức:</b> ${escHtml(k?.code||'Chưa chọn chuẩn')} → ${escHtml(f?.id||'Dạng tự nhập')}${f?` • ${escHtml(f.title)}`:''}`};
     select.addEventListener('change',()=>{const f=getForm(select.value);if(f){input.value=f.title;const lev=document.getElementById('qeLevel');if(lev)lev.value=f.level||lev.value}renderEditorPath();document.getElementById('qeForm')?.dispatchEvent(new Event('input',{bubbles:true}))});
     ['qeLesson','qeKnowledge'].forEach(fid=>document.getElementById(fid)?.addEventListener('change',()=>setTimeout(refresh,0)));document.getElementById('qeLevel')?.addEventListener('change',renderEditorPath);
     refresh();

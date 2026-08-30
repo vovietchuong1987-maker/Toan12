@@ -99,7 +99,7 @@
     if(referencedVisualButMissing(q))push(issues,issue('VISUAL_MISSING','warning','Đề có nhắc hình/bảng/đồ thị nhưng chưa có hình kèm theo','','Dữ kiện'));
     const persistedMeta=Number(q.questionBankSchema)===36&&Number(q.knowledgeMapVersion)===36&&q.metadataStatusV36==='complete'&&String(q.formId||'').trim()&&String(q.blueprintKey||'').trim();
     if(!persistedMeta&&q.id!=='CÂU MỚI')push(issues,issue('META_V36','warning','Metadata Knowledge Map V36 chưa hoàn chỉnh','Cần chuẩn hóa metadata đã lưu: bài, mã kiến thức, dạng toán và blueprintKey.','Metadata',true));
-    if(!['NB','TH','VD'].includes(q.level))push(issues,issue('LEVEL','warning','Mức độ NB/TH/VD chưa chuẩn','','Metadata',true));
+    if(!['NB','TH','VD','VDC'].includes(q.level))push(issues,issue('LEVEL','warning','Mức độ NB/TH/VD/VDC chưa chuẩn','','Metadata',true));
     if(!['mcq','tf','tf4','short'].includes(q.type))push(issues,issue('TYPE','critical','Loại câu hỏi không hợp lệ','','Cấu trúc'));
     if(!String(q.formId||metadata.formId||'').trim())push(issues,issue('FORM','info','Chưa gắn dạng toán chuẩn V36','','Metadata',true));
     latexAudit(stem,'Nội dung').forEach(x=>issues.push(x));latexAudit(q.explanation||'','Lời giải').forEach(x=>issues.push(x));latexAudit(q.figureLatex||'','Hình vẽ').forEach(x=>issues.push(x));

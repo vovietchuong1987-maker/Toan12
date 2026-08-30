@@ -1,0 +1,27 @@
+Math12 Hub V37.4 — Official ID6 Taxonomy
+Validation date: 2026-08-30
+
+SOURCE ALIGNMENT
+- Official ID6 rule: Grade 12=2; D/H strand; level N/H/V/C; chapter; lesson; form.
+- Official Grade 12 forms implemented: 91 / 91.
+- Prefix counts: 2D1=30, 2H2=10, 2D3=7, 2D4=17, 2H5=19, 2D6=8.
+
+REGRESSION
+- 2D1?1-1 + NB  => 2D1N1-1 PASS
+- 2D1?1-1 + TH  => 2D1H1-1 PASS
+- 2D1?1-1 + VD  => 2D1V1-1 PASS
+- 2D1?1-1 + VDC => 2D1C1-1 PASS
+- 2H5?2-7 + VD  => 2H5V2-7 PASS
+- Internal record ID preserved during ID6 normalization PASS
+- 91 ID6 patterns unique PASS
+- JavaScript syntax PASS
+- HTML duplicate IDs: 0
+- Missing local assets: 0
+- firestore.rules unchanged from V37.3.6 PASS
+- firestore.indexes.json unchanged from V37.3.6 PASS
+
+COMPATIBILITY NOTES
+- Existing 19 internal learning lessons and 57 Mastery knowledge units are intentionally preserved.
+- Official 91 ID6 forms are mapped onto those internal lessons only for Question Bank classification.
+- q.id remains the unique internal database key. q.id6 is classification metadata and may repeat across questions.
+- Old backups remain compatible; legacy form titles can be mapped to ID6 when running “Chuẩn hóa ID6”.
