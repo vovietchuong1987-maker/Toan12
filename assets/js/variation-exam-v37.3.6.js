@@ -94,20 +94,23 @@ function v3736InstallArrowWatcher(){
 function v3736TkzTabNativeHTML(tex=''){
   const d=(typeof parseTkzTabFigure==='function'?parseTkzTabFigure(tex):{ok:false,error:'Thiếu bộ đọc tkz-tab.'});
   if(!d.ok)return `<div class="bulk-errors fatal">${typeof esc==='function'?esc(d.error||'Không đọc được bảng biến thiên.'):d.error}</div>`;
+  const hasFunctionRow=(d.rows?.length||0)>=3||((d.vars?.length||0)>0);
   const n=Math.max(2,d.xsRaw?.length||d.xs?.length||2),safeA=7,safeB=93;
   const nodeX=Array.from({length:n},(_,i)=>safeA+(safeB-safeA)*(i/(n-1)));
   const nodes=[];
-  for(let i=0;i<n;i++){
-    const v=d.vars?.[i]||{};
-    if(v.discontinuity){
-      nodes.push({kind:'break',left:{x:nodeX[i]-3.5,y:v3736PointY(v.leftRaw,v.leftMode),labelY:v3736LabelY(v.leftRaw,v.leftMode),raw:v.leftRaw},right:{x:nodeX[i]+3.5,y:v3736PointY(v.rightRaw,v.rightMode),labelY:v3736LabelY(v.rightRaw,v.rightMode),raw:v.rightRaw}});
-    }else{
-      nodes.push({kind:'normal',pt:{x:nodeX[i],y:v3736PointY(v.rawValue,v.mode),labelY:v3736LabelY(v.rawValue,v.mode),raw:v.rawValue}});
+  if(hasFunctionRow){
+    for(let i=0;i<n;i++){
+      const v=d.vars?.[i]||{};
+      if(v.discontinuity){
+        nodes.push({kind:'break',left:{x:nodeX[i]-3.5,y:v3736PointY(v.leftRaw,v.leftMode),labelY:v3736LabelY(v.leftRaw,v.leftMode),raw:v.leftRaw},right:{x:nodeX[i]+3.5,y:v3736PointY(v.rightRaw,v.rightMode),labelY:v3736LabelY(v.rightRaw,v.rightMode),raw:v.rightRaw}});
+      }else{
+        nodes.push({kind:'normal',pt:{x:nodeX[i],y:v3736PointY(v.rawValue,v.mode),labelY:v3736LabelY(v.rawValue,v.mode),raw:v.rawValue}});
+      }
     }
   }
   const startPt=node=>node?.kind==='break'?node.right:node?.pt;
   const endPt=node=>node?.kind==='break'?node.left:node?.pt;
-  const arrows=[];for(let i=0;i<n-1;i++)arrows.push(v3736Segment(startPt(nodes[i]),endPt(nodes[i+1]),i));
+  const arrows=[];if(hasFunctionRow){for(let i=0;i<n-1;i++)arrows.push(v3736Segment(startPt(nodes[i]),endPt(nodes[i+1]),i));}
 
   const rowLabel=(raw,fallback)=>`<div class="tkztab-label">${v3736MathCell(raw||fallback)}</div>`;
   const xNodes=nodeX.map((x,i)=>`<span class="tkztab-node" style="left:${x}%">${v3736MathCell(d.xsRaw?.[i]||d.xs?.[i]||'')}</span>`).join('');
@@ -137,7 +140,8 @@ function v3736TkzTabNativeHTML(tex=''){
   const imaExtras=(d.imas||[]).map(v=>{const a=Math.max(0,Math.min(n-1,(Number(v.from)||1)-1)),b=Math.max(0,Math.min(n-1,(Number(v.to)||2)-1)),x=(nodeX[a]+nodeX[b])/2;return `<span class="tkztab-extra tkztab-value v3736-value" style="left:${x}%;top:50%">${v3736MathCell(v.valueRaw)}</span>`}).join('');
   const warn=d.unsupported?.length?`<div class="tkztab-validation">Chưa dựng trực tiếp: ${d.unsupported.map(x=>'\\'+x).join(', ')}. Mã gốc vẫn được giữ để chỉnh sửa.</div>`:'';
 
-  return `<div class="tkztab-scroll v3736-tkztab-scroll"><div class="tkztab-native v3736-tkztab math-rich"><div class="tkztab-row tkztab-x">${rowLabel(d.rows?.[0],'$x$')}<div class="tkztab-data">${xNodes}${xExtras}</div></div><div class="tkztab-row tkztab-d">${rowLabel(d.rows?.[1],"$f'(x)$")}<div class="tkztab-data">${dMarks}</div></div><div class="tkztab-row tkztab-y">${rowLabel(d.rows?.[2],'$f(x)$')}<div class="tkztab-data"><svg class="tkztab-arrows v3736-arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${arrows.join('')}</svg>${yMarks}${valExtras}${imaExtras}</div></div></div></div>${warn}`;
+  const yRow=hasFunctionRow?`<div class="tkztab-row tkztab-y">${rowLabel(d.rows?.[2],'$f(x)$')}<div class="tkztab-data"><svg class="tkztab-arrows v3736-arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${arrows.join('')}</svg>${yMarks}${valExtras}${imaExtras}</div></div>`:'';
+  return `<div class="tkztab-scroll v3736-tkztab-scroll"><div class="tkztab-native v3736-tkztab math-rich"><div class="tkztab-row tkztab-x">${rowLabel(d.rows?.[0],'$x$')}<div class="tkztab-data">${xNodes}${xExtras}</div></div><div class="tkztab-row tkztab-d">${rowLabel(d.rows?.[1],"$f'(x)$")}<div class="tkztab-data">${dMarks}</div></div>${yRow}</div></div>${warn}`;
 }
 
 // Override the mature native renderer while keeping the parser/source data intact.

@@ -457,13 +457,15 @@ function parseTkzTabFigure(tex=''){
 function tkzTabFigureSrcdoc(tex=''){
   const d=parseTkzTabFigure(tex);
   if(!d.ok)return `<!doctype html><html><body style="font-family:Arial;padding:20px;color:#b91c1c">${esc(d.error||'Không đọc được bảng biến thiên.')}</body></html>`;
+  const hasFunctionRow=(d.rows?.length||0)>=3||((d.vars?.length||0)>0);
   const n=Math.max(2,d.xs.length),labelX=tkzPlainMath(d.rows[0]||'$x$'),labelD=tkzPlainMath(d.rows[1]||"$y'$"),labelY=tkzPlainMath(d.rows[2]||'$y$');
-  const width=Math.max(720,180+n*142),height=244,labelW=92,top=10,rowX=52,rowD=50,rowY=120,bottom=top+rowX+rowD+rowY;
+  const width=Math.max(720,180+n*142),labelW=92,top=10,rowX=52,rowD=50,rowY=hasFunctionRow?120:0,bottom=top+rowX+rowD+rowY,height=hasFunctionRow?244:132;
   const outerRight=width-14;
   const edgeSafe=Math.max(50,Math.min(70,width*0.08));
   const dataLeft=labelW+edgeSafe,dataRight=outerRight-edgeSafe,usable=dataRight-dataLeft;
   const nodeXs=Array.from({length:n},(_,i)=>dataLeft+usable*(i/(n-1)));
   const yTop=top+rowX+rowD+26,yBottom=bottom-24,yMid=(yTop+yBottom)/2;
+  const renderFunctionRow=hasFunctionRow&&((d.vars?.length||0)>0||(d.rows?.length||0)>=3);
   const splitGap=Math.max(30,Math.min(42,usable/(n*5.5)));
   const lineGap=5;
   const svg=[];
@@ -477,16 +479,16 @@ function tkzTabFigureSrcdoc(tex=''){
   add(`<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7.1" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7 z" class="arrow-head"/></marker></defs>`);
   add(`<rect x="0.75" y="${top}" width="${outerRight-0.75}" height="${rowX}" class="x-bg outer"/>`);
   add(`<rect x="0.75" y="${top+rowX}" width="${outerRight-0.75}" height="${rowD}" class="d-bg outer"/>`);
-  add(`<rect x="0.75" y="${top+rowX+rowD}" width="${outerRight-0.75}" height="${rowY}" class="y-bg outer"/>`);
+  if(renderFunctionRow)add(`<rect x="0.75" y="${top+rowX+rowD}" width="${outerRight-0.75}" height="${rowY}" class="y-bg outer"/>`);
   add(`<rect x="0.75" y="${top}" width="${labelW}" height="${rowX}" class="label-x"/>`);
   add(`<rect x="0.75" y="${top+rowX}" width="${labelW}" height="${rowD}" class="label-d"/>`);
-  add(`<rect x="0.75" y="${top+rowX+rowD}" width="${labelW}" height="${rowY}" class="label-y"/>`);
+  if(renderFunctionRow)add(`<rect x="0.75" y="${top+rowX+rowD}" width="${labelW}" height="${rowY}" class="label-y"/>`);
   add(`<line x1="${labelW}" y1="${top}" x2="${labelW}" y2="${bottom}" class="grid strong"/>`);
   add(`<line x1="0.75" y1="${top+rowX}" x2="${outerRight}" y2="${top+rowX}" class="grid"/>`);
-  add(`<line x1="0.75" y1="${top+rowX+rowD}" x2="${outerRight}" y2="${top+rowX+rowD}" class="grid"/>`);
+  if(renderFunctionRow)add(`<line x1="0.75" y1="${top+rowX+rowD}" x2="${outerRight}" y2="${top+rowX+rowD}" class="grid"/>`);
   add(txt(labelW/2,top+rowX/2+1,labelX,'axis-label italic'));
   add(txt(labelW/2,top+rowX+rowD/2+1,labelD,'axis-label italic'));
-  add(txt(labelW/2,top+rowX+rowD+rowY/2+1,labelY,'axis-label italic'));
+  if(renderFunctionRow)add(txt(labelW/2,top+rowX+rowD+rowY/2+1,labelY,'axis-label italic'));
   for(let i=0;i<n;i++){
     add(txt(nodeXs[i],top+rowX/2+1,d.xs[i]||'','x-text'));
     const b=(d.boundary[i]||'').trim();
@@ -504,24 +506,26 @@ function tkzTabFigureSrcdoc(tex=''){
       add(txt(mid,top+rowX+rowD/2+1,sign,'sign-text'));
     }
   }
-  const nodes=[];
-  for(let i=0;i<n;i++){
-    const v=d.vars[i]||{};
-    if(v.discontinuity){
-      nodes.push({kind:'break',x:nodeXs[i],left:{x:nodeXs[i]-splitGap,y:valueY(v.leftValue,v.leftMode),value:v.leftValue},right:{x:nodeXs[i]+splitGap,y:valueY(v.rightValue,v.rightMode),value:v.rightValue}});
-    }else nodes.push({kind:'normal',x:nodeXs[i],pt:{x:nodeXs[i],y:valueY(v.value,v.mode),value:v.value}});
+  if(renderFunctionRow){
+    const nodes=[];
+    for(let i=0;i<n;i++){
+      const v=d.vars[i]||{};
+      if(v.discontinuity){
+        nodes.push({kind:'break',x:nodeXs[i],left:{x:nodeXs[i]-splitGap,y:valueY(v.leftValue,v.leftMode),value:v.leftValue},right:{x:nodeXs[i]+splitGap,y:valueY(v.rightValue,v.rightMode),value:v.rightValue}});
+      }else nodes.push({kind:'normal',x:nodeXs[i],pt:{x:nodeXs[i],y:valueY(v.value,v.mode),value:v.value}});
+    }
+    const segStart=(node)=>node?.kind==='break'?node.right:node?.pt;
+    const segEnd=(node)=>node?.kind==='break'?node.left:node?.pt;
+    for(let i=0;i<n-1;i++){
+      const a=segStart(nodes[i]),b=segEnd(nodes[i+1]);
+      if(!a||!b)continue;
+      const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+      const padA=Math.min(46,22+String(a.value||'').length*4.2),padB=Math.min(46,22+String(b.value||'').length*4.2);
+      const x1=a.x+ux*padA,y1=a.y+uy*padA,x2=b.x-ux*padB,y2=b.y-uy*padB;
+      add(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="trend-line" marker-end="url(#arr)"/>`);
+    }
+    nodes.forEach(node=>{if(node.kind==='break'){add(valueBox(node.left.x,node.left.y,node.left.value));add(valueBox(node.right.x,node.right.y,node.right.value));}else if(node.pt)add(valueBox(node.pt.x,node.pt.y,node.pt.value));});
   }
-  const segStart=(node)=>node?.kind==='break'?node.right:node?.pt;
-  const segEnd=(node)=>node?.kind==='break'?node.left:node?.pt;
-  for(let i=0;i<n-1;i++){
-    const a=segStart(nodes[i]),b=segEnd(nodes[i+1]);
-    if(!a||!b)continue;
-    const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
-    const padA=Math.min(46,22+String(a.value||'').length*4.2),padB=Math.min(46,22+String(b.value||'').length*4.2);
-    const x1=a.x+ux*padA,y1=a.y+uy*padA,x2=b.x-ux*padB,y2=b.y-uy*padB;
-    add(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="trend-line" marker-end="url(#arr)"/>`);
-  }
-  nodes.forEach(node=>{if(node.kind==='break'){add(valueBox(node.left.x,node.left.y,node.left.value));add(valueBox(node.right.x,node.right.y,node.right.value));}else if(node.pt)add(valueBox(node.pt.x,node.pt.y,node.pt.value));});
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
   *{box-sizing:border-box}html,body{margin:0;background:#fff;color:#111}body{padding:10px;display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}.wrap{width:100%;max-width:${width}px}.frame{width:100%;display:block}.outer{stroke:#141414;stroke-width:1.35}.x-bg{fill:#cff8cc}.d-bg,.y-bg{fill:#fff9d8}.label-x{fill:#f7f7f7;stroke:#141414;stroke-width:1.2}.label-d,.label-y{fill:#ffe4c6;stroke:#141414;stroke-width:1.2}.grid{stroke:#141414;stroke-width:1.2}.grid.strong{stroke-width:1.35}.break-gap{fill:#fffdf0}.break-line{stroke:#111;stroke-width:1.15}.break-line.function-break{stroke-width:1.45}.axis-label{font-family:"Times New Roman",Cambria,serif;font-size:24px;fill:#111}.italic{font-style:italic}.x-text,.sign-text,.value-text{font-family:"Times New Roman",Cambria,serif;fill:#111}.x-text{font-size:24px}.sign-text{font-size:25px}.sign-text.zero{font-size:23px}.trend-line{stroke:#111;stroke-width:1.25;fill:none}.arrow-head{fill:#111}.value-bg{fill:#fff;fill-opacity:.96}.value-text{font-size:24px;font-weight:500}.sqrt-rad{font-size:20px}.sqrt-bar,.sqrt-stroke{stroke:#111;stroke-width:1.35;fill:none;stroke-linecap:round;stroke-linejoin:round}.frame{shape-rendering:geometricPrecision;text-rendering:geometricPrecision}@media(max-width:620px){body{padding:4px}.axis-label,.x-text,.value-text{font-size:21px}.sign-text{font-size:22px}}
   </style></head><body><div class="wrap"><svg class="frame" viewBox="0 0 ${width} ${height}" role="img" aria-label="Bảng biến thiên">${svg.join('')}</svg></div></body></html>`;
@@ -533,6 +537,7 @@ function detectFigureMode(figure='',fallback='tikz'){
 function figureSrcdocByMode(mode,figure){ if(mode==='tkztab')return tkzTabFigureSrcdoc(figure); if(mode==='graph2d')return graphFigureSrcdoc(figure); if(mode==='oxyz')return oxyzFigureSrcdoc(figure); return tikzFigureSrcdoc(figure); }
 function tkzTabNativeHTML(tex=''){
   const d=parseTkzTabFigure(tex);if(!d.ok)return `<div class="bulk-errors fatal">${esc(d.error||'Không đọc được bảng biến thiên.')}</div>`;
+  const hasFunctionRow=(d.rows?.length||0)>=3||((d.vars?.length||0)>0);
   const n=Math.max(2,d.xsRaw?.length||d.xs.length),safeA=8,safeB=92,nodeX=Array.from({length:n},(_,i)=>safeA+(safeB-safeA)*(i/(n-1)));
   const modeY=(mode='')=>String(mode||'').includes('+')?20:String(mode||'').includes('-')?80:50;
   const normRaw=(raw='')=>tkzMathRaw(raw).replace(/\s+/g,'');
@@ -540,11 +545,13 @@ function tkzTabNativeHTML(tex=''){
   const isNegInfRaw=(raw='')=>/^(?:[-−]\\infty|[-−]∞)$/.test(normRaw(raw));
   const rawY=(raw='',mode='')=>{if(isPosInfRaw(raw))return 20;if(isNegInfRaw(raw))return 80;return modeY(mode)};
   const nodes=[];
-  for(let i=0;i<n;i++){const v=d.vars[i]||{};if(v.discontinuity)nodes.push({kind:'break',left:{x:nodeX[i]-4.2,y:rawY(v.leftRaw,v.leftMode),raw:v.leftRaw},right:{x:nodeX[i]+4.2,y:rawY(v.rightRaw,v.rightMode),raw:v.rightRaw}});else nodes.push({kind:'normal',pt:{x:nodeX[i],y:rawY(v.rawValue,v.mode),raw:v.rawValue}})}
+  if(hasFunctionRow){
+    for(let i=0;i<n;i++){const v=d.vars[i]||{};if(v.discontinuity)nodes.push({kind:'break',left:{x:nodeX[i]-4.2,y:rawY(v.leftRaw,v.leftMode),raw:v.leftRaw},right:{x:nodeX[i]+4.2,y:rawY(v.rightRaw,v.rightMode),raw:v.rightRaw}});else nodes.push({kind:'normal',pt:{x:nodeX[i],y:rawY(v.rawValue,v.mode),raw:v.rawValue}})}
+  }
   const startPt=node=>node?.kind==='break'?node.right:node?.pt,endPt=node=>node?.kind==='break'?node.left:node?.pt;
   const ptPad=pt=>{const raw=tkzPlainMath(pt?.raw||'');const len=Math.max(1,raw.length);return Math.max(4.6,Math.min(8.2,4.2+(len-1)*0.45))};
   let hash=0;for(const c of String(tex||''))hash=(hash*31+c.charCodeAt(0))>>>0;const marker=`tkza${hash}`;
-  const arrows=[];for(let i=0;i<n-1;i++){const a=startPt(nodes[i]),b=endPt(nodes[i+1]);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,padA=ptPad(a),padB=ptPad(b)+0.8;arrows.push(`<line x1="${a.x+ux*padA}" y1="${a.y+uy*padA}" x2="${b.x-ux*padB}" y2="${b.y-uy*padB}" class="tkztab-trend" marker-end="url(#${marker})"/>`)}
+  const arrows=[];if(hasFunctionRow){for(let i=0;i<n-1;i++){const a=startPt(nodes[i]),b=endPt(nodes[i+1]);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,padA=ptPad(a),padB=ptPad(b)+0.8;arrows.push(`<line x1="${a.x+ux*padA}" y1="${a.y+uy*padA}" x2="${b.x-ux*padB}" y2="${b.y-uy*padB}" class="tkztab-trend" marker-end="url(#${marker})"/>`)}}
   const rowLabel=(raw,fallback)=>`<div class="tkztab-label">${tkzMathCell(raw||fallback)}</div>`;
   const xNodes=nodeX.map((x,i)=>`<span class="tkztab-node" style="left:${x}%">${tkzMathCell(d.xsRaw?.[i]||d.xs[i]||'')}</span>`).join('');
   const xExtras=(d.vals||[]).map(v=>{let a=Math.max(0,Math.min(n-1,(Number(v.from)||1)-1)),b=Math.max(0,Math.min(n-1,(Number(v.to)||2)-1)),r=Number.isFinite(v.pos)?Math.max(0,Math.min(1,v.pos)):.5,x=nodeX[a]+(nodeX[b]-nodeX[a])*r;return `<span class="tkztab-extra tkztab-node" style="left:${x}%">${tkzMathCell(v.xRaw)}</span>`}).join('');
@@ -553,7 +560,8 @@ function tkzTabNativeHTML(tex=''){
   const valExtras=(d.vals||[]).map(v=>{let a=Math.max(0,Math.min(n-1,(Number(v.from)||1)-1)),b=Math.max(0,Math.min(n-1,(Number(v.to)||2)-1)),r=Number.isFinite(v.pos)?Math.max(0,Math.min(1,v.pos)):.5,x=nodeX[a]+(nodeX[b]-nodeX[a])*r,pa=endPt(nodes[a]),pb=startPt(nodes[b]),y=pa&&pb?pa.y+(pb.y-pa.y)*r:50;return `<span class="tkztab-extra tkztab-value" style="left:${x}%;top:${y}%">${tkzMathCell(v.yRaw)}</span>`}).join('');
   const imaExtras=(d.imas||[]).map(v=>{let a=Math.max(0,Math.min(n-1,(Number(v.from)||1)-1)),b=Math.max(0,Math.min(n-1,(Number(v.to)||2)-1)),x=(nodeX[a]+nodeX[b])/2;return `<span class="tkztab-extra tkztab-value" style="left:${x}%;top:50%">${tkzMathCell(v.valueRaw)}</span>`}).join('');
   const warn=d.unsupported?.length?`<div class="tkztab-validation">Chưa dựng trực tiếp: ${d.unsupported.map(x=>'\\'+x).join(', ')}. Mã gốc vẫn được giữ để chỉnh sửa.</div>`:'';
-  return `<div class="tkztab-scroll"><div class="tkztab-native math-rich"><div class="tkztab-row tkztab-x">${rowLabel(d.rows[0],'$x$')}<div class="tkztab-data">${xNodes}${xExtras}</div></div><div class="tkztab-row tkztab-d">${rowLabel(d.rows[1],"$y'$")}<div class="tkztab-data">${dMarks}</div></div><div class="tkztab-row tkztab-y">${rowLabel(d.rows[2],'$y$')}<div class="tkztab-data"><svg class="tkztab-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"><defs><marker id="${marker}" markerWidth="4" markerHeight="4" refX="3.4" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="#111"/></marker></defs>${arrows.join('')}</svg>${yMarks}${valExtras}${imaExtras}</div></div></div></div>${warn}`;
+  const yRow=hasFunctionRow?`<div class="tkztab-row tkztab-y">${rowLabel(d.rows[2],'$y$')}<div class="tkztab-data"><svg class="tkztab-arrows" viewBox="0 0 100 100" preserveAspectRatio="none"><defs><marker id="${marker}" markerWidth="4" markerHeight="4" refX="3.4" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 z" fill="#111"/></marker></defs>${arrows.join('')}</svg>${yMarks}${valExtras}${imaExtras}</div></div>`:'';
+  return `<div class="tkztab-scroll"><div class="tkztab-native math-rich"><div class="tkztab-row tkztab-x">${rowLabel(d.rows[0],'$x$')}<div class="tkztab-data">${xNodes}${xExtras}</div></div><div class="tkztab-row tkztab-d">${rowLabel(d.rows[1],"$y'$")}<div class="tkztab-data">${dMarks}</div></div>${yRow}</div></div>${warn}`;
 }
 function questionFigureHTML(item={},compact=false){
   const mode=item.figureMode||((item.figureLatex||'').trim()?'tikz':'none');
