@@ -1,0 +1,53 @@
+Math12 Hub V37.4.5 — Hybrid LaTeX Figure Engine
+Build: 37.4.5-hybrid-latex-figure-engine
+Date: 2026-08-30
+
+A. RELEASE / INTEGRATION
+[PASS] APP_VERSION = 37.4.5
+[PASS] meta app-version/build = 37.4.5 / 37.4.5-hybrid-latex-figure-engine
+[PASS] manifest = Math12 Hub V37.4.5
+[PASS] service worker = sw-v37.4.5.js, new cache namespace
+[PASS] all local src/href references from index.html resolve
+[PASS] figure-engine-v37.4.5.js loads after the mature V37.2/V37.3.6/V37.4.x layers
+[PASS] no Firestore rules/index migration
+[PASS] clean F1 bank is bundled only under imports/ and is NOT auto-restored
+
+B. JAVASCRIPT SYNTAX
+[PASS] assets/js/figure-engine-v37.4.5.js
+[PASS] assets/js/core.js
+[PASS] assets/js/hardening-v35.js
+[PASS] sw-v37.4.5.js
+
+C. FIGURE ENGINE
+[PASS] Stored LaTeX SVG has highest priority when figureSvg exists and source hash matches
+[PASS] Smart Native SVG uses explicit Ox/Oy axes as graph viewport
+[PASS] Samples near vertical asymptotes do not define canvas bounds
+[PASS] plot path is clipped to the coordinate viewport
+[PASS] TikZJax fallback remains available for unsupported advanced TikZ
+[PASS] figureDisplay supports maxWidth/maxHeight/align/scale/crop
+[PASS] responsive SVG / preserveAspectRatio / print CSS
+[PASS] white figure paper in dark UI
+[PASS] legacy 2-row x,f(x) tkz-tab gets a dedicated renderer; 3-row BBT still delegates to V37.3.6
+
+D. REGRESSION — EXACT RATIONAL-GRAPH PATTERN USED IN THE BANK
+Source pattern:
+  y = -x/(x+1), vertical asymptote x=-1, horizontal asymptote y=-1
+Result from V3745FigureEngine.regression():
+  ok=true
+  engine=smart-native-svg
+  axisBounds=true
+  compactCanvas=true
+  plotClipping=true
+  width=338
+  height=302
+[PASS]
+
+Generated visual fixtures:
+  tests/v37.4.5-asymptote-regression.svg
+  tests/v37.4.5-asymptote-regression.png
+
+E. INCLUDED CLEAN BANK
+[PASS] questionCount = 240
+[PASS] approved = 240/240
+
+Note: the exact separately packaged V37.4.4 website artifact was not present in the accessible Library. The V37.4.5 figure layer is therefore implemented as a non-destructive compatibility layer over the latest available V37.4.x package foundation, while superseding the known V37.4.4 figure-render hotfix scope (stored SVG / pending TikZ / 2-row BBT issues) without changing unrelated modules.

@@ -1,4 +1,36 @@
-# Math12 Hub V37.4.3 — Clean Question Bank Reset
+# Math12 Hub V37.4.5 — Hybrid LaTeX Figure Engine
+
+Nâng tiếp trên nền Math12 Hub V37.4.x, giữ nguyên toàn bộ kiến trúc cũ và bổ sung một lớp hiển thị hình chuyên biệt.
+
+## V37.4.5 thay đổi gì?
+
+- **Ưu tiên `figureSvg` đã biên dịch từ LaTeX**: nếu JSON có `figureSvg` hợp lệ và hash khớp `figureLatex`, website dùng SVG đó trước.
+- **Smart Native SVG** cho TikZ đồ thị THPT thông dụng: vùng nhìn lấy theo chính các trục `Ox`, `Oy`, không lấy cực trị y của các mẫu gần tiệm cận. Vì vậy các đồ thị phân thức không còn bị kéo dẹt/rộng bất thường.
+- Plot được **clip theo vùng trục**, giữ đúng dạng nhánh khi tiến gần tiệm cận.
+- Kích thước native SVG tôn trọng `scale=...` của `tikzpicture`, giữ tỉ lệ x:y và căn giữa.
+- **TikZJax chỉ là fallback** khi TikZ chứa lệnh mà native renderer không hỗ trợ.
+- SVG đã lưu được chuẩn hóa `viewBox`, `preserveAspectRatio`, responsive và tight-crop an toàn sau khi gắn vào DOM.
+- Thêm renderer riêng cho **BBT 2 dòng `x, f(x)`**, không ép giả hàng `f'(x)`. BBT 3 dòng tiếp tục dùng renderer V37.3.6.
+- Thêm **Công cụ → Kiểm tra hình V37.4.5** để thống kê LaTeX SVG / Smart SVG / TikZJax / BBT 2 dòng.
+- Production regression có thêm kiểm tra đồ thị phân thức với tiệm cận để phát hiện lỗi kéo dẹt canvas.
+- Không đổi Firestore rules/indexes, không tạo collection mới, không xóa chức năng cũ.
+
+## Thứ tự renderer
+
+`Stored LaTeX SVG → Smart Native SVG → TikZJax fallback`
+
+## Kiểm thử V37.4.5
+
+- Mẫu đồ thị $y=-x/(x+1)$ với hai tiệm cận đã qua regression: `smart-native-svg`, `axisBounds=true`, `plotClipping=true`, canvas `338×302`.
+- File kiểm chứng hình nằm trong `tests/v37.4.5-asymptote-regression.svg` và `.png`.
+- Có thể chạy trong Console: `V3745FigureEngine.regression()`.
+
+## Dữ liệu kèm theo
+
+Thư mục `imports/` có bản ngân hàng `F1 CLEAN/APPROVED-ready` 240 câu để khôi phục thủ công. Gói website không tự nạp file này, do đó không ghi đè ngân hàng hiện có khi triển khai.
+
+## Ghi chú nền V37.4.3
+
 
 Nâng trực tiếp từ **V37.4.2 Pure ID6 Taxonomy UI**. Bản này tạo một điểm khởi đầu sạch để xây lại ngân hàng câu hỏi theo chuẩn ID6.
 
