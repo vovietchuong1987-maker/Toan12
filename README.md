@@ -1,3 +1,5 @@
+# Math12 Hub V37.4.2 — Pure ID6 Taxonomy UI
+
 # Math12 Hub V37.4 — Official ID6 Taxonomy
 
 Nâng trực tiếp từ V37.3.6, giữ nguyên toàn bộ nền tảng học tập, Mastery, Quality, Smart Exam, TikZ/Graph và Firestore hiện có.
@@ -27,3 +29,6 @@ Nâng trực tiếp từ V37.3.6, giữ nguyên toàn bộ nền tảng học t�
 2. Vào **Ngân hàng câu hỏi → Dạng toán & ID câu hỏi V37.4**.
 3. Mở **Danh mục 91 dạng** để kiểm tra.
 4. Nếu cần, bấm **Chuẩn hóa ID6**; hệ thống cố gắng tạo Recovery Snapshot trước khi ghi.
+
+
+V37.4.2: xem README-V37.4.2.md

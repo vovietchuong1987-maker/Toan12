@@ -1,0 +1,21 @@
+Math12 Hub V37.4.2 — Pure ID6 Taxonomy UI
+Validation date: 2026-08-30
+
+PASS — APP_VERSION = 37.4.2
+PASS — app-build = 37.4.2-pure-id6-taxonomy-ui
+PASS — 6 official chapters
+PASS — 17 official lessons
+PASS — 91 official ID6 forms
+PASS — 2D1H2-2 decodes to Grade 12 / D / Chapter 1 / TH / Lesson 2 / Form 2
+PASS — Chapter 1 = 30 forms
+PASS — Chapter 1 Lesson 2 = 7 forms
+PASS — Pure UI axis = Chapter → Lesson → Form → Level → ID6
+PASS — Legacy F/K taxonomy controls hidden from main Question Bank UI
+PASS — Internal record id hidden from question list/editor UI; retained in data
+PASS — ID6 coverage uses one-chapter-at-a-time accordion
+PASS — 309 HTML IDs, 0 duplicates
+PASS — all local JavaScript files pass node --check
+PASS — service-worker local asset references all exist
+PASS — Firestore Rules unchanged
+PASS — Firestore indexes unchanged
+PASS — no Firestore collection migration

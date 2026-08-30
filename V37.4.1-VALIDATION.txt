@@ -1,0 +1,15 @@
+Math12 Hub V37.4.1 — ID6 Hierarchy UX
+
+Visible official taxonomy:
+- 6 chapters
+- 17 official lessons
+- 91 official forms
+- ID6 decode example: 2D1H2-2 = Grade 12 / D / Chapter 1 / Understanding / Lesson 2 / Form 2
+
+UX rules:
+- Bank: chapter must be selected before lesson; lesson before form.
+- Selecting one chapter never lists forms from other chapters.
+- Editor: visible hierarchy is Chapter -> Lesson -> Form; legacy lessonId/knowledgeCode fields are hidden compatibility metadata.
+- ID6 remains classification metadata; internal q.id remains unique Firestore record id.
+
+Firestore rules/indexes: unchanged from V37.4.
