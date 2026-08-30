@@ -1,3 +1,57 @@
+# Math12 Hub V37.4.8 — Bulk Figure Manager & Re-render Center
+
+Nâng trực tiếp từ **V37.4.7**, giữ nguyên Approved Gate, Figure QC, Hybrid Figure Engine, Auto Crop/Responsive/Zoom và toàn bộ module cũ.
+
+## Điểm mới V37.4.8
+
+- Thêm **Công cụ → Trung tâm Hình V37.4.8** để quản lý hình theo lô.
+- Dashboard thống kê: đã xác minh, Approved cũ, cần xem, QC lỗi, Stored SVG, Native/Smart và Fallback.
+- Lọc theo trạng thái QC, `figureMode`, engine, ID/ID6/nguồn/nội dung.
+- Chọn hàng loạt và chạy **QC lại** mà không tự xác minh hình thay giáo viên.
+- **Tạo Smart SVG theo lô** cho TikZ/tkz mà native parser hỗ trợ; lưu `figureSvg` + hash nguồn để lần sau ưu tiên Stored SVG.
+- **Chuẩn hóa layout theo lô** (`figureKind`, `figureDisplay`) nhưng không sửa mã TikZ/LaTeX.
+- Có thể **đánh dấu cần xem lại** để thu hồi dấu xác minh hình mà vẫn giữ trạng thái Approved của câu.
+- Có công cụ **xóa cache SVG** khi cần render lại; mã nguồn hình luôn được giữ.
+- Mọi thao tác theo lô có **Hoàn tác lô gần nhất** trong phiên làm việc.
+- Xuất **Figure QC CSV** cho các hình đang lọc.
+- Xử lý theo batch có progress/yield để ngân hàng lớn ít gây treo giao diện.
+- Không đổi `firestore.rules`, `firestore.indexes.json`, không tạo collection mới và không tự thay nội dung toán học.
+
+## Nguyên tắc an toàn
+
+V37.4.8 **không có nút xác minh hàng loạt “Hình đúng”**. Xác minh trực quan vẫn phải thực hiện trong editor V37.4.7 để tránh một batch render kỹ thuật vô tình được coi là đã kiểm tra bằng mắt.
+
+---
+
+# Math12 Hub V37.4.7 — Figure QC + Preview trước Approved
+
+Nâng trực tiếp từ **V37.4.6**, giữ nguyên Hybrid Figure Engine V37.4.5, Auto Crop/Responsive/Zoom V37.4.6 và toàn bộ nền tảng cũ.
+
+## Điểm mới V37.4.7
+
+- Thêm **Figure QC** cho TikZ, tkz, tkz-tab, graph2d và Oxyz.
+- Khi câu mới/chuyển trạng thái sang **Approved** và có hình, bắt buộc **Kiểm tra & xem hình → ✓ Hình đúng** trước khi lưu Approved.
+- Xác minh gắn với `sourceHash`; thay mã hình sẽ tự hủy dấu xác minh cũ.
+- Lưu metadata `figureQC` và `figureStatus` ngay trong document câu hỏi, **không tạo collection Firestore mới**.
+- Câu **Approved từ trước V37.4.7 được giữ nguyên**, không tự hạ trạng thái; nếu sửa hình rồi lưu Approved thì phải xác minh lại.
+- Khi sửa câu mà nguồn hình không đổi, hệ thống bảo toàn `figureSvg`/render metadata cũ thay vì làm mất SVG đã biên dịch.
+- Nếu nguồn hình thay đổi, SVG cũ bị loại để tránh hiển thị hình stale; renderer được chọn lại theo V37.4.5.
+- Thêm **Công cụ → Figure QC V37.4.7** để thống kê toàn ngân hàng: đã xác minh, Approved cũ, cần xem hình, QC lỗi.
+- Question Bank Pro nhận chính thức trạng thái `approved` bên cạnh `draft` và `reviewed`; file 240 câu Approved đi kèm vẫn giữ 240/240 Approved.
+
+## Quy trình duyệt hình mới
+
+1. Mở câu hỏi trong editor.
+2. Chọn trạng thái **Approved**.
+3. Bấm **Kiểm tra & xem hình**.
+4. Quan sát hình thực tế giống hình LaTeX mong muốn.
+5. Bấm **✓ Hình đúng**.
+6. Lưu câu hỏi.
+
+Câu không có hình không cần bước xác minh trực quan.
+
+---
+
 # Math12 Hub V37.4.5 — Hybrid LaTeX Figure Engine
 
 Nâng tiếp trên nền Math12 Hub V37.4.x, giữ nguyên toàn bộ kiến trúc cũ và bổ sung một lớp hiển thị hình chuyên biệt.
@@ -70,3 +124,9 @@ Nâng trực tiếp từ **V37.4.2 Pure ID6 Taxonomy UI**. Bản này tạo mộ
 - Không tạo collection mới.
 - Backup JSON trước reset có trường `questionBank`, vì vậy **Khôi phục V2** có thể đọc lại phần ngân hàng hoạt động.
 - Các câu Word sau khi chuyển LaTeX có thể import lại theo Chương → Bài → Dạng → Mức độ → ID6.
+
+## V37.5 — Figure Production Engine
+- Release Gate cho hình Approved.
+- Safe Repair cache/metadata renderer, không sửa nội dung Toán.
+- Production snapshot có chữ ký và tự báo stale khi ngân hàng thay đổi.
+- Xuất Production Manifest để đối soát trước phát hành.

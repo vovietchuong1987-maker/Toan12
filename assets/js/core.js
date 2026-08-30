@@ -1,4 +1,4 @@
-const APP_VERSION='37.4.5'; // Hybrid LaTeX Figure Engine V37.4.5 on top of the V37.4.x ID6 + clean-bank foundation; all previous modules remain compatible.
+const APP_VERSION='37.5'; // Figure Production Engine + Release Gate on top of V37.4.8; all previous modules remain compatible.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Tính đơn điệu và cực trị của hàm số'},

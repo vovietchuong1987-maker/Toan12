@@ -3,23 +3,27 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V37.4.5 2026–2027 - Hybrid LaTeX Figure Engine</title>
+<title>Math12 Hub V37.5 2026–2027 - Figure Production Engine & Release Gate</title>
 <meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
-<meta name="app-version" content="37.4.5" />
-<meta name="app-build" content="37.4.5-hybrid-latex-figure-engine" />
+<meta name="app-version" content="37.5" />
+<meta name="app-build" content="37.5-figure-production-engine-release-gate" />
 <meta name="app-architecture" content="modular-static-github-pages" />
 <meta name="theme-color" content="#172033" />
-<link rel="manifest" href="manifest.webmanifest?v=37.4.5" />
-<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=37.4.5" />
+<link rel="manifest" href="manifest.webmanifest?v=37.5" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=37.5" />
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-<script defer src="assets/js/mathjax-config.js?v=37.4.5"></script>
-<script defer src="assets/vendor/mathjax.js?v=37.4.5"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=37.4.5">
-<link rel="stylesheet" href="assets/css/id6-v37.4.css?v=37.4.5">
-<link rel="stylesheet" href="assets/css/id6-hierarchy-v37.4.1.css?v=37.4.5">
-<link rel="stylesheet" href="assets/css/id6-pure-ui-v37.4.2.css?v=37.4.5">
-<link rel="stylesheet" href="assets/css/bank-reset-v37.4.3.css?v=37.4.5">
-<link rel="stylesheet" href="assets/css/figure-engine-v37.4.5.css?v=37.4.5">
+<script defer src="assets/js/mathjax-config.js?v=37.5"></script>
+<script defer src="assets/vendor/mathjax.js?v=37.5"></script>
+<link rel="stylesheet" href="assets/css/app.css?v=37.5">
+<link rel="stylesheet" href="assets/css/id6-v37.4.css?v=37.5">
+<link rel="stylesheet" href="assets/css/id6-hierarchy-v37.4.1.css?v=37.5">
+<link rel="stylesheet" href="assets/css/id6-pure-ui-v37.4.2.css?v=37.5">
+<link rel="stylesheet" href="assets/css/bank-reset-v37.4.3.css?v=37.5">
+<link rel="stylesheet" href="assets/css/figure-engine-v37.4.5.css?v=37.5">
+<link rel="stylesheet" href="assets/css/figure-layout-v37.4.6.css?v=37.5">
+<link rel="stylesheet" href="assets/css/figure-qc-v37.4.7.css?v=37.5">
+<link rel="stylesheet" href="assets/css/figure-manager-v37.4.8.css?v=37.5">
+<link rel="stylesheet" href="assets/css/figure-production-v37.5.css?v=37.5">
 </head>
 <body>
 <div id="v33PublicReportShell" class="v33-public-shell hidden"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập V33</small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -106,7 +110,7 @@
     </div>
     <div class="sidebar-foot" title="Math12 Hub • Chương trình Toán 12 GDPT 2018">
       <div class="sidebar-foot-title">Toán 12 • GDPT 2018</div>
-      <div class="tiny">V37.4.5 • Hybrid LaTeX Figure Engine</div>
+      <div class="tiny">V37.5 • Figure Production Engine + Release Gate</div>
     </div>
   </aside>
   <main class="main">
@@ -148,7 +152,7 @@
         </div>
         <div class="admin-only v353-admin-strip" aria-label="Trạng thái hệ thống nhanh">
           <div class="v353-admin-status"><span><small>Firebase App Check</small><b>Bảo vệ request từ trình duyệt</b></span><strong id="v353AdminAppCheck">—</strong></div>
-          <div class="v353-admin-status"><span><small>Lỗi runtime phiên này</small><b>Production Center V37.4.5</b></span><strong id="v353AdminRuntime">0</strong></div>
+          <div class="v353-admin-status"><span><small>Lỗi runtime phiên này</small><b>Production Center V37.5</b></span><strong id="v353AdminRuntime">0</strong></div>
         </div>
 
         <div class="grid grid-4 mt student-only">
@@ -335,7 +339,11 @@
               <div class="v371-tools-panel">
                 <div class="v371-tool-group"><b>Nhập & hỗ trợ</b>
                   <button onclick="openBulkLatexImport()">⇧ Import LaTeX / .tex</button>
-                  <button onclick="v3745OpenFigureAudit()">◈ Kiểm tra hình V37.4.5</button>
+                  <button onclick="v3745OpenFigureAudit()">◈ Engine hình V37.4.5</button>
+                  <button onclick="v3746OpenFigureAudit()">⛶ Bố cục hình V37.4.6</button>
+                  <button onclick="v3747OpenFigureQC()">✓ Figure QC V37.4.7</button>
+                  <button onclick="v3748OpenFigureManager()">▦ Trung tâm Hình V37.4.8</button>
+                  <button onclick="v375OpenProductionCenter()">🔒 Production Hình V37.5</button>
                   <button onclick="v373OpenGraphAudit()">📈 Kiểm tra Graph V37.3.3</button>
                   <button onclick="goPage('ai-teacher')">✦ Trợ lý AI</button>
                   <button onclick="v360NormalizeBank(true)">↻ Chuẩn hóa metadata V36</button>
@@ -425,7 +433,7 @@
             <select id="bankFormV36"><option value="">Tất cả dạng toán</option></select>
             <select id="bankLevel"><option value="">Tất cả mức độ</option><option value="NB">Nhận biết</option><option value="TH">Thông hiểu</option><option value="VD">Vận dụng</option><option value="VDC">Vận dụng cao</option></select>
             <select id="bankType"><option value="">Tất cả loại câu</option><option value="mcq">Nhiều lựa chọn</option><option value="tf">Đúng/Sai 1 mệnh đề</option><option value="tf4">Đúng/Sai 4 ý</option><option value="short">Trả lời ngắn</option></select>
-            <select id="bankReviewStatus"><option value="">Tất cả trạng thái</option><option value="reviewed">Đã duyệt</option><option value="draft">Bản nháp</option></select>
+            <select id="bankReviewStatus"><option value="">Tất cả trạng thái</option><option value="approved">Approved</option><option value="reviewed">Đã duyệt chuyên môn</option><option value="draft">Bản nháp</option></select>
             <select id="bankDifficulty"><option value="">Mọi độ khó</option><option value="1">1/5</option><option value="2">2/5</option><option value="3">3/5</option><option value="4">4/5</option><option value="5">5/5</option></select>
             <select id="bankSource"><option value="">Tất cả nguồn nhập</option></select>
             <input id="bankTag" placeholder="Lọc theo thẻ...">
@@ -728,7 +736,7 @@
 
   <div class="card mt v35-production-card">
     <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Production Center • V37.4.5</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1, TikZ Figure Support V37.2 và Native Function Graph Engine V37.3.3, TikZ Plot Parser V37.3.4 và Variation Arrow Rendering Fix V37.3.6 và Official ID6 Taxonomy V37.4 + Pure ID6 Taxonomy UI V37.4.2 + Clean Question Bank Reset V37.4.3 + Hybrid LaTeX Figure Engine V37.4.5. Không gửi telemetry ra ngoài.</p></div>
+      <div><h3>Production Center • V37.5</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1, TikZ Figure Support V37.2 và Native Function Graph Engine V37.3.3, TikZ Plot Parser V37.3.4 và Variation Arrow Rendering Fix V37.3.6 và Official ID6 Taxonomy V37.4 + Pure ID6 Taxonomy UI V37.4.2 + Clean Question Bank Reset V37.4.3 + Hybrid LaTeX Figure Engine V37.4.5 + Auto Crop, Responsive Figure Layout và Vector Zoom V37.4.6 + Figure QC, Preview-before-Approved và source-hash verification V37.4.7 + Bulk Figure Manager, batch QC/re-render và rollback V37.4.8 + Figure Production Engine, Release Gate, Safe Repair và signed snapshot V37.5. Không gửi telemetry ra ngoài.</p></div>
       <div class="online-actions"><button class="btn btn-soft" onclick="v35RunRegressionChecks({render:true,toast:true})">✓ Chạy kiểm tra</button><button class="btn btn-soft" onclick="v35ClearRuntimeIssues()">Xóa lỗi phiên</button><button class="btn btn-blue" onclick="v35ExportDiagnostics()">Xuất V37.3 diagnostics</button></div>
     </div>
     <div class="grid grid-5 v35-production-metrics">
@@ -881,40 +889,44 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=37.4.5"></script>
-<script src="assets/js/id6-taxonomy-v37.4.js?v=37.4.5"></script>
-<script src="assets/js/authoring.js?v=37.4.5"></script>
-<script src="assets/js/data-vault.js?v=37.4.5"></script>
-<script src="assets/js/exam.js?v=37.4.5"></script>
-<script src="assets/js/firebase.js?v=37.4.5"></script>
-<script src="assets/js/dashboard-v22.js?v=37.4.5"></script>
-<script src="assets/js/admin-v25.js?v=37.4.5"></script>
-<script src="assets/js/integrity-v26.js?v=37.4.5"></script>
-<script src="assets/js/teacher-ops-v27.js?v=37.4.5"></script>
-<script src="assets/js/student-ux-v28.js?v=37.4.5"></script>
-<script src="assets/js/question-bank-v29.js?v=37.4.5"></script>
-<script src="assets/js/exam-pro-v30.js?v=37.4.5"></script>
-<script src="assets/js/analytics-pro-v31.js?v=37.4.5"></script>
-<script src="assets/js/scale-v34.js?v=37.4.5"></script>
-<script src="assets/js/hardening-v35.js?v=37.4.5"></script>
-<script src="assets/js/ui-v35.js?v=37.4.5"></script>
-<script src="assets/js/bootstrap.js?v=37.4.5"></script>
-<script src="assets/js/ux-v35.3.js?v=37.4.5"></script>
-<script src="assets/js/smart-nav-v35.4.js?v=37.4.5"></script>
-<script src="assets/js/knowledge-map-v36.js?v=37.4.5"></script>
-<script src="assets/js/quality-engine-v36.1.js?v=37.4.5"></script>
-<script src="assets/js/smart-exam-v36.2.js?v=37.4.5"></script>
-<script src="assets/js/mastery-v36.3.js?v=37.4.5"></script>
-<script src="assets/js/ai-intelligence-v37.js?v=37.4.5"></script>
-<script src="assets/js/bank-backup-v37.1.js?v=37.4.5"></script>
-<script src="assets/js/tikz-support-v37.2.js?v=37.4.5"></script>
-<script src="assets/js/graph-engine-v37.3.3.js?v=37.4.5"></script>
-<script src="assets/js/tools-menu-v37.3.1.js?v=37.4.5"></script>
-<script src="assets/js/variation-exam-v37.3.6.js?v=37.4.5"></script>
-<script src="assets/js/id6-ui-v37.4.js?v=37.4.5"></script>
-<script src="assets/js/id6-hierarchy-v37.4.1.js?v=37.4.5"></script>
-<script src="assets/js/id6-pure-ui-v37.4.2.js?v=37.4.5"></script>
-<script src="assets/js/bank-reset-v37.4.3.js?v=37.4.5"></script>
-<script src="assets/js/figure-engine-v37.4.5.js?v=37.4.5"></script>
+<script src="assets/js/core.js?v=37.5"></script>
+<script src="assets/js/id6-taxonomy-v37.4.js?v=37.5"></script>
+<script src="assets/js/authoring.js?v=37.5"></script>
+<script src="assets/js/data-vault.js?v=37.5"></script>
+<script src="assets/js/exam.js?v=37.5"></script>
+<script src="assets/js/firebase.js?v=37.5"></script>
+<script src="assets/js/dashboard-v22.js?v=37.5"></script>
+<script src="assets/js/admin-v25.js?v=37.5"></script>
+<script src="assets/js/integrity-v26.js?v=37.5"></script>
+<script src="assets/js/teacher-ops-v27.js?v=37.5"></script>
+<script src="assets/js/student-ux-v28.js?v=37.5"></script>
+<script src="assets/js/question-bank-v29.js?v=37.5"></script>
+<script src="assets/js/exam-pro-v30.js?v=37.5"></script>
+<script src="assets/js/analytics-pro-v31.js?v=37.5"></script>
+<script src="assets/js/scale-v34.js?v=37.5"></script>
+<script src="assets/js/hardening-v35.js?v=37.5"></script>
+<script src="assets/js/ui-v35.js?v=37.5"></script>
+<script src="assets/js/bootstrap.js?v=37.5"></script>
+<script src="assets/js/ux-v35.3.js?v=37.5"></script>
+<script src="assets/js/smart-nav-v35.4.js?v=37.5"></script>
+<script src="assets/js/knowledge-map-v36.js?v=37.5"></script>
+<script src="assets/js/quality-engine-v36.1.js?v=37.5"></script>
+<script src="assets/js/smart-exam-v36.2.js?v=37.5"></script>
+<script src="assets/js/mastery-v36.3.js?v=37.5"></script>
+<script src="assets/js/ai-intelligence-v37.js?v=37.5"></script>
+<script src="assets/js/bank-backup-v37.1.js?v=37.5"></script>
+<script src="assets/js/tikz-support-v37.2.js?v=37.5"></script>
+<script src="assets/js/graph-engine-v37.3.3.js?v=37.5"></script>
+<script src="assets/js/tools-menu-v37.3.1.js?v=37.5"></script>
+<script src="assets/js/variation-exam-v37.3.6.js?v=37.5"></script>
+<script src="assets/js/id6-ui-v37.4.js?v=37.5"></script>
+<script src="assets/js/id6-hierarchy-v37.4.1.js?v=37.5"></script>
+<script src="assets/js/id6-pure-ui-v37.4.2.js?v=37.5"></script>
+<script src="assets/js/bank-reset-v37.4.3.js?v=37.5"></script>
+<script src="assets/js/figure-engine-v37.4.5.js?v=37.5"></script>
+<script src="assets/js/figure-layout-v37.4.6.js?v=37.5"></script>
+<script src="assets/js/figure-qc-v37.4.7.js?v=37.5"></script>
+<script src="assets/js/figure-manager-v37.4.8.js?v=37.5"></script>
+<script src="assets/js/figure-production-v37.5.js?v=37.5"></script>
 </body>
 </html>

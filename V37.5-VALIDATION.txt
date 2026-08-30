@@ -1,0 +1,46 @@
+Math12 Hub V37.5 — VALIDATION
+=============================
+Build: 37.5-figure-production-engine-release-gate
+Base: V37.4.8 Bulk Figure Manager & Re-render Center
+
+STATIC CHECKS
+- [PASS] index.html app-version/app-build/cache-bust updated to 37.5
+- [PASS] APP_VERSION in core.js = 37.5
+- [PASS] hardening V35 version regression updated to 37.5
+- [PASS] Service Worker registration updated to sw-v37.5.js
+- [PASS] sw-v37.5.js includes all V37.4.8 assets + V37.5 JS/CSS
+- [PASS] figure-production-v37.5.js parses with node --check
+- [PASS] all application JS in assets/js parse with node --check
+- [PASS] all local src/href references in index.html exist
+- [PASS] all local CORE references in sw-v37.5.js exist
+- [PASS] firestore.rules unchanged from V37.4.8
+- [PASS] firestore.indexes.json unchanged from V37.4.8
+
+QUESTION BANK CHECK
+- [PASS] 240 questions total
+- [PASS] 240/240 reviewStatus=approved
+- [PASS] 82 figureMode=none
+- [PASS] 76 figureMode=tikz
+- [PASS] 82 figureMode=tkztab
+- [PASS] 5 Stored SVG records
+- [PASS] 0/5 Stored SVG source-hash mismatch in static validation
+
+FEATURE CHECKS
+- [PASS] Release Gate: Operational Ready / Verified Production / Blocked
+- [PASS] Detect failed QC / invalid Stored SVG / stale source hash
+- [PASS] Production signature covers Approved content + answer + ID6 + figure hash + verification
+- [PASS] Signed Production Snapshot and stale detection
+- [PASS] Safe Repair never changes mathematical content, answer, ID6 or reviewStatus
+- [PASS] Safe Repair preserves visual verification only when source hash is unchanged
+- [PASS] Production Manifest JSON export with SHA-256 when Web Crypto is available
+- [PASS] Dynamic bank Release Gate added to Production Center V35
+- [PASS] No auto visual verification
+
+RUNTIME REGRESSION
+- V375FigureProduction.regression()
+- V375FigureProduction.audit()
+- Production Center: Figure Production Gate V37.5
+- Production Center: Ngân hàng hình Production V37.5
+
+NOTE
+The bundled 240-question import is legacy-approved with respect to V37.4.7 visual verification metadata. V37.5 intentionally reports those figures as needing visual verification until a teacher confirms them; it does not downgrade Approved status.
