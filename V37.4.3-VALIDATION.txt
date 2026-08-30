@@ -1,0 +1,20 @@
+Math12 Hub V37.4.3 — Clean Question Bank Reset
+Build: 37.4.3-clean-question-bank-reset
+
+Validated:
+- APP_VERSION/meta: 37.4.3
+- Seed/sample question bank disabled: PASS (SEED_QUESTION_BANK = [])
+- Reset regression: PASS
+  * active questions -> 0
+  * question trash -> 0
+  * custom exams preserved
+  * custom-exam trash preserved
+  * student questionHistory preserved
+- Mandatory backup payload contains questionBank + recycleBinQuestions: PASS
+- Firebase reset strategy: force teacher-content replacement + verify questionBank empty when signed in
+- Firestore rules unchanged from V37.4.2
+- Firestore indexes unchanged from V37.4.2
+- JS syntax: PASS
+- Duplicate HTML IDs: 0
+- Service Worker: sw-v37.4.3.js
+- Cache: math12hub-v37-4-3-shell-24

@@ -3,21 +3,22 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V37.4.2 2026–2027 - Pure ID6 Taxonomy UI</title>
+<title>Math12 Hub V37.4.3 2026–2027 - Clean Question Bank Reset</title>
 <meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
-<meta name="app-version" content="37.4.2" />
-<meta name="app-build" content="37.4.2-pure-id6-taxonomy-ui" />
+<meta name="app-version" content="37.4.3" />
+<meta name="app-build" content="37.4.3-clean-question-bank-reset" />
 <meta name="app-architecture" content="modular-static-github-pages" />
 <meta name="theme-color" content="#172033" />
-<link rel="manifest" href="manifest.webmanifest?v=37.4.2" />
-<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=37.4.2" />
+<link rel="manifest" href="manifest.webmanifest?v=37.4.3" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=37.4.3" />
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-<script defer src="assets/js/mathjax-config.js?v=37.4.2"></script>
-<script defer src="assets/vendor/mathjax.js?v=37.4.2"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=37.4.2">
-<link rel="stylesheet" href="assets/css/id6-v37.4.css?v=37.4.2">
-<link rel="stylesheet" href="assets/css/id6-hierarchy-v37.4.1.css?v=37.4.2">
-<link rel="stylesheet" href="assets/css/id6-pure-ui-v37.4.2.css?v=37.4.2">
+<script defer src="assets/js/mathjax-config.js?v=37.4.3"></script>
+<script defer src="assets/vendor/mathjax.js?v=37.4.3"></script>
+<link rel="stylesheet" href="assets/css/app.css?v=37.4.3">
+<link rel="stylesheet" href="assets/css/id6-v37.4.css?v=37.4.3">
+<link rel="stylesheet" href="assets/css/id6-hierarchy-v37.4.1.css?v=37.4.3">
+<link rel="stylesheet" href="assets/css/id6-pure-ui-v37.4.2.css?v=37.4.3">
+<link rel="stylesheet" href="assets/css/bank-reset-v37.4.3.css?v=37.4.3">
 </head>
 <body>
 <div id="v33PublicReportShell" class="v33-public-shell hidden"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập V33</small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -104,7 +105,7 @@
     </div>
     <div class="sidebar-foot" title="Math12 Hub • Chương trình Toán 12 GDPT 2018">
       <div class="sidebar-foot-title">Toán 12 • GDPT 2018</div>
-      <div class="tiny">V37.4.2 • Pure ID6 Taxonomy UI</div>
+      <div class="tiny">V37.4.3 • Clean Question Bank Reset</div>
     </div>
   </aside>
   <main class="main">
@@ -146,7 +147,7 @@
         </div>
         <div class="admin-only v353-admin-strip" aria-label="Trạng thái hệ thống nhanh">
           <div class="v353-admin-status"><span><small>Firebase App Check</small><b>Bảo vệ request từ trình duyệt</b></span><strong id="v353AdminAppCheck">—</strong></div>
-          <div class="v353-admin-status"><span><small>Lỗi runtime phiên này</small><b>Production Center V37.4.2</b></span><strong id="v353AdminRuntime">0</strong></div>
+          <div class="v353-admin-status"><span><small>Lỗi runtime phiên này</small><b>Production Center V37.4.3</b></span><strong id="v353AdminRuntime">0</strong></div>
         </div>
 
         <div class="grid grid-4 mt student-only">
@@ -351,7 +352,7 @@
                 </div>
                 <div class="v371-tool-group"><b>Bảo trì</b>
                   <button onclick="v26OpenContentTrash()">🗑 Thùng rác</button>
-                  <button onclick="resetQuestionBank()">↺ Ngân hàng mẫu</button>
+                  <button class="v3743-clean-menu-btn" onclick="v3743OpenCleanBankCenter()">🧹 Làm sạch ngân hàng</button>
                 </div>
               </div>
             </details>
@@ -726,7 +727,7 @@
 
   <div class="card mt v35-production-card">
     <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Production Center • V37.4.1</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1, TikZ Figure Support V37.2 và Native Function Graph Engine V37.3.3, TikZ Plot Parser V37.3.4 và Variation Arrow Rendering Fix V37.3.6 và Official ID6 Taxonomy V37.4 + Pure ID6 Taxonomy UI V37.4.2. Không gửi telemetry ra ngoài.</p></div>
+      <div><h3>Production Center • V37.4.3</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1, TikZ Figure Support V37.2 và Native Function Graph Engine V37.3.3, TikZ Plot Parser V37.3.4 và Variation Arrow Rendering Fix V37.3.6 và Official ID6 Taxonomy V37.4 + Pure ID6 Taxonomy UI V37.4.2 + Clean Question Bank Reset V37.4.3. Không gửi telemetry ra ngoài.</p></div>
       <div class="online-actions"><button class="btn btn-soft" onclick="v35RunRegressionChecks({render:true,toast:true})">✓ Chạy kiểm tra</button><button class="btn btn-soft" onclick="v35ClearRuntimeIssues()">Xóa lỗi phiên</button><button class="btn btn-blue" onclick="v35ExportDiagnostics()">Xuất V37.3 diagnostics</button></div>
     </div>
     <div class="grid grid-5 v35-production-metrics">
@@ -879,38 +880,39 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=37.4.2"></script>
-<script src="assets/js/id6-taxonomy-v37.4.js?v=37.4.2"></script>
-<script src="assets/js/authoring.js?v=37.4.2"></script>
-<script src="assets/js/data-vault.js?v=37.4.2"></script>
-<script src="assets/js/exam.js?v=37.4.2"></script>
-<script src="assets/js/firebase.js?v=37.4.2"></script>
-<script src="assets/js/dashboard-v22.js?v=37.4.2"></script>
-<script src="assets/js/admin-v25.js?v=37.4.2"></script>
-<script src="assets/js/integrity-v26.js?v=37.4.2"></script>
-<script src="assets/js/teacher-ops-v27.js?v=37.4.2"></script>
-<script src="assets/js/student-ux-v28.js?v=37.4.2"></script>
-<script src="assets/js/question-bank-v29.js?v=37.4.2"></script>
-<script src="assets/js/exam-pro-v30.js?v=37.4.2"></script>
-<script src="assets/js/analytics-pro-v31.js?v=37.4.2"></script>
-<script src="assets/js/scale-v34.js?v=37.4.2"></script>
-<script src="assets/js/hardening-v35.js?v=37.4.2"></script>
-<script src="assets/js/ui-v35.js?v=37.4.2"></script>
-<script src="assets/js/bootstrap.js?v=37.4.2"></script>
-<script src="assets/js/ux-v35.3.js?v=37.4.2"></script>
-<script src="assets/js/smart-nav-v35.4.js?v=37.4.2"></script>
-<script src="assets/js/knowledge-map-v36.js?v=37.4.2"></script>
-<script src="assets/js/quality-engine-v36.1.js?v=37.4.2"></script>
-<script src="assets/js/smart-exam-v36.2.js?v=37.4.2"></script>
-<script src="assets/js/mastery-v36.3.js?v=37.4.2"></script>
-<script src="assets/js/ai-intelligence-v37.js?v=37.4.2"></script>
-<script src="assets/js/bank-backup-v37.1.js?v=37.4.2"></script>
-<script src="assets/js/tikz-support-v37.2.js?v=37.4.2"></script>
-<script src="assets/js/graph-engine-v37.3.3.js?v=37.4.2"></script>
-<script src="assets/js/tools-menu-v37.3.1.js?v=37.4.2"></script>
-<script src="assets/js/variation-exam-v37.3.6.js?v=37.4.2"></script>
-<script src="assets/js/id6-ui-v37.4.js?v=37.4.2"></script>
-<script src="assets/js/id6-hierarchy-v37.4.1.js?v=37.4.2"></script>
-<script src="assets/js/id6-pure-ui-v37.4.2.js?v=37.4.2"></script>
+<script src="assets/js/core.js?v=37.4.3"></script>
+<script src="assets/js/id6-taxonomy-v37.4.js?v=37.4.3"></script>
+<script src="assets/js/authoring.js?v=37.4.3"></script>
+<script src="assets/js/data-vault.js?v=37.4.3"></script>
+<script src="assets/js/exam.js?v=37.4.3"></script>
+<script src="assets/js/firebase.js?v=37.4.3"></script>
+<script src="assets/js/dashboard-v22.js?v=37.4.3"></script>
+<script src="assets/js/admin-v25.js?v=37.4.3"></script>
+<script src="assets/js/integrity-v26.js?v=37.4.3"></script>
+<script src="assets/js/teacher-ops-v27.js?v=37.4.3"></script>
+<script src="assets/js/student-ux-v28.js?v=37.4.3"></script>
+<script src="assets/js/question-bank-v29.js?v=37.4.3"></script>
+<script src="assets/js/exam-pro-v30.js?v=37.4.3"></script>
+<script src="assets/js/analytics-pro-v31.js?v=37.4.3"></script>
+<script src="assets/js/scale-v34.js?v=37.4.3"></script>
+<script src="assets/js/hardening-v35.js?v=37.4.3"></script>
+<script src="assets/js/ui-v35.js?v=37.4.3"></script>
+<script src="assets/js/bootstrap.js?v=37.4.3"></script>
+<script src="assets/js/ux-v35.3.js?v=37.4.3"></script>
+<script src="assets/js/smart-nav-v35.4.js?v=37.4.3"></script>
+<script src="assets/js/knowledge-map-v36.js?v=37.4.3"></script>
+<script src="assets/js/quality-engine-v36.1.js?v=37.4.3"></script>
+<script src="assets/js/smart-exam-v36.2.js?v=37.4.3"></script>
+<script src="assets/js/mastery-v36.3.js?v=37.4.3"></script>
+<script src="assets/js/ai-intelligence-v37.js?v=37.4.3"></script>
+<script src="assets/js/bank-backup-v37.1.js?v=37.4.3"></script>
+<script src="assets/js/tikz-support-v37.2.js?v=37.4.3"></script>
+<script src="assets/js/graph-engine-v37.3.3.js?v=37.4.3"></script>
+<script src="assets/js/tools-menu-v37.3.1.js?v=37.4.3"></script>
+<script src="assets/js/variation-exam-v37.3.6.js?v=37.4.3"></script>
+<script src="assets/js/id6-ui-v37.4.js?v=37.4.3"></script>
+<script src="assets/js/id6-hierarchy-v37.4.1.js?v=37.4.3"></script>
+<script src="assets/js/id6-pure-ui-v37.4.2.js?v=37.4.3"></script>
+<script src="assets/js/bank-reset-v37.4.3.js?v=37.4.3"></script>
 </body>
 </html>

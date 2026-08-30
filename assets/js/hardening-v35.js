@@ -9,10 +9,10 @@
    No Firestore collection/schema migration is introduced by V35.
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
-const V35_BUILD='37.4.2-pure-id6-taxonomy-ui';
+const V35_BUILD='37.4.3-clean-question-bank-reset';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=37.4.2',label:'Trợ lý AI'},
-  reports:{src:'assets/js/reports-v33.js?v=37.4.2',label:'Báo cáo học tập'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=37.4.3',label:'Trợ lý AI'},
+  reports:{src:'assets/js/reports-v33.js?v=37.4.3',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
 const v35FeaturePromises=new Map();
@@ -44,7 +44,7 @@ async function v35EnsureFeature(name,{quiet=false}={}){
   if(v35FeatureReady(name))return true;
   if(v35FeaturePromises.has(name))return v35FeaturePromises.get(name);
   let f=V35_FEATURES[name];if(!f)throw new Error(`Tính năng nền V35/V36 không tồn tại: ${name}`);
-  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V37.4.2 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
+  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V37.4.3 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
   v35FeaturePromises.set(name,p);try{return await p}catch(err){v35FeaturePromises.delete(name);throw err}
 }
 async function v35EnsureXlsx(){return v35EnsureFeature('xlsx')}
@@ -94,7 +94,7 @@ function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:St
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
   let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='37.4.2'&&meta==='37.4.2',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='37.4.3'&&meta==='37.4.3',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));
@@ -119,6 +119,8 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
   checks.push(v35Check('Knowledge Map V36.0',!!window.v360KnowledgeMap&&window.v360KnowledgeMap.build==='36.0-knowledge-map'&&window.v360KnowledgeMap.map().counts.knowledge===57&&window.v360KnowledgeMap.map().counts.lessons===19,'6 chương • 19 bài • 57 chuẩn • metadata câu hỏi','fail'));
   try{const id6=window.ID6V374,forms=id6?.allForms?.()||[],ok=id6?.buildId6?.('2D1?1-1','NB')==='2D1N1-1'&&id6?.buildId6?.('2D1?1-1','TH')==='2D1H1-1'&&id6?.buildId6?.('2D1?1-1','VD')==='2D1V1-1'&&id6?.buildId6?.('2D1?1-1','VDC')==='2D1C1-1'&&forms.length===91;checks.push(v35Check('Official ID6 Taxonomy V37.4',ok,ok?'91 dạng • N/H/V/C • giữ khóa nội bộ riêng':'ID6 regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Official ID6 Taxonomy V37.4',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{const pu=window.ID6V3742,m=pu?.meta?.({id6Pattern:'2D1?2-2',level:'TH'}),ok=pu?.BUILD==='37.4.2-pure-id6-taxonomy-ui'&&m?.id6==='2D1H2-2'&&m?.chapter===1&&m?.lesson===2&&m?.form===2;checks.push(v35Check('Pure ID6 UI V37.4.2',ok,ok?'Chương → Bài → Dạng → Mức độ → ID6':'Pure ID6 regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Pure ID6 UI V37.4.2',false,v35SanitizeErrorText(err?.message),'fail'))}
+  try{const cr=window.v3743CleanReset?._test?.regression?.(),ok=cr?.ok===true&&cr?.seedBankDisabled===true;checks.push(v35Check('Clean Question Bank Reset V37.4.3',ok,ok?'Seed/demo = 0 • backup bắt buộc • giữ lớp/đề/lịch sử học tập':'Reset regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Clean Question Bank Reset V37.4.3',false,v35SanitizeErrorText(err?.message),'fail'))}
+
   try{
     const qe=window.v361QualityEngine,sample={id:'REG-QC',questionBankSchema:36,knowledgeMapVersion:36,metadataStatusV36:'complete',curriculumId:'MATH12-GDPT2018-2026',blueprintKey:'F1-01.K1|F1-01.D1|NB|mcq',chapterId:1,lessonId:'F1-01',knowledgeCode:'F1-01.K1',formId:'F1-01.D1',form:'Regression',level:'NB',type:'mcq',question:'Chọn phương án đúng cho biểu thức $x^2$.',options:['$x=1$','$x=1$','$x=2$','$x=3$'],answer:0,explanation:'Dữ liệu kiểm tra regression.',sourceName:'Regression',reviewStatus:'reviewed'},qr=qe?.auditQuestion?.(sample);
     checks.push(v35Check('Question Quality Engine V36.1',qe?.build==='36.1-quality-engine'&&qr?.details?.some(x=>x.code==='MCQ_DUP_OPTION'),'Cấu trúc + LaTeX + đáp án + TF4 + near-duplicate','fail'))
@@ -207,7 +209,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw-v37.4.2.js?v=37.4.2',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw-v37.4.3.js?v=37.4.3',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){

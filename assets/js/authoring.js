@@ -250,7 +250,8 @@ function buildSeedQuestionBank(){
   shorts.forEach(x=>items.push({id:x[0],chapterId:x[1],lessonId:x[2],knowledgeCode:x[3],form:x[4],level:x[5],type:'short',question:x[6],answer:x[7],explanation:x[8],source:'seed'}));
   return items;
 }
-const SEED_QUESTION_BANK=buildSeedQuestionBank();
+const SEED_QUESTION_BANK=[]; // V37.4.3: sample/demo bank intentionally disabled; buildSeedQuestionBank kept only for legacy diagnostics.
+const V3743_SEED_BANK_DISABLED=true;
 if(!state.questionBank){state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));save()}
 function allKnowledgeCodes(){return chapters.flatMap(c=>c.lessons.flatMap(l=>getLessonMeta(l.id).knowledge.map(k=>({chapterId:c.id,lessonId:l.id,...k}))))}
 function questionTypeName(t){return t==='mcq'?'Nhiều lựa chọn':t==='tf4'?'Đúng/Sai 4 ý':t==='tf'?'Đúng/Sai 1 mệnh đề':'Trả lời ngắn'}
@@ -899,7 +900,7 @@ async function commitBankRestore(){
 function undoLastBankRestore(){
   try{const raw=localStorage.getItem('math12hub2026_bank_before_restore');if(!raw){alert('Chưa có bản hoàn tác khôi phục.');return}const data=JSON.parse(raw);if(!Array.isArray(data.questionBank))throw new Error('Bản hoàn tác không hợp lệ');if(!confirm(`Hoàn tác về ngân hàng trước lần khôi phục gần nhất (${data.questionBank.length} câu)?`))return;state.questionBank=data.questionBank;save();renderQuestionBank(true);localStorage.removeItem('math12hub2026_bank_before_restore');alert('Đã hoàn tác lần khôi phục gần nhất.')}catch(err){alert('Không thể hoàn tác: '+(err?.message||err))}
 }
-async function resetQuestionBank(){if(!requireTeacher('Khôi phục ngân hàng'))return;if(!confirm('Khôi phục ngân hàng mẫu? Các câu đã thêm/sửa trong ngân hàng hiện tại sẽ bị thay thế. V26 sẽ tạo điểm khôi phục trước.'))return;if(typeof v26SafetyCheckpoint==='function')await v26SafetyCheckpoint('bank-reset');state.questionBank=JSON.parse(JSON.stringify(SEED_QUESTION_BANK));save({reason:'v26-bank-reset'});renderQuestionBank(true)}
+async function resetQuestionBank(){if(typeof v3743OpenCleanBankCenter==='function')return v3743OpenCleanBankCenter();alert('V37.4.3 đã vô hiệu hóa Ngân hàng mẫu. Hãy dùng Công cụ → Làm sạch ngân hàng.')}
 function exportQuestionBank(){if(!requireTeacher('Xuất ngân hàng'))return;let blob=new Blob([JSON.stringify(state.questionBank,null,2)],{type:'application/json;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`math12-question-bank-v${APP_VERSION}.json`;a.click();URL.revokeObjectURL(a.href)}
 function equalShort(a,b){let x=normAns(a),y=normAns(b);return x===y||(!isNaN(Number(x))&&!isNaN(Number(y))&&Math.abs(Number(x)-Number(y))<.011)}
 const fullExam={

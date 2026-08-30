@@ -1,34 +1,40 @@
-# Math12 Hub V37.4.2 — Pure ID6 Taxonomy UI
+# Math12 Hub V37.4.3 — Clean Question Bank Reset
 
-# Math12 Hub V37.4 — Official ID6 Taxonomy
+Nâng trực tiếp từ **V37.4.2 Pure ID6 Taxonomy UI**. Bản này tạo một điểm khởi đầu sạch để xây lại ngân hàng câu hỏi theo chuẩn ID6.
 
-Nâng trực tiếp từ V37.3.6, giữ nguyên toàn bộ nền tảng học tập, Mastery, Quality, Smart Exam, TikZ/Graph và Firestore hiện có.
+## Thay đổi chính
 
-## Trọng tâm V37.4
+- Ngân hàng mẫu/seed được **vô hiệu hóa**: cài mới bắt đầu với 0 câu.
+- Thêm **Công cụ → Làm sạch ngân hàng** với quy trình 3 bước.
+- Bắt buộc tải JSON sao lưu trước khi nút xóa được mở khóa.
+- Trước khi xóa, hệ thống cố tạo Recovery Snapshot trong Data Safety/IndexedDB.
+- Xóa:
+  - toàn bộ câu hỏi đang hoạt động;
+  - toàn bộ `_versions` gắn trong các câu cũ;
+  - toàn bộ **câu hỏi** trong Thùng rác V26;
+  - dấu hoàn tác khôi phục ngân hàng cũ trên localStorage.
+- Giữ nguyên:
+  - đề kiểm tra đã lưu (`customExams`);
+  - thùng rác của đề;
+  - lớp, học sinh, assignments/submissions;
+  - lịch sử học tập, Mastery/Adaptive;
+  - cấu trúc **6 chương – 17 bài – 91 dạng ID6**.
+- Nếu giáo viên đang đăng nhập Firebase, reset sẽ force-sync `questionBank=[]`, giữ recycle của đề và kiểm tra lại cloud sau khi ghi.
+- Nếu chưa đăng nhập Firebase, giao diện cảnh báo reset chỉ có hiệu lực trên máy hiện tại.
+- Khi ngân hàng trống, empty state hướng thẳng tới **Import LaTeX/.tex** hoặc **Thêm câu hỏi**.
 
-- Chuẩn hóa **91 dạng toán Toán 12** theo tài liệu `ID6-MONTOAN-KHOI10-11-12-CHINHTHUC.pdf` do giáo viên cung cấp.
-- ID6 dùng mẫu 6 tham số như `2D1N1-1`, `2H5V2-7`.
-- Quy ước mức độ: `N` = Nhận biết, `H` = Thông hiểu, `V` = Vận dụng, `C` = Vận dụng cao.
-- **Không dùng ID6 làm khóa Firestore** vì nhiều câu có thể cùng một dạng. `q.id` vẫn là mã bản ghi nội bộ duy nhất; `q.id6` là mã phân loại chính thức.
-- Giữ nguyên 19 bài học nội bộ + 57 chuẩn Knowledge/Mastery để không làm hỏng tiến độ học sinh; 91 dạng ID6 được ánh xạ vào các bài hiện có.
-- Trình soạn câu hỏi hiển thị ID6 tự động theo Dạng toán + Mức độ.
-- Import/Export LaTeX hỗ trợ metadata `% id6:`. CSV có cột `id6` và `id6Pattern`.
-- Có danh mục 91 dạng và chức năng `Chuẩn hóa ID6` an toàn cho ngân hàng cũ.
-- Vận dụng cao (`VDC`) được hỗ trợ trong editor/QC; Smart Exam hiện gom VDC vào cột Vận dụng để giữ tương thích ma trận 3 mức cũ.
+## Xác nhận xóa
+
+1. Mở **Ngân hàng câu hỏi → Công cụ → Làm sạch ngân hàng**.
+2. Bấm **Tải bản sao lưu bắt buộc**.
+3. Đánh dấu xác nhận.
+4. Nhập `XOA-SACH`.
+5. Bấm **Xóa sạch & tạo ngân hàng mới**.
 
 ## Tương thích
 
-- Không đổi `firestore.rules` hoặc `firestore.indexes.json`.
+- Không đổi `firestore.rules`.
+- Không đổi `firestore.indexes.json`.
 - Không tạo collection mới.
-- Backup V37.1 và các file JSON cũ vẫn đọc được.
-- Mã bản ghi nội bộ cũ không bị đổi khi chuẩn hóa ID6.
-
-## Sau khi deploy
-
-1. Ctrl + F5 một lần.
-2. Vào **Ngân hàng câu hỏi → Dạng toán & ID câu hỏi V37.4**.
-3. Mở **Danh mục 91 dạng** để kiểm tra.
-4. Nếu cần, bấm **Chuẩn hóa ID6**; hệ thống cố gắng tạo Recovery Snapshot trước khi ghi.
-
-
-V37.4.2: xem README-V37.4.2.md
+- Backup JSON trước reset có trường `questionBank`, vì vậy **Khôi phục V2** có thể đọc lại phần ngân hàng hoạt động.
+- Các câu Word sau khi chuyển LaTeX có thể import lại theo Chương → Bài → Dạng → Mức độ → ID6.
