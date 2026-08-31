@@ -1,7 +1,7 @@
 {
-  "name": "Math12 Hub V37.5",
+  "name": "Math12 Hub V37.5.1",
   "short_name": "Math12 Hub",
-  "description": "Nền tảng ôn tập và kiểm tra Toán 12 theo Chương trình GDPT 2018 • Hybrid LaTeX Figure Engine • Auto Crop • Responsive Figure Layout • Vector Zoom • Figure QC • Preview before Approved • Bulk Figure Manager • Batch QC/re-render • Safe rollback • Figure Production Engine • Release Gate • Safe Repair • Signed Production Snapshot.",
+  "description": "Nền tảng ôn tập và kiểm tra Toán 12 theo GDPT 2018 • Figure Production Engine • Dynamic Practice theo bài và chương • lấy câu ngẫu nhiên từ ngân hàng theo ID6 • phủ bài/dạng • cân bằng mức độ • bộ hiện tại/bộ mới.",
   "lang": "vi",
   "start_url": "./",
   "scope": "./",

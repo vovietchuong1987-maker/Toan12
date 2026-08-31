@@ -1,0 +1,35 @@
+Math12 Hub V37.5.1 — Dynamic Practice Engine
+
+Scope
+- Base: V37.5 Figure Production Engine.
+- New: lesson/chapter practice generated from question bank.
+- Package-clean policy: current runtime only; no historical root SW/README/VALIDATION/preview/test/import files.
+
+Functional rules
+1. Lesson practice: max 8 eligible questions from exact lesson scope.
+2. Chapter review: 12–20 questions depending on chapter/pool size.
+3. If reviewStatus exists in the scope, only Approved questions are student-eligible.
+4. Figure QC fatal failures are excluded when Figure QC API is available.
+5. Selection priority: lesson coverage (chapter mode) -> ID6/form coverage -> knowledge coverage -> level balance -> random fill.
+6. “Current set” persists question IDs in localStorage to support resume.
+7. “New set” clears old draft for that scope and penalizes questions from the previous set to reduce repetition.
+8. No question content, answer, ID6, reviewStatus or Firestore schema is modified.
+
+Validation commands are recorded during build: JS syntax, referenced local files, service-worker core files, ZIP integrity, clean-root policy.
+
+Build validation result
+- Actual bank test: 240 Approved questions.
+- F1-01 lesson set: 8 questions.
+- Fresh F1-01 set test: 0/8 repeated versus immediately previous set in this test run.
+- Chapter 1 set: 15 questions.
+- Chapter 1 sample balance: NB 6 / TH 6 / VD 3.
+- Chapter 1 sample lesson coverage: F1-01 5 / F1-02 5 / F1-04 5 (these are the lessonIds present in the supplied clean bank for Chapter 1).
+- Chapter 1 sample ID6/form coverage: 8 forms.
+- JavaScript node --check: PASS for all shipped JS and service worker.
+- HTML local references: PASS, 0 missing.
+- Service-worker core references: PASS, 0 missing.
+- Historical root files: removed.
+- Obsolete unreferenced JS removed: graph-engine-v37.3.js, graph-engine-v37.3.2.js, variation-exam-v37.3.5.js.
+- tests/ and imports/ omitted from release ZIP.
+- Firestore rules: unchanged from V37.5.
+- Firestore indexes: unchanged from V37.5.
