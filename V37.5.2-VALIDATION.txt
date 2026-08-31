@@ -1,0 +1,71 @@
+Math12 Hub V37.5.2 — Graph Reading Engine
+Validation date: 2026-08-31
+Base: V37.5.1 Dynamic Practice Clean Package
+
+1. CORE VERSION
+PASS — APP_VERSION = 37.5.2
+PASS — index app-version = 37.5.2
+PASS — service worker = sw-v37.5.2.js
+PASS — only one service worker is shipped.
+
+2. GRAPH READING REGRESSION — USER SAMPLE
+PASS — TikZ cubic-Bezier/line graph parsed successfully.
+Detected semantics:
+- domain/read interval: [-2, 4]
+- decreasing: [-2, 1]
+- increasing: [1, 3]
+- decreasing: [3, 4]
+- local minimum: (1, -2)
+- local maximum: (3, 2)
+- global maximum on marked closed graph: 7 at x=-2
+- global minimum on marked closed graph: -4 at x=4
+- source-hash/QC: PASS
+
+3. EXISTING QUESTION BANK REGRESSION
+Bank used for regression: merged F1 bank with 278 questions (minmax1 + minmax2).
+PASS — 85 graph candidates detected.
+PASS — 85/85 graph candidates parsed successfully.
+- 71 TikZ plot-expression graphs -> tikz-plot-auto
+- 14 generic TikZ Bezier/line graphs -> tikz-auto
+No existing question was modified during this regression scan.
+
+4. SUPPORTED GRAPH SOURCES
+PASS — generic TikZ straight paths (--)
+PASS — generic TikZ cubic Bezier paths (.. controls ..)
+PASS — TikZ plot(\x,{expression}) with domain
+PASS — graph2d expression configuration
+PASS — Native Graph THPT V37.3.3 configuration
+PASS — axes, dashed guides and \fill key points are read when present.
+
+5. SAFETY / DATA MODEL
+PASS — graphData is a separate semantic layer.
+PASS — graphData is not rendered to students and does not expose answers.
+PASS — Graph Reading does not change question text, answer, ID6, lessonId or reviewStatus.
+PASS — source hash detects stale graphData after figure source changes.
+PASS — Graph Reading QC is connected to exported Figure QC / Production Gate.
+PASS — low-confidence or ambiguous curves produce warnings instead of invented conclusions.
+PASS — TikZ plot without marked closed endpoints does not auto-claim global max/min from viewport alone.
+
+6. EDITOR / TEACHER WORKFLOW
+PASS — editor adds “🧠 Đọc đồ thị”.
+PASS — automatic analysis can populate graphData.
+PASS — graphData can be manually corrected by teacher.
+PASS — semantic QC blocks saving enabled invalid graphData.
+PASS — Graph Reading Center audits missing/stale/low-confidence semantic data.
+PASS — recommendedLessonIds can suggest F1-01 / F1-02 / F1-03 according to graph capabilities without moving the question between lessons.
+
+7. STATIC / PWA VALIDATION
+PASS — 44 application JavaScript files pass node --check.
+PASS — sw-v37.5.2.js passes node --check.
+PASS — index.html local asset refs: 57 checked, 0 missing.
+PASS — service-worker asset refs: 57 checked, 0 missing.
+PASS — Firestore rules unchanged from V37.5.1.
+PASS — Firestore indexes unchanged from V37.5.1.
+
+8. CLEAN PACKAGE RULE
+PASS — no tests/ directory.
+PASS — no imports/ directory.
+PASS — no preview/regression HTML files.
+PASS — no historical README/VALIDATION files.
+PASS — no historical service-worker files.
+Note: version-named assets such as figure-engine-v37.4.5.js or dynamic-practice-v37.5.1.js remain because index.html actively depends on them; they are runtime modules, not unused history.
