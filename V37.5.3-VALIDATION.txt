@@ -1,0 +1,49 @@
+Math12 Hub V37.5.3 — VALIDATION
+================================
+Build: 37.5.3-unified-figure-renderer
+Base: V37.5.2 Graph Reading Engine
+
+1. Release structure
+- index local refs: 59; missing: 0
+- service worker refs: 61; missing: 0
+- service workers in package: 1 (expected 1)
+- historical tests/imports folders: 0
+- current README: True
+
+2. GTLN–GTNN regression bank (278-question test bank)
+- minmax questions: 38
+- no figure: 16
+- TikZ Stored SVG: 14
+- tkz-tab Stored SVG: 8
+- total Stored SVG in minmax: 22
+- figureSourceHash match: 22/22
+
+3. Stored SVG compatibility
+- total figureSvg in 278-bank: 27
+- SVG with Inkscape/XML comment before <svg>: 22
+- SVG already starting with <svg>: 5
+- V37.5.3 cleanSvgSource strips leading XML/comment metadata before sanitizer.
+- Shared V3745 sanitizer API is patched at runtime so Figure QC / Production Gate see the normalized SVG too.
+
+4. Renderer priority
+- tikz/tkz: normalized Stored SVG -> existing V37.4.5 Smart SVG/TikZ fallback
+- tkz-tab: normalized Stored SVG -> Native BBT fallback
+- Stored BBT uses V37.4.6 auto-crop / responsive / vector zoom.
+- Native BBT fallback uses readability-safe auto-fit plus dedicated zoom lightbox.
+
+5. Safety / data invariants
+- no automatic changes to question text, answer, ID6, lessonId, reviewStatus, graphData or teacher verification metadata
+- firestore.rules unchanged from V37.5.2 package
+- firestore.indexes.json unchanged from V37.5.2 package
+
+Static reference validation: PASS
+
+6. Executable checks
+- JavaScript syntax: 45/45 PASS
+- manifest.webmanifest JSON: PASS
+- firestore.indexes.json JSON: PASS
+- firestore.rules unchanged: PASS
+- firestore.indexes.json unchanged: PASS
+- Unified renderer VM test: 22/22 stored; 14 TikZ; 8 tkz-tab; native fallback=PASS
+
+FINAL: PASS

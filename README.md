@@ -1,26 +1,23 @@
-# Math12 Hub V37.5.2
+# Math12 Hub V37.5.3
 
-## Graph Reading Engine
+## Unified Figure Renderer
 
-V37.5.2 nâng trực tiếp từ V37.5.1, giữ nguyên Dynamic Practice, Figure Production, ID6, Firestore và toàn bộ nền tảng cũ.
+V37.5.3 nâng trực tiếp từ V37.5.2, giữ nguyên Graph Reading, Dynamic Practice, Figure Production, ID6, Firestore và toàn bộ chức năng cũ.
 
 ### Điểm mới
-- Thêm lớp `graphData` để website không chỉ hiển thị mà còn hiểu ngữ nghĩa đồ thị.
-- Tự đọc TikZ tổng quát dùng đoạn thẳng `--`, cubic Bezier `.. controls ..`, điểm `\fill`, trục tọa độ và đường gióng.
-- Đọc `graph2d` theo biểu thức bằng lấy mẫu số; đọc Graph THPT V37.3.3 qua native analyzer.
-- Suy ra miền đọc, điểm đặc biệt, khoảng tăng/giảm, cực trị, GTLN/GTNN và giao trục khi đủ dữ liệu.
-- Graph Reading QC kiểm tra source-hash; sửa mã hình làm `graphData` cũ bị báo stale.
-- Trình soạn câu hỏi có nút **🧠 Đọc đồ thị**, preview ngữ nghĩa và JSON `graphData` có thể chỉnh tay.
-- Graph Reading Center thống kê đồ thị đã bật, QC đạt, thiếu dữ liệu, stale hoặc độ tin cậy thấp.
-- Dữ liệu ngữ nghĩa không hiển thị cho học sinh, không tự thay đổi câu hỏi, đáp án, ID6 hay reviewStatus.
+- Thống nhất pipeline hiển thị TikZ và `tkz-tab`.
+- `tkz-tab` nay ưu tiên **Stored SVG đã biên dịch từ LaTeX** nếu SVG hợp lệ và khớp `figureSourceHash`.
+- Chuẩn hóa SVG có XML/comment của Inkscape trước thẻ `<svg>`; đây là lỗi khiến một số SVG LaTeX hợp lệ trước đây bị sanitizer cũ bỏ qua.
+- Cơ chế Stored SVG ưu tiên áp dụng lại cho cả `tikz`/`tkz`, nên đồ thị và BBT dùng chung một pipeline.
+- Khi không có Stored SVG hợp lệ, hệ thống mới dùng Native BBT làm fallback.
+- Stored SVG của BBT đi qua cùng lớp Auto-crop, Responsive sizing và Vector Zoom V37.4.6 như đồ thị TikZ.
+- Native BBT fallback có auto-fit theo khung, giới hạn co để giữ chữ dễ đọc, và có cửa sổ phóng to riêng.
+- Figure QC API nhận biết `tkz-tab` đang dùng Stored SVG.
+- Production regression bổ sung kiểm tra số BBT dùng Stored SVG, native fallback và SVG lệch source-hash.
+- Không thay đổi nội dung Toán, đáp án, ID6, lessonId, reviewStatus hay dữ liệu xác minh hình của giáo viên.
 
-### Mẫu regression chính
-Mẫu TikZ gồm các điểm `(-2,7)`, `(1,-2)`, `(3,2)`, `(4,-4)` được đọc thành:
-- giảm trên `[-2,1]`;
-- tăng trên `[1,3]`;
-- giảm trên `[3,4]`;
-- cực tiểu `(1,-2)`; cực đại `(3,2)`;
-- GTLN `7`, GTNN `-4`.
+### Kiểm tra riêng nhóm GTLN–GTNN
+Ngân hàng kiểm thử 278 câu hiện có 38 câu thuộc nhóm minmax đã nhập gần nhất: 14 TikZ, 8 `tkz-tab`, 16 không hình. Cả 8 BBT và 14 đồ thị TikZ đều có Stored SVG trong bộ minmax; V37.5.3 đã kiểm thử 22/22 hình này qua đường Stored SVG, thay vì để comment Inkscape làm sanitizer bỏ qua.
 
 ### Gói phát hành sạch
-Gói ZIP chỉ giữ các file runtime đang được `index.html`/Service Worker sử dụng cùng README và VALIDATION của V37.5.2. Không kèm preview, tests hay README/VALIDATION/service worker lịch sử.
+ZIP chỉ giữ runtime hiện tại, một Service Worker V37.5.3, README và VALIDATION hiện tại. Không kèm tests, preview, imports hay tài liệu/service worker lịch sử.
