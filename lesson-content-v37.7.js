@@ -132,7 +132,7 @@
     if(/^2[DH]\d[NHVC]\d+-\d+$/.test(id6))return id6.replace(/^(.{3})[NHVC](.+)$/,'$1?$2');
     return '';
   }
-  function v377SourceBank(){return window.V3822PracticeBank?.effectiveBank?.()||(state.questionBank||[])}
+  function v377SourceBank(){return window.V383PracticeBank?.effectiveBank?.()||window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||(state.questionBank||[])}
   function v377LessonBank(id){
     // V38.2.1: do not trust stale lessonId from pre-ID6 banks. The official ID6 pattern
     // is authoritative for Chapter 1, so lesson cards/counts stay correct even before
@@ -218,7 +218,9 @@
     const q=(document.getElementById('lessonSearch')?.value||'').toLowerCase();
     const chapterBank=v377SourceBank().filter(x=>Number(x.chapterId)===Number(c.id)).length;
     const official=c.id===1?'<span class="v377-official-chip">✓ 5 bài chính thức ID6</span>':'';
-    document.getElementById('lessonHeader').innerHTML=`<div class="v377-chapter-head"><div><div class="v377-kicker">NỘI DUNG BÀI HỌC • V38.3 • 371 FULL BANK + ID6</div><h3>Chương ${c.id}. ${esc(c.title)}</h3><p>${esc(c.desc)}</p></div><div class="v377-chapter-summary"><span><b>${c.lessons.length}</b><small>Bài học</small></span><span><b>${c.lessons.reduce((n,l)=>n+getLessonMeta(l.id).knowledge.length,0)}</b><small>Chuẩn kiến thức</small></span><span><b>${chapterBank}</b><small>Câu trong ngân hàng</small></span>${official}</div></div>`;
+    const allPractice=v377SourceBank(),firstPracticeChapter=chapters.find(ch=>allPractice.some(q=>Number(q.chapterId)===Number(ch.id)||(ch.lessons||[]).some(l=>l.id===q.lessonId)));
+    const emptyPracticeNotice=!chapterBank&&allPractice.length?`<div class="notice" style="margin-top:12px"><b>Chương ${c.id} hiện chưa có câu luyện tập trong gói dữ liệu này.</b> Ngân hàng tự học đang có <b>${allPractice.length} câu</b>${firstPracticeChapter?` ở Chương ${firstPracticeChapter.id}`:''}.${firstPracticeChapter&&firstPracticeChapter.id!==c.id?` <button class="btn btn-soft" style="margin-left:8px" onclick="selectChapter(${firstPracticeChapter.id})">Mở chương có câu luyện</button>`:''}</div>`:'';
+    document.getElementById('lessonHeader').innerHTML=`<div class="v377-chapter-head"><div><div class="v377-kicker">NỘI DUNG BÀI HỌC • V38.3.1 • STUDENT PRACTICE HOTFIX</div><h3>Chương ${c.id}. ${esc(c.title)}</h3><p>${esc(c.desc)}</p></div><div class="v377-chapter-summary"><span><b>${c.lessons.length}</b><small>Bài học</small></span><span><b>${c.lessons.reduce((n,l)=>n+getLessonMeta(l.id).knowledge.length,0)}</b><small>Chuẩn kiến thức</small></span><span><b>${chapterBank}</b><small>Câu trong ngân hàng</small></span>${official}</div></div>${emptyPracticeNotice}`;
     const rows=c.lessons.filter(l=>{
       const m=getLessonMeta(l.id),text=[l.common,m.overview||'',...m.goals,...m.knowledge.map(k=>k.title),...m.forms.map(f=>f.title)].join(' ').toLowerCase();
       return text.includes(q);

@@ -7,7 +7,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='38.3-self-study-full-bank';
+const BUILD='38.3.1-student-practice-hotfix';
 const TYPES=new Set(['mcq','tf','tf4','short']);
 function bank(){return window.V383PracticeBank?.effectiveBank?.()||window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||[]}
 function patternOf(q={}){

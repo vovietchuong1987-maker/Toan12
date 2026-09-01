@@ -8,7 +8,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='38.3-self-study-full-bank';
+const BUILD='38.3.1-student-practice-hotfix';
 function bundled(){return Array.isArray(window.MATH12_ALL_PRACTICE_BANK)?window.MATH12_ALL_PRACTICE_BANK:[]}
 function teacherRole(){try{return typeof isTeacherRole==='function'&&isTeacherRole()}catch(_){return false}}
 function privateBank(){return (typeof state!=='undefined'&&Array.isArray(state?.questionBank))?state.questionBank:[]}
@@ -23,7 +23,7 @@ function stats(){
   const rows=effectiveBank(),meta=window.MATH12_ALL_PRACTICE_META||{};
   return {build:BUILD,bundledCount:bundled().length,effectiveCount:rows.length,teacherMode:teacherRole(),meta};
 }
-const api={build:BUILD,publicBank:bundled,effectiveBank,stats};
+const api={build:BUILD,publicBank:bundled,effectiveBank,stats,source:'bundled-public-practice + teacher-private-when-authorized'};
 window.V383PracticeBank=api;
 window.V3823PracticeBank=api;
 window.V3822PracticeBank=api;

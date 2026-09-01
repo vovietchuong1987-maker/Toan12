@@ -20,7 +20,7 @@
   const fmtMs=ms=>{let s=Math.max(0,Math.round((Number(ms)||0)/1000)),m=Math.floor(s/60);return `${m}:${String(s%60).padStart(2,'0')}`};
   const status=(q,a)=>typeof examQuestionStatus==='function'?examQuestionStatus(q,a):(a==null?'empty':'answered');
 
-  function bank(){return typeof state!=='undefined'&&Array.isArray(state.questionBank)?state.questionBank:[]}
+  function bank(){try{const rows=window.getPracticeQuestionBank?.();if(Array.isArray(rows))return rows}catch(_){}return typeof state!=='undefined'&&Array.isArray(state.questionBank)?state.questionBank:[]}
   function qualityOk(q){try{let a=window.v361QualityEngine?.auditQuestion?.(q);return !a||!(a.counts?.critical)}catch(_){return true}}
   function eligible(q){if(!q||!q.id||!q.question||!['mcq','tf4','tf','short'].includes(q.type))return false;if(q.reviewStatus&&q.reviewStatus!=='approved'&&q.reviewStatus!=='reviewed')return false;return qualityOk(q)}
   function approvedPool(type){return bank().filter(q=>eligible(q)&&(!type||q.type===type))}
