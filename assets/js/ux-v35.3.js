@@ -5,7 +5,7 @@
 (function(){
   'use strict';
   const BUILD='35.3-ux-polish';
-  const HEAVY_PAGES=new Set(['online','teacher','reports','admin','question-bank','ai-teacher']);
+  const HEAVY_PAGES=new Set(['reports','admin','question-bank','ai-teacher']);
   const PAGE_META={
     dashboard:{title:'Tổng quan',group:'Trang chủ'},
     'learning-plan':{title:'Lộ trình của em',group:'Cá nhân'},
@@ -19,11 +19,9 @@
     analytics:{title:'Phân tích năng lực',group:'Cá nhân'},
     reports:{title:'Báo cáo học tập',group:'Báo cáo'},
     notifications:{title:'Thông báo',group:'Kết nối'},
-    online:{title:'Lớp học online',group:'Dạy & học'},
     'question-bank':{title:'Ngân hàng câu hỏi',group:'Công cụ giáo viên'},
     'exam-builder':{title:'Tạo đề kiểm tra',group:'Công cụ giáo viên'},
     'ai-teacher':{title:'Trợ lý AI',group:'Công cụ giáo viên'},
-    teacher:{title:'Theo dõi lớp',group:'Dạy học'},
     admin:{title:'Quản trị hệ thống',group:'Hệ thống'}
   };
   let skeletonTimer=0;

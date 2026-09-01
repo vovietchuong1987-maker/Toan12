@@ -31,7 +31,7 @@ function v33CodeStats(rows=[]){let map=new Map();rows.forEach(h=>{let m=typeof a
 function v33LevelStats(rows=[]){return ['NB','TH','VD'].map(level=>{let rr=rows.filter(x=>(x.level||analyticsQuestionMeta?.(x)?.level)===level),s=v33QuestionStats(rr);return {level,attempts:s.total,accuracy:s.accuracy}})}
 function v33Recommendations({weak=[],completionRate=null,overdue=0,doneCount=0,totalLessons=TOTAL,targetScore=8,verifiedAverageScore=null}={}){
   let out=[];
-  weak.slice(0,3).forEach(x=>out.push(`Củng cố ${x.code} – ${x.title||x.code}${x.accuracy==null?'':` (đạt ${Math.round(x.accuracy*100)}%)`}.`));
+  weak.slice(0,3).forEach(x=>out.push(`Củng cố ${x.title||'kiến thức'} – ${displayKnowledgeCode(x.code)}${x.accuracy==null?'':` (đạt ${Math.round(x.accuracy*100)}%)`}.`));
   if(overdue>0)out.push(`Hoàn thành ${overdue} bài đang trễ trước khi học thêm nội dung mới.`);
   if(completionRate!=null&&completionRate<1)out.push(`Duy trì việc nộp bài: hiện hoàn thành ${Math.round(completionRate*100)}% bài được giao trong phạm vi báo cáo.`);
   if(doneCount<totalLessons)out.push(`Tiếp tục hoàn thành chương trình: ${doneCount}/${totalLessons} bài đã hoàn thành.`);
@@ -59,7 +59,7 @@ async function v33BuildTeacherReport(classId,uid,period='all'){
 
 function v33ReportSourceBadges(r){let m=r.metrics||{},v=m.verifiedEvidence>0||m.verifiedAverageScore!=null,p=m.practiceEvidence>0||m.practiceAccuracy!=null;return `<div class="v33-source-badges">${v?'<span class="verified">✓ Secure Exam xác minh</span>':'<span class="muted">Chưa có Secure Exam xác minh</span>'}${p?'<span class="practice">◎ Có dữ liệu tự luyện</span>':''}<span>▣ ${esc(r.periodLabel||'')}</span></div>`}
 function v33ReportMetric(label,value,sub='',cls=''){return `<div class="v33-report-metric ${cls}"><small>${esc(label)}</small><strong>${value}</strong>${sub?`<span>${esc(sub)}</span>`:''}</div>`}
-function v33ReportSkillList(rows=[],empty='Chưa đủ dữ liệu'){return rows.length?rows.map(x=>`<div class="v33-skill-row"><div><b>${esc(x.code||'')}</b><span>${esc(x.title||'')}</span></div><strong>${v33Pct(x.accuracy)}</strong><small>${v33Num(x.attempts)} câu</small></div>`).join(''):`<div class="v33-report-empty">${esc(empty)}</div>`}
+function v33ReportSkillList(rows=[],empty='Chưa đủ dữ liệu'){return rows.length?rows.map(x=>`<div class="v33-skill-row"><div><b>${esc(x.title||'')}</b><span>${esc(displayKnowledgeCode(x.code||''))}</span></div><strong>${v33Pct(x.accuracy)}</strong><small>${v33Num(x.attempts)} câu</small></div>`).join(''):`<div class="v33-report-empty">${esc(empty)}</div>`}
 function v33ReportRecent(rows=[]){return rows.length?rows.map(x=>`<div class="v33-recent-row"><div><b>${esc(x.title||'Bài kiểm tra')}</b><span>${v33Date(x.date)}</span></div><strong>${v33Score(x.score)}</strong><small>${x.source==='verified'?'Xác minh':'Tự luyện'}</small></div>`).join(''):'<div class="v33-report-empty">Chưa có điểm trong phạm vi này.</div>'}
 function v33LevelLabel(k){return k==='NB'?'Nhận biết':k==='TH'?'Thông hiểu':'Vận dụng'}
 function v33ReportHTML(r,{publicMode=false}={}){

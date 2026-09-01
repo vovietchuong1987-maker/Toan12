@@ -205,7 +205,10 @@
   function normalizeQuestion(q={},force=false){
     const pattern=inferPattern(q);if(!pattern)return {...q,id6Status:q.id6Status||'review'};
     const f=formByPattern(pattern),id6=buildId6(pattern,q.level);
-    return {...q,formId:pattern,id6Pattern:pattern,id6,id6Title:f?.title||q.id6Title||q.form||'',form:f?.title||q.form||'',id6Status:id6?'complete':'review',id6Schema:1,id6Build:BUILD};
+    const base={...q,formId:pattern,id6Pattern:pattern,id6,id6Title:f?.title||q.id6Title||q.form||'',form:f?.title||q.form||'',id6Status:id6?'complete':'review',id6Schema:1,id6Build:BUILD};
+    // V38.2.1: after the sync layer is loaded, every import/editor save also receives
+    // the canonical Chapter-1 lessonId + knowledgeCode derived from official ID6.
+    return window.v3821Taxonomy?.canonicalizeQuestion?window.v3821Taxonomy.canonicalizeQuestion(base):base;
   }
   function analyze(bank){
     const rows=Array.isArray(bank)?bank:[],complete=rows.filter(q=>isId6(q.id6)).length,review=rows.length-complete;
