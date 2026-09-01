@@ -28,8 +28,8 @@ function capsule(name,h,r,pos,material,parent=root){let m;if(BABYLON.MeshBuilder
 function box(name,size,pos,material,parent=root){const m=BABYLON.MeshBuilder.CreateBox(name,{width:size.x,height:size.y,depth:size.z},scene);m.position.set(pos.x,pos.y,pos.z);m.material=material;m.parent=parent;return m}
 function torus(name,diam,thick,pos,material,parent=root){const m=BABYLON.MeshBuilder.CreateTorus(name,{diameter:diam,thickness:thick,tessellation:28},scene);m.position.set(pos.x,pos.y,pos.z);m.material=material;m.parent=parent;return m}
 function avatar(){return window.avatarV378Current?.()||window.avatarV378Stored?.()||{gender:'male',skin:'warm',face:'smile',hair:'short',outfit:'school-blue'}}
-function outfit(a){return window.AVATAR_V378_OUTFITS?.find?.(x=>x.id===a.outfit)||[{top:'#EAF2FF',accent:'#315BC7',bottom:'#27364E'}][0]}
-function skinColor(a){return window.AVATAR_V378_SKINS?.[a.skin]?.fill||({light:'#F4C7A1',warm:'#E6AD7B',tan:'#B97850'}[a.skin]||'#E6AD7B')}
+function outfit(a){return AVATAR_V378_OUTFITS?.find?.(x=>x.id===a.outfit)||[{top:'#EAF2FF',accent:'#315BC7',bottom:'#27364E'}][0]}
+function skinColor(a){return AVATAR_V378_SKINS?.[a.skin]?.fill||({light:'#F4C7A1',warm:'#E6AD7B',tan:'#B97850'}[a.skin]||'#E6AD7B')}
 function disposeModel(){if(root){try{root.dispose(false,true)}catch(_){}root=null}parts={}}
 function buildHair(a,hairMat){
   const style=a.hair||'short';

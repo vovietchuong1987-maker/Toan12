@@ -4,8 +4,8 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='38.5-wardrobe-engine',SCHEMA=385;
-const uid=()=>window.firebaseUser?.uid||'local';
+const BUILD='39.1-wardrobe-engine-hotfix',SCHEMA=391;
+const uid=()=>firebaseUser?.uid||'local';
 const slots=[
  {id:'hair',label:'Tóc',icon:'💇'}, {id:'top',label:'Áo',icon:'👕'}, {id:'bottom',label:'Quần/Váy',icon:'👖'},
  {id:'shoes',label:'Giày',icon:'👟'}, {id:'head',label:'Mũ',icon:'🎓'}, {id:'glasses',label:'Kính',icon:'👓'},
@@ -39,7 +39,7 @@ const catalog=[
 ];
 let activeSlot='top';
 function blank(){return {schemaVersion:SCHEMA,ownerUid:uid(),equipped:{hair:'hair-classic',top:'top-school-blue',bottom:'bottom-navy',shoes:'shoes-school',head:'',glasses:'',back:'',hand:''},updatedAt:''}}
-function bucket(){window.state.wardrobeV385ByUser=window.state.wardrobeV385ByUser&&typeof window.state.wardrobeV385ByUser==='object'?window.state.wardrobeV385ByUser:{};return window.state.wardrobeV385ByUser}
+function bucket(){state.wardrobeV385ByUser=state.wardrobeV385ByUser&&typeof state.wardrobeV385ByUser==='object'?state.wardrobeV385ByUser:{};return state.wardrobeV385ByUser}
 function sanitize(raw){const x={...blank(),...(raw&&typeof raw==='object'?raw:{})};x.ownerUid=uid();x.schemaVersion=SCHEMA;x.equipped={...blank().equipped,...(x.equipped||{})};for(const s of slots){const id=String(x.equipped[s.id]||'');if(id&&!catalog.some(i=>i.id===id&&i.slot===s.id))x.equipped[s.id]=''}return x}
 function profile(){return sanitize(bucket()[uid()]||blank())}
 function persist(p){p=sanitize(p);p.updatedAt=new Date().toISOString();bucket()[uid()]=p;try{window.save?.({sync:false,reason:'wardrobe-v38.5'})}catch(_){};try{window.v384Avatar3D?.rebuild?.()}catch(_){};renderPanel();return p}

@@ -19,7 +19,7 @@
     visibleButtons.forEach(b=>{const g=b.closest('.nav-group');if(g&&!g.classList.contains('open'))setGroup(g,true,false)})
   }
   function roleName(){try{const r=typeof currentSecureRole==='function'?currentSecureRole():'student';return r==='admin'?'Quản trị':r==='teacher'?'Giáo viên':'Học sinh'}catch(_){return 'Học sinh'}}
-  function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=`V37.1 • ${roleName()} • AI Teaching Intelligence`}
+  function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=`V39.1 • ${roleName()} • 3D Learning World`}
   function applyCompact(fromUser=false){
     if(innerWidth<=760){app()?.classList.remove('sidebar-compact');return}
     let on=false;try{on=localStorage.getItem(PREF_COMPACT)==='1'}catch(_){}

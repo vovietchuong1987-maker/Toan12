@@ -1,3 +1,11 @@
-Math12 Hub V39 Corrected
-Build: 39.0.2
-Entry point, UI version marker and Service Worker have been corrected to V39.
+Math12 Hub V39.1 — Student 3D World Hotfix
+Build: 39.1-student-3d-world-hotfix
+
+Sửa trực tiếp trên nền V39:
+- Fix Mega Shop bị rơi về giao diện V38.0 do module V38.6 dùng window.state trong khi state là global lexical binding.
+- Fix Wardrobe / Achievement / Room dùng sai window.firebaseUser, window.firebaseProfile và window.ROLE_ACCESS.
+- Học sinh được phép truy cập trực tiếp: Shop, Nhiệm vụ, Hành trình, Bộ sưu tập, Phòng của em.
+- Mega Shop mở rộng: 304 vật phẩm V39.1 + tự nhập 12 vật phẩm V38.0 legacy = 316 mục khi chạy đủ module.
+- Shop có tìm kiếm, lọc theo slot/rarity, 40 vật phẩm/trang và bộ sưu tập Toán học.
+- My Math Room tiếp tục dùng dữ liệu theo UID thực thay vì bucket local dùng chung.
+- Cache/version đổi sang 39.1 để tránh GitHub Pages giữ giao diện cũ.

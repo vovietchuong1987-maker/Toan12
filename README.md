@@ -1,16 +1,13 @@
-# Math12 Hub V39 — Corrected Build
+# Math12 Hub V39.1
 
-Bản V39 đã sửa lỗi nhận diện/đóng gói của gói trước.
+Bản sửa lỗi Student 3D World trên nền V39.
 
-- Entry point hiển thị V39 • 3D Learning World.
-- app-version = 39.0.
-- Service Worker = sw-v39.js và cache key V39 corrected.
-- Kế thừa Student Practice Hotfix V38.3.1.
-- Avatar 3D V38.4.
-- Wardrobe V38.5.
-- Mega Shop V38.6 (124 vật phẩm).
-- Pets & Effects V38.7.
-- Achievement Collections V38.8.
-- My Math Room V39.
+## Sửa chính
+- Mega Shop không còn rơi về Shop V38.0 12 món.
+- Catalog V39.1 có 304 vật phẩm mới; khi module V38.0 hoạt động, 12 món legacy cũng được nhập vào Shop (316 mục tổng).
+- Học sinh truy cập được Phòng của em và Bộ sưu tập.
+- Wardrobe, Shop, Achievement và Room lưu theo đúng UID tài khoản học sinh.
+- Cache GitHub Pages đổi sang 39.1.
 
-Sau khi deploy GitHub Pages, nên Ctrl+F5 một lần để xóa giao diện cache cũ.
+## Triển khai GitHub Pages
+Giải nén và upload toàn bộ nội dung thư mục này vào repository. Sau khi commit, mở trang và Ctrl+F5 một lần để bỏ cache cũ.
