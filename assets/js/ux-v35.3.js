@@ -9,6 +9,7 @@
   const PAGE_META={
     dashboard:{title:'Tổng quan',group:'Trang chủ'},
     'learning-plan':{title:'Lộ trình của em',group:'Cá nhân'},
+    avatar:{title:'Nhân vật của em',group:'Cá nhân'},
     lessons:{title:'Học theo bài',group:'Học tập'},
     'lesson-detail':{title:'Chi tiết bài học',group:'Học tập'},
     chapters:{title:'Ôn theo chương',group:'Học tập'},

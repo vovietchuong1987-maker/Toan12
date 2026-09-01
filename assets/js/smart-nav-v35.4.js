@@ -14,6 +14,7 @@
   const PAGE_META={
     dashboard:{title:'Tổng quan',subtitle:'Trang chủ và việc cần làm',icon:'⌂',keywords:'trang chủ dashboard tổng quan'},
     'learning-plan':{title:'Lộ trình của em',subtitle:'Mục tiêu và kế hoạch học',icon:'✦',keywords:'lộ trình kế hoạch mục tiêu'},
+    avatar:{title:'Nhân vật của em',subtitle:'Avatar tân thủ và diện mạo cá nhân',icon:'♟',keywords:'avatar nhân vật tân thủ trang phục hồ sơ'},
     lessons:{title:'Học theo bài',subtitle:'19 bài Toán 12 theo GDPT 2018',icon:'▤',keywords:'bài học kiến thức chương trình'},
     chapters:{title:'Ôn theo chương',subtitle:'Ôn tập theo 6 chương',icon:'◫',keywords:'chương ôn tập'},
     periodic:{title:'Kiểm tra định kỳ',subtitle:'Bài kiểm tra giữa kỳ và học kỳ',icon:'◷',keywords:'kiểm tra định kỳ giữa kỳ học kỳ'},

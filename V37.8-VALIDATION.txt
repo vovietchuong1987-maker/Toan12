@@ -1,0 +1,51 @@
+Math12 Hub V37.8 — VALIDATION
+===============================
+Build: 37.8-avatar-foundation
+Base: V37.7.1 Lesson Content + TikZ Scope/Clip Hotfix
+
+1. VERSION / RUNTIME
+PASS app-version = 37.8
+PASS app-build = 37.8-avatar-foundation
+PASS APP_VERSION = 37.8
+PASS Service Worker registration points to sw-v37.8.js?v=37.8
+PASS exactly one root Service Worker: sw-v37.8.js
+PASS old ?v=37.7.1 references in index/registration = 0
+
+2. JAVASCRIPT / LOCAL REFERENCES
+PASS 49/49 assets/js/*.js pass node --check
+PASS sw-v37.8.js passes node --check
+PASS index.html local src/href references: 0 missing
+PASS Service Worker cached local assets: 0 missing
+
+3. AVATAR FOUNDATION REGRESSION
+PASS student role can access page avatar
+PASS avatar nav item exists under Personal
+PASS avatar page exists
+PASS avatar topbar slot exists
+PASS avatar dashboard card slot exists
+PASS avatar-v37.8.js and avatar-v37.8.css are loaded
+PASS first authenticated student login without an initialized avatar prompts exactly once per session
+PASS an existing initialized avatar does not trigger onboarding
+PASS starter paths: male -> short hair; female -> bob hair
+PASS SVG renderer returns valid inline SVG for male and female starter avatars
+PASS builder renders 2 gender cards
+PASS builder renders 3 skin + 2 face + 3 gender-specific hair choices
+PASS builder renders 3 starter outfits
+PASS avatar save path is local-first and can sync to users/{uid}.avatarV378
+PASS no EXP/gold/shop scoring logic is active in V37.8
+
+4. LESSON / FIGURE / QUESTION SAFETY
+PASS assets/js/lesson-content-v37.7.js byte-for-byte unchanged from V37.7.1
+PASS assets/js/tikz-support-v37.2.js byte-for-byte unchanged from V37.7.1
+PASS assets/js/figure-engine-v37.4.5.js byte-for-byte unchanged from V37.7.1
+PASS no question-bank reset/import/migration added by V37.8
+PASS Avatar Foundation does not modify answers, ID6, reviewStatus or scoring functions
+
+5. DATA / BACKEND SAFETY
+PASS firestore.rules byte-for-byte unchanged from V37.7.1
+PASS firestore.indexes.json byte-for-byte unchanged from V37.7.1
+PASS firebase.json byte-for-byte unchanged from V37.7.1
+PASS no new Firestore collection required
+PASS avatar profile write remains inside the signed-in user's own users/{uid} document
+
+STATUS: PASS — V37.8 Avatar Foundation ready for student UI testing.
