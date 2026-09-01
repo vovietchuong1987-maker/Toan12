@@ -1,0 +1,52 @@
+Math12 Hub V37.6 — VALIDATION
+================================
+Build: 37.6-exam-pro-engine
+Base: V37.5.4 Native Freeform Graph Renderer
+
+1. VERSION / RUNTIME
+PASS app-version = 37.6
+PASS app-build = 37.6-exam-pro-engine
+PASS Exam Pro CSS and JS are referenced after the inherited runtime modules.
+PASS Service Worker registration points to sw-v37.6.js?v=37.6.
+PASS exactly one root Service Worker: sw-v37.6.js.
+PASS no runtime query/reference remains to sw-v37.5.4 or ?v=37.5.4.
+
+2. JAVASCRIPT / LOCAL REFERENCES
+PASS 47/47 assets/js/*.js pass node --check.
+PASS index.html local src/href references: 0 missing.
+PASS sw-v37.6.js CORE local files: 0 missing.
+
+3. EXAM PRO REGRESSION — CURRENT 278-QUESTION BANK
+Input bank: 278 Approved questions (current F1 merged bank used for regression).
+Observed type readiness: 278 MCQ, 0 TF4, 0 short.
+PASS official generator returns exactly 22 questions.
+PASS section structure = 12 MCQ + 4 TF4 + 6 short.
+PASS 12/12 Section-I questions sourced from current Approved bank.
+PASS missing TF4/short are filled only from the inherited full-exam sample; engine does not fabricate new math content.
+PASS generated official exam has 22 unique question IDs.
+PASS after marking the first 12 MCQ as recent, next regression exam had 0/12 repeated MCQ.
+PASS 15-question balanced practice generated 15/15 from current bank.
+
+4. EXAM EXPERIENCE
+PASS existing autosave/resume remains the base persistence mechanism.
+PASS V37.6 adds active-exam resume entry in THPT Exam Center.
+PASS per-question timing is stored locally and attached to local attempt records after submit.
+PASS pace ribbon, answered progress, online/offline chip, focus mode and keyboard shortcuts installed.
+PASS submit-review overlay reports completed / incomplete / flagged before final submit.
+PASS result augmentation adds accuracy, average time, level breakdown, weak knowledge codes and retry-wrong flow.
+PASS existing THPT scoring function and Secure Assignment submit path are not rewritten.
+
+5. DATA / BACKEND SAFETY
+PASS firestore.rules unchanged from V37.5.4.
+PASS firestore.indexes.json unchanged from V37.5.4.
+PASS firebase.json unchanged from V37.5.4.
+PASS no new Firestore collection is required by V37.6 Exam Pro.
+PASS no external telemetry added; timing data remains in local state/localStorage unless existing app sync behavior applies to the attempt record.
+
+6. CLEAN PACKAGE POLICY
+PASS one current README.
+PASS one current VALIDATION.
+PASS no tests/, imports/, preview pages or historical service workers included in release root.
+NOTE inherited version-named assets remain only because index.html/runtime still references them.
+
+STATUS: PASS — V37.6 Exam Pro Engine release candidate ready.
