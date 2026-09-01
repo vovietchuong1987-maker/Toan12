@@ -1,0 +1,3 @@
+Math12 Hub V39 Corrected
+Build: 39.0.2
+Entry point, UI version marker and Service Worker have been corrected to V39.
