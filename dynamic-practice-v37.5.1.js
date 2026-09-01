@@ -23,7 +23,8 @@ function lessonKey(q){return String(q.lessonId||'').trim()}
 function levelKey(q){const x=String(q.level||'').toUpperCase();return ['NB','TH','VD','VDC'].includes(x)?x:'TH'}
 function qcPass(q){try{return !window.V3747FigureQC?.qcQuestion||window.V3747FigureQC.qcQuestion(q).pass!==false}catch(_){return true}}
 function eligiblePool(predicate){
-  let pool=(state.questionBank||[]).filter(q=>q&&q.id&&TYPES.has(q.type)&&predicate(q)&&qcPass(q));
+  const source=window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||(state.questionBank||[]);
+  let pool=source.filter(q=>q&&q.id&&TYPES.has(q.type)&&predicate(q)&&qcPass(q));
   const hasWorkflow=pool.some(q=>String(q.reviewStatus||'').trim());
   if(hasWorkflow)pool=pool.filter(q=>q.reviewStatus==='approved');
   return pool;

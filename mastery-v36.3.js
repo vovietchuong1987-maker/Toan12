@@ -15,7 +15,8 @@
   const codeMeta=code=>(typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).find(x=>x.code===code)||{code,title:code,lessonId:'',chapterId:0,level:''};
   const humanCode=code=>window.v3821Taxonomy?.humanCode?.(code,true)||code;
   const humanFull=code=>window.v3821Taxonomy?.humanCode?.(code,false)||code;
-  const bankMap=()=>new Map((state?.questionBank||[]).map(q=>[q.id,q]));
+  const practiceBank=()=>window.V3822PracticeBank?.effectiveBank?.({approvedOnly:true})||(state?.questionBank||[]).filter(q=>!q.reviewStatus||q.reviewStatus==='approved');
+  const bankMap=()=>new Map(practiceBank().map(q=>[q.id,q]));
   function rows(){return typeof analyticsHistory==='function'?analyticsHistory():[]}
   function difficultyOf(h,map){let q=map.get(h.questionId)||null,d=Number(q?.difficulty);if(Number.isFinite(d))return Math.max(1,Math.min(5,d));return h.level==='VD'?4:h.level==='TH'?3:2}
   function evidenceWeight(h,map,now=Date.now()){
@@ -68,10 +69,10 @@
   }
   function selectAdaptive(count=10,forcedCode=''){
     count=Math.max(3,Math.min(20,Number(count)||10));const targets=adaptiveTargets(forcedCode),codes=targets.map(x=>x.code);if(!codes.length)return {questions:[],targets:[],reason:'no-target'};
-    const lastMap=latestQuestionState(),used=new Set(),selected=[],summary=masterySummary(),masteryMap=new Map(summary.codes.map(x=>[x.code,x])),bank=(state?.questionBank||[]).filter(q=>codes.includes(q.knowledgeCode)&&['mcq','tf','tf4','short'].includes(q.type)&&qcSafe(q));
+    const lastMap=latestQuestionState(),used=new Set(),selected=[],summary=masterySummary(),masteryMap=new Map(summary.codes.map(x=>[x.code,x])),bank=practiceBank().filter(q=>codes.includes(q.knowledgeCode)&&['mcq','tf','tf4','short'].includes(q.type)&&qcSafe(q));
     const byCode=new Map(codes.map(c=>{const m=masteryMap.get(c)||targets.find(x=>x.code===c),ranked=bank.filter(q=>q.knowledgeCode===c).map(q=>({q,rank:questionPriority(q,m,lastMap,qualityScore(q))})).sort((a,b)=>b.rank-a.rank).map(x=>x.q);return [c,ranked]}));
     let round=0;while(selected.length<count&&round<12){for(const m of targets){const pool=byCode.get(m.code)||[],q=pool.find(x=>!used.has(x.id));if(q){selected.push(q);used.add(q.id);if(selected.length>=count)break}}round++;if(![...byCode.values()].some(p=>p.some(q=>!used.has(q.id))))break}
-    if(selected.length<count){const lessons=new Set(targets.map(x=>x.lessonId));const fallback=(state?.questionBank||[]).filter(q=>lessons.has(q.lessonId)&&!used.has(q.id)&&qcSafe(q)&&['mcq','tf','tf4','short'].includes(q.type)).map(q=>({q,rank:questionPriority(q,masteryMap.get(q.knowledgeCode),lastMap,qualityScore(q))})).sort((a,b)=>b.rank-a.rank).map(x=>x.q);for(const q of fallback){selected.push(q);used.add(q.id);if(selected.length>=count)break}}
+    if(selected.length<count){const lessons=new Set(targets.map(x=>x.lessonId));const fallback=practiceBank().filter(q=>lessons.has(q.lessonId)&&!used.has(q.id)&&qcSafe(q)&&['mcq','tf','tf4','short'].includes(q.type)).map(q=>({q,rank:questionPriority(q,masteryMap.get(q.knowledgeCode),lastMap,qualityScore(q))})).sort((a,b)=>b.rank-a.rank).map(x=>x.q);for(const q of fallback){selected.push(q);used.add(q.id);if(selected.length>=count)break}}
     return {questions:selected.slice(0,count),targets,codes}
   }
   function startAdaptive(count=10,forcedCode=''){

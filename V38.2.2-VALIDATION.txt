@@ -1,0 +1,44 @@
+Math12 Hub V38.2.2 — VALIDATION
+================================
+Build: 38.2.2-published-practice-bank
+Base: V38.2.1 Taxonomy Sync
+
+1. ROOT CAUSE / FIX
+PASS V37.4.3 seed bank is intentionally empty; student role protection therefore cannot use state.questionBank as a practice source.
+PASS Published Practice Bank is separated from teacher-private questionBank.
+PASS student/offline effective practice pool = 278 Approved questions.
+PASS teacher/admin effective pool merges public + own bank by question id; own record wins without exposing it to student role.
+
+2. PUBLISHED BANK REGRESSION
+PASS bundled public questions = 278.
+PASS unique ids = 278.
+PASS every bundled question reviewStatus = approved.
+PASS every bundled MCQ has 4 options and answer index 0..3.
+PASS every question has valid Chapter-1 ID6 and canonical F1-xx.K1..K3 knowledgeCode.
+PASS Bài 1 / F1-01 = 87 questions (NB 56 / TH 30 / VD 1).
+PASS Bài 2 / F1-02 = 60 questions (NB 37 / TH 22 / VD 1).
+PASS Bài 3 / F1-03 = 38 questions (NB 19 / TH 19).
+PASS Bài 4 / F1-04 = 93 questions (NB 51 / TH 38 / VD 4).
+NOTE Bài 5 / F1-05 = 0 Approved questions in the current 278-question published snapshot. New KSHS/DSKSHS Draft items are intentionally not published.
+PASS F1-02.K1 adaptive target has 14 Approved questions instead of the false 0 warning.
+
+3. LEARNER MODULES
+PASS Lesson Content reads V3822PracticeBank effective pool.
+PASS Dynamic Practice reads the same effective pool and still applies QC + Approved workflow filtering.
+PASS Mastery adaptive selection reads Approved effective practice pool.
+PASS teacher-private state remains handled by the existing role-lock vault; no private bank is copied into the public bundle at runtime.
+
+4. VERSION / OFFLINE
+PASS app-version = 38.2.2.
+PASS Service Worker = sw-v38.2.2.js and caches public bank data + bridge.
+PASS index local src/href references = 0 missing.
+PASS Service Worker CORE local files = 0 missing.
+PASS 56/56 JS/data scripts pass node --check.
+
+5. FIREBASE SAFETY
+PASS firestore.rules unchanged from V38.2.1.
+PASS firestore.indexes.json unchanged from V38.2.1.
+PASS firebase.json unchanged from V38.2.1.
+PASS no new Firestore collection or rule is required.
+
+STATUS: PASS — V38.2.2 fixes the zero-question learner practice bug while keeping the teacher bank private.

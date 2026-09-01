@@ -1,4 +1,4 @@
-const APP_VERSION='38.2.1'; // Taxonomy Sync — official 5-lesson Chapter 1.
+const APP_VERSION='38.2.2'; // Published Practice Bank — student-safe Approved practice pool.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Sự đồng biến và nghịch biến của hàm số'},

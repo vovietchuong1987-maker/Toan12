@@ -1,30 +1,33 @@
-# Math12 Hub V38.2.1 — Taxonomy Sync
+# Math12 Hub V38.2.2 — Published Practice Bank
 
-Hotfix đồng bộ toàn bộ Chương 1 theo hệ ID6 chính thức, phát triển trực tiếp từ V38.2 Mastery + Avatar Evolution.
+Bản vá kế tiếp V38.2.1, sửa lỗi trang **Nội dung bài học hiển thị 0 câu** khi dùng tài khoản học sinh hoặc khi chạy ở chế độ không mở ngân hàng riêng của giáo viên.
 
-## Cấu trúc Chương 1 thống nhất
+## Nguyên nhân
 
-- F1-01 — Bài 1: Sự đồng biến và nghịch biến của hàm số — `2D1?1-*`
-- F1-02 — Bài 2: Cực trị của hàm số — `2D1?2-*`
-- F1-03 — Bài 3: Giá trị lớn nhất và giá trị nhỏ nhất của hàm số — `2D1?3-*`
-- F1-04 — Bài 4: Đường tiệm cận — `2D1?4-*`
-- F1-05 — Bài 5: Khảo sát sự biến thiên và vẽ đồ thị hàm số — `2D1?5-*`
+Từ V37.4.3, `SEED_QUESTION_BANK` được cố ý để rỗng. Cơ chế phân quyền cũ gọi `clearTeacherPrivateLocal()` với học sinh và thay `state.questionBank` bằng seed rỗng để bảo vệ ngân hàng riêng của giáo viên. Các mô-đun Học theo bài / Dynamic Practice / Mastery trước đây lại đọc trực tiếp `state.questionBank`, vì vậy học sinh nhìn thấy 0 câu dù giáo viên có ngân hàng thật.
 
-## Những gì V38.2.1 sửa
+## Sửa trong V38.2.2
 
-1. `core.js` không còn dùng sơ đồ cũ của Chương 1 ở lớp dữ liệu nền.
-2. Thêm `taxonomy-sync-v38.2.1.js`: lấy ID6 của từng câu làm nguồn chuẩn để tự đồng bộ `lessonId`, `knowledgeCode`, `formId`, `id6Pattern`, `blueprintKey`, `taxonomyPath` và metadata liên quan.
-3. Đồng bộ cả câu hỏi tải từ Firebase, lịch sử câu hỏi và questionResults khi có thể đối chiếu theo `questionId`.
-4. Mọi lần `save()` đều chuẩn hóa taxonomy trước khi ghi local state; import/editor ID6 cũng nhận metadata mới.
-5. Trang Nội dung bài học không còn tin tuyệt đối vào `lessonId` cũ; với Chương 1, ID6 quyết định bài đang thuộc.
-6. Mastery/Adaptive Practice chuẩn hóa ngân hàng trước khi chọn câu, vì vậy không còn cảnh báo sai kiểu `F1-02.K1 (0 câu khả dụng)` chỉ do metadata cũ lệch bài.
-7. Các vùng giao diện chính thay mã nội bộ `F1-xx.Kx` bằng tên bài + stem ID6 chính thức; mã K vẫn được giữ nội bộ để tương thích dữ liệu Mastery.
-8. Không thay nội dung câu hỏi, đáp án, Firestore Rules, indexes hay cấu hình Firebase.
+- Tách **Published Practice Bank** khỏi ngân hàng riêng của giáo viên.
+- Gói sẵn 278 câu **Approved** hiện hành của Chương 1 làm ngân hàng luyện tập read-only.
+- Học sinh / chế độ offline chỉ đọc Published Practice Bank, không bao giờ nhận Draft hay ngân hàng riêng của giáo viên.
+- Giáo viên/Admin khi luyện tập dùng hợp nhất Published Bank + ngân hàng riêng, khử trùng theo `id`; bản riêng của giáo viên được ưu tiên.
+- `lesson-content-v37.7.js`, `dynamic-practice-v37.5.1.js` và `mastery-v36.3.js` cùng dùng một nguồn luyện tập thống nhất.
+- Published Bank đã được chuẩn hóa lại `lessonId` và `knowledgeCode` theo ID6 V38.2.1.
 
-## Quy tắc câu tổng hợp
+## Dữ liệu Published Bank hiện có
 
-Một câu nhiều ý được xếp vào **bài học muộn nhất mà học sinh cần học xong để giải trọn câu**. Ví dụ: đơn điệu + cực trị + GTLN/GTNN + tiệm cận → Bài 4; nếu cần thêm tương giao/khảo sát đồ thị → Bài 5.
+- Tổng: **278 Approved MCQ**.
+- Bài 1: **87** câu (NB 56 / TH 30 / VD 1).
+- Bài 2: **60** câu (NB 37 / TH 22 / VD 1).
+- Bài 3: **38** câu (NB 19 / TH 19).
+- Bài 4: **93** câu (NB 51 / TH 38 / VD 4).
+- Bài 5: **0 Approved trong snapshot 278 hiện tại**.
 
-## Sau khi triển khai
+Các bộ KSHS/DSKSHS mới đang ở trạng thái Draft sẽ không tự xuất bản cho học sinh; điều này là chủ ý an toàn. Sau khi giáo viên duyệt Approved, cần cập nhật Published Bank trong một bản phát hành/publish kế tiếp nếu muốn học sinh trên thiết bị khác dùng ngay.
 
-Do V38.2.1 đổi Service Worker từ `sw-v38.2.js` sang `sw-v38.2.1.js`, nên sau khi tải bản mới lên GitHub Pages hãy mở trang và nhấn **Ctrl + F5** một lần.
+## Không thay đổi
+
+- Firestore Rules / Indexes / Firebase config.
+- Nội dung, đáp án và lời giải của ngân hàng giáo viên.
+- ID6, chấm điểm, Exam Pro, avatar/game hóa.

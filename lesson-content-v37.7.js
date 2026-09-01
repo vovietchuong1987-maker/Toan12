@@ -132,11 +132,12 @@
     if(/^2[DH]\d[NHVC]\d+-\d+$/.test(id6))return id6.replace(/^(.{3})[NHVC](.+)$/,'$1?$2');
     return '';
   }
+  function v377SourceBank(){return window.V3822PracticeBank?.effectiveBank?.()||(state.questionBank||[])}
   function v377LessonBank(id){
     // V38.2.1: do not trust stale lessonId from pre-ID6 banks. The official ID6 pattern
     // is authoritative for Chapter 1, so lesson cards/counts stay correct even before
     // a persisted migration finishes (for example during a Firebase hydrate race).
-    return (state.questionBank||[]).filter(q=>{
+    return v377SourceBank().filter(q=>{
       if(!q||!['mcq','tf','tf4','short'].includes(q.type))return false;
       const pattern=v377PatternOf(q),canonical=window.v3821Taxonomy?.lessonFromPattern?.(pattern)||'';
       return (canonical||q.lessonId)===id;
@@ -215,9 +216,9 @@
     renderChapterTabs();
     const c=chapters.find(x=>x.id===activeChapter)||chapters[0];
     const q=(document.getElementById('lessonSearch')?.value||'').toLowerCase();
-    const chapterBank=(state.questionBank||[]).filter(x=>Number(x.chapterId)===Number(c.id)).length;
+    const chapterBank=v377SourceBank().filter(x=>Number(x.chapterId)===Number(c.id)).length;
     const official=c.id===1?'<span class="v377-official-chip">✓ 5 bài chính thức ID6</span>':'';
-    document.getElementById('lessonHeader').innerHTML=`<div class="v377-chapter-head"><div><div class="v377-kicker">NỘI DUNG BÀI HỌC • V38.2.1 • ID6 ĐỒNG NHẤT</div><h3>Chương ${c.id}. ${esc(c.title)}</h3><p>${esc(c.desc)}</p></div><div class="v377-chapter-summary"><span><b>${c.lessons.length}</b><small>Bài học</small></span><span><b>${c.lessons.reduce((n,l)=>n+getLessonMeta(l.id).knowledge.length,0)}</b><small>Chuẩn kiến thức</small></span><span><b>${chapterBank}</b><small>Câu trong ngân hàng</small></span>${official}</div></div>`;
+    document.getElementById('lessonHeader').innerHTML=`<div class="v377-chapter-head"><div><div class="v377-kicker">NỘI DUNG BÀI HỌC • V38.2.2 • PUBLISHED BANK + ID6</div><h3>Chương ${c.id}. ${esc(c.title)}</h3><p>${esc(c.desc)}</p></div><div class="v377-chapter-summary"><span><b>${c.lessons.length}</b><small>Bài học</small></span><span><b>${c.lessons.reduce((n,l)=>n+getLessonMeta(l.id).knowledge.length,0)}</b><small>Chuẩn kiến thức</small></span><span><b>${chapterBank}</b><small>Câu trong ngân hàng</small></span>${official}</div></div>`;
     const rows=c.lessons.filter(l=>{
       const m=getLessonMeta(l.id),text=[l.common,m.overview||'',...m.goals,...m.knowledge.map(k=>k.title),...m.forms.map(f=>f.title)].join(' ').toLowerCase();
       return text.includes(q);
@@ -262,7 +263,7 @@
         <section class="study-card" id="lessonKnowledge"><div class="study-kicker">02 • KIẾN THỨC CỐT LÕI</div><h3>Học theo từng mã kiến thức</h3><p class="v377-section-desc">Mỗi mã kiến thức liên kết trực tiếp với câu hỏi, điểm số và Mastery. Học xong mục nào có thể đánh dấu mục đó.</p><div class="v377-knowledge-list">${knowledge}</div></section>
         <section class="study-card" id="v377Forms"><div class="study-kicker">03 • DẠNG TOÁN ID6</div><div class="v377-section-head"><div><h3>${m.forms.length} dạng cần luyện</h3><p>Hiển thị đúng mã dạng chính thức; dấu <b>?</b> được thay bằng N/H/V/C khi gắn mức độ cho từng câu.</p></div><span class="v377-id6-stem">${esc(m.id6Stem||'ID6')}</span></div><div class="v377-form-list">${forms}</div></section>
         <section class="study-card" id="v377Example"><div class="study-kicker">04 • VÍ DỤ TRỌNG TÂM</div><h3>Một ví dụ để nối lý thuyết với cách làm</h3><div class="example-box"><b>Bài toán.</b> ${mathHTML(m.example?.problem||'')}<div class="solution"><b>Lời giải định hướng.</b> ${mathHTML(m.example?.solution||'')}</div></div></section>
-        <section class="study-card" id="v377Practice"><div class="study-kicker">05 • LUYỆN TẬP TỪ NGÂN HÀNG</div><div class="v377-section-head"><div><h3>Câu hỏi đang có cho bài này</h3><p>Dữ liệu đọc trực tiếp từ ngân hàng hiện tại, không dùng câu mẫu cố định.</p></div><button class="btn btn-blue" onclick="openLessonQuiz('${activeLessonId}')" ${bs.total?'':'disabled'}>Luyện bài này</button></div>${bankBreakdown}</section>
+        <section class="study-card" id="v377Practice"><div class="study-kicker">05 • LUYỆN TẬP TỪ NGÂN HÀNG</div><div class="v377-section-head"><div><h3>Câu hỏi đang có cho bài này</h3><p>Dữ liệu lấy từ ngân hàng luyện tập đã duyệt; học sinh luôn có thể dùng Published Practice Bank mà không truy cập ngân hàng riêng của giáo viên.</p></div><button class="btn btn-blue" onclick="openLessonQuiz('${activeLessonId}')" ${bs.total?'':'disabled'}>Luyện bài này</button></div>${bankBreakdown}</section>
         <section class="study-card" id="v377Mistakes"><div class="study-kicker">06 • LỖI THƯỜNG GẶP</div><h3>Những điểm dễ mất điểm</h3><div class="mistake-list">${mistakes}</div></section>
         <div class="v377-prev-next">${prev}<span></span>${next}</div>
       </main><aside class="study-aside">
