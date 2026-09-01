@@ -209,11 +209,11 @@ function exportCSV(){
   let csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`theo-doi-${String(c.className||'lop').replace(/[^a-zA-Z0-9_-]+/g,'-')}.csv`;a.click();URL.revokeObjectURL(a.href)
 }
 const lessonQ={
- 'F1-01':{q:'Cho hàm số f(x)=x³−3x. Điểm cực đại của hàm số có hoành độ bằng',opts:['−1','0','1','3'],ans:0,ex:'f\'(x)=3x²−3; đạo hàm đổi dấu + sang − tại x=−1.'},
- 'F1-02':{q:'Giá trị lớn nhất của f(x)=−x²+4x+1 trên [0;4] là',opts:['1','4','5','9'],ans:2,ex:'Parabol quay xuống, đỉnh tại x=2 và f(2)=5.'},
- 'F1-03':{q:'Đồ thị y=(2x+1)/(x−3) có tiệm cận đứng là',opts:['x=−1/2','x=2','x=3','y=3'],ans:2,ex:'Mẫu số bằng 0 tại x=3 và tử khác 0.'},
- 'F1-04':{q:'Để khảo sát sự biến thiên của hàm số, bước nào trực tiếp quyết định các khoảng đồng biến, nghịch biến?',opts:['Tính đạo hàm và xét dấu đạo hàm','Tính giao điểm với Oy','Tính f(0)','Chọn vài điểm ngẫu nhiên'],ans:0,ex:'Dấu của đạo hàm quyết định tính đơn điệu trên các khoảng.'},
- 'F1-05':{q:'Trong bài toán tối ưu thực tiễn bằng đạo hàm, việc nào cần làm trước khi tìm cực trị?',opts:['Xác định biến và miền giá trị thực tế','Luôn cho đạo hàm bằng 1','Bỏ qua đơn vị','Chỉ xét nghiệm âm'],ans:0,ex:'Mô hình đúng cần biến, hàm mục tiêu và miền thực tế trước khi tối ưu.'},
+ 'F1-01':{q:'Cho hàm số f(x)=x³−3x. Hàm số nghịch biến trên khoảng nào?',opts:['(−1;1)','(−∞;−1)','(1;+∞)','(−∞;+∞)'],ans:0,ex:'f\'(x)=3(x−1)(x+1)<0 trên (−1;1).'},
+ 'F1-02':{q:'Cho hàm số f(x)=x³−3x. Điểm cực đại của hàm số có hoành độ bằng',opts:['−1','0','1','3'],ans:0,ex:'f\'(x)=3x²−3; đạo hàm đổi dấu + sang − tại x=−1.'},
+ 'F1-03':{q:'Giá trị lớn nhất của f(x)=−x²+4x+1 trên [0;4] là',opts:['1','4','5','9'],ans:2,ex:'Parabol quay xuống, đỉnh tại x=2 và f(2)=5.'},
+ 'F1-04':{q:'Đồ thị y=(2x+1)/(x−3) có tiệm cận đứng là',opts:['x=−1/2','x=2','x=3','y=3'],ans:2,ex:'Mẫu số bằng 0 tại x=3 và tử khác 0.'},
+ 'F1-05':{q:'Muốn biện luận số nghiệm của phương trình f(x)=m từ đồ thị y=f(x), ta cần',opts:['Đếm giao điểm của đồ thị với đường thẳng y=m','Chỉ tính f(0)','Chỉ tìm tập xác định','Luôn giải f\'(x)=m'],ans:0,ex:'Số nghiệm của f(x)=m bằng số giao điểm của y=f(x) và y=m.'},
  'F2-01':{q:'Trong không gian, nếu a=(1;2;−1), b=(2;−1;3) thì a+b bằng',opts:['(3;1;2)','(1;1;2)','(3;3;−4)','(2;2;3)'],ans:0,ex:'Cộng từng tọa độ.'},
  'F2-02':{q:'Điểm M(2;−1;4) có vectơ OM bằng',opts:['(−2;1;−4)','(2;−1;4)','(2;1;4)','(1;−2;4)'],ans:1,ex:'Tọa độ OM trùng với tọa độ điểm M.'},
  'F2-03':{q:'Cho a=(1;0;2), b=(2;1;−1). Tích vô hướng a·b bằng',opts:['0','1','2','3'],ans:0,ex:'1·2+0·1+2·(−1)=0.'},
@@ -240,7 +240,7 @@ function buildSeedQuestionBank(){
     if(k3){let distract=meta.knowledge.filter(k=>k.code!==k3.code).map(k=>k.summary);while(distract.length<3)distract.push('Chỉ cần ghi nhớ công thức mà không cần xét điều kiện của bài toán.');items.push({id:`${l.id}-K3-01`,chapterId:ch.id,lessonId:l.id,knowledgeCode:k3.code,form:meta.forms[2]?.title||'',level:k3.level,type:'mcq',question:`Nội dung nào mô tả đúng nhất kiến thức “${k3.title}”?`,options:[k3.summary,...distract.slice(0,3)],answer:0,explanation:k3.summary,source:'seed'});}
   }));
   const shorts=[
-    ['QB-S01',1,'F1-02','F1-02.K2','GTLN – GTNN trên đoạn','TH','Cho f(x)=−x²+4x+1 trên [0;4]. Giá trị lớn nhất của f bằng bao nhiêu?','5','Parabol quay xuống, đỉnh x=2 và f(2)=5.'],
+    ['QB-S01',1,'F1-03','F1-03.K1','GTLN – GTNN trên đoạn','TH','Cho f(x)=−x²+4x+1 trên [0;4]. Giá trị lớn nhất của f bằng bao nhiêu?','5','Parabol quay xuống, đỉnh x=2 và f(2)=5.'],
     ['QB-S02',2,'F2-02','F2-02.K2','Khoảng cách và trung điểm','TH','Cho A(1;2;3), B(3;2;1). Tính độ dài AB, làm tròn đến hai chữ số thập phân.','2.83','AB=√[(2)²+0²+(−2)²]=√8≈2,83.'],
     ['QB-S03',3,'F3-02','F3-02.K3','Độ lệch chuẩn','VD','Một mẫu số liệu có phương sai bằng 16. Độ lệch chuẩn bằng bao nhiêu?','4','Độ lệch chuẩn là căn bậc hai của phương sai.'],
     ['QB-S04',4,'F4-02','F4-02.K2','Newton–Leibniz','TH','Tính ∫₀³ 2x dx.','9','[x²]₀³=9.'],

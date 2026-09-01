@@ -1,0 +1,58 @@
+Math12 Hub V37.7 — VALIDATION
+================================
+Build: 37.7-lesson-content-engine
+Base: V37.6 Exam Pro Engine
+
+1. VERSION / RUNTIME
+PASS app-version = 37.7
+PASS app-build = 37.7-lesson-content-engine
+PASS APP_VERSION = 37.7
+PASS Service Worker registration points to sw-v37.7.js?v=37.7
+PASS exactly one root Service Worker: sw-v37.7.js
+PASS no runtime query/reference remains to sw-v37.6.js?v=37.6
+
+2. JAVASCRIPT / LOCAL REFERENCES
+PASS all assets/js/*.js and sw-v37.7.js pass node --check
+PASS index.html local src/href references: 0 missing
+PASS sw-v37.7.js local cached assets: 0 missing
+PASS lesson-content-v37.7.css and lesson-content-v37.7.js are loaded and cached
+
+3. CURRICULUM / ID6 ALIGNMENT
+PASS app lesson count remains 19
+PASS Mastery knowledge-code count remains 57
+PASS official ID6 form count remains 91
+PASS Chapter 1 now maps one-to-one:
+  F1-01 = Bài 1 = Sự đồng biến và nghịch biến của hàm số
+  F1-02 = Bài 2 = Cực trị của hàm số
+  F1-03 = Bài 3 = Giá trị lớn nhất và giá trị nhỏ nhất của hàm số
+  F1-04 = Bài 4 = Đường tiệm cận
+  F1-05 = Bài 5 = Khảo sát sự biến thiên và vẽ đồ thị hàm số
+PASS Chapter 1 official-form distribution = 5 / 7 / 6 / 4 / 8 (total 30)
+PASS practical forms are placed back into the official lesson where the knowledge belongs
+PASS lesson-content module loads after Official ID6 Taxonomy and before authoring/knowledge-map modules
+
+4. LESSON CONTENT EXPERIENCE
+PASS lesson list shows lesson order, ID6 stem, knowledge count, form count, bank-question count and progress
+PASS lesson detail shows prerequisites, goals, core knowledge, quick takeaways, official ID6 forms, example, bank practice and common mistakes
+PASS each ID6 form shows current bank count and level distribution
+PASS form-specific practice uses questions already present in questionBank; no math content is fabricated
+PASS previous/next lesson navigation added
+PASS Chapter 1 displays the aggregate-classification rule:
+     multi-part questions belong to the latest lesson students must have completed to solve the whole question
+
+5. DATA / BACKEND SAFETY
+PASS firestore.rules unchanged from V37.6
+PASS firestore.indexes.json unchanged from V37.6
+PASS firebase.json unchanged from V37.6
+PASS no new Firestore collection required
+PASS questionBank storage key/schema unchanged
+PASS no questionBank reset/import is run by V37.7
+
+6. CLEAN PACKAGE POLICY
+PASS one current README
+PASS one current VALIDATION
+PASS one current root Service Worker
+PASS no tests/, imports/ or preview pages included in release root
+NOTE inherited version-named runtime assets remain only where the application still references them.
+
+STATUS: PASS — V37.7 Lesson Content Engine release candidate ready.

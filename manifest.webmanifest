@@ -1,7 +1,7 @@
 {
-  "name": "Math12 Hub V37.6",
+  "name": "Math12 Hub V37.7",
   "short_name": "Math12 Hub",
-  "description": "Nền tảng ôn tập và kiểm tra Toán 12 theo GDPT 2018 • Exam Pro V37.6 • Thi thật 12–4–6 • luyện đề động từ ngân hàng • autosave/resume • pace & timing từng câu • phân tích lỗi sau thi • Dynamic Practice • Graph Reading • Unified/Freeform Figure Renderer • ID6.",
+  "description": "Nền tảng ôn tập và kiểm tra Toán 12 theo GDPT 2018 • Lesson Content Engine V37.7 • Chương 1 căn thẳng 5 bài ID6 • nội dung học theo mã kiến thức • dạng ID6 liên kết ngân hàng • Exam Pro V37.6 • Dynamic Practice • Graph Reading • Unified/Freeform Figure Renderer.",
   "lang": "vi",
   "start_url": "./",
   "scope": "./",

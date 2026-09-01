@@ -12,47 +12,47 @@
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
   const F=(id6Pattern,title,officialLessonTitle)=>({id:id6Pattern,id6Pattern,title,officialLessonTitle,officialId6:true});
 
-  // 91 dạng Toán 12 chính thức, được phân vào 19 bài học nội bộ hiện có để
-  // không phá tiến độ/Mastery cũ. Mã ID6 vẫn giữ đúng chương-bài-dạng của tài liệu.
+    // V37.7: Chương 1 được căn thẳng với 5 bài chính thức.
+  // Mỗi lessonId F1-01...F1-05 tương ứng đúng bài 1...5 trong ID6.
   const BY_APP_LESSON={
     'F1-01':[
       F('2D1?1-1','Xét tính đơn điệu của hàm số cho bởi công thức','Sự đồng biến và nghịch biến của hàm số'),
       F('2D1?1-2','Xét tính đơn điệu dựa vào bảng biến thiên, đồ thị','Sự đồng biến và nghịch biến của hàm số'),
       F('2D1?1-3','Tìm tham số m để hàm số đơn điệu','Sự đồng biến và nghịch biến của hàm số'),
       F('2D1?1-4','Ứng dụng tính đơn điệu để chứng minh bất đẳng thức, giải phương trình, bất phương trình, hệ phương trình','Sự đồng biến và nghịch biến của hàm số'),
+      F('2D1?1-5','Toán thực tế ứng dụng sự đồng biến nghịch biến','Sự đồng biến và nghịch biến của hàm số')
+    ],
+    'F1-02':[
       F('2D1?2-1','Tìm cực trị của hàm số cho bởi công thức','Cực trị của hàm số'),
       F('2D1?2-2','Tìm cực trị dựa vào BBT, đồ thị','Cực trị của hàm số'),
       F('2D1?2-3','Tìm m để hàm số đạt cực trị tại 1 điểm x0 cho trước','Cực trị của hàm số'),
       F('2D1?2-4','Tìm m để hàm số, đồ thị hàm số bậc ba có cực trị thỏa mãn điều kiện','Cực trị của hàm số'),
       F('2D1?2-5','Tìm m để hàm số, đồ thị hàm số trùng phương có cực trị thỏa mãn điều kiện','Cực trị của hàm số'),
-      F('2D1?2-6','Tìm m để hàm số, đồ thị hàm số các hàm số khác có cực trị thỏa mãn điều kiện','Cực trị của hàm số')
+      F('2D1?2-6','Tìm m để hàm số, đồ thị hàm số các hàm số khác có cực trị thỏa mãn điều kiện','Cực trị của hàm số'),
+      F('2D1?2-7','Toán thực tế ứng dụng cực trị của hàm số','Cực trị của hàm số')
     ],
-    'F1-02':[
+    'F1-03':[
       F('2D1?3-1','GTLN, GTNN trên đoạn [a; b]','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số'),
       F('2D1?3-2','GTLN, GTNN trên khoảng','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số'),
       F('2D1?3-3','Sử dụng các đánh giá, bất đẳng thức cổ điển','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số'),
       F('2D1?3-4','Ứng dụng GTNN, GTLN trong bài toán phương trình, bất phương trình, hệ phương trình','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số'),
-      F('2D1?3-5','GTLN, GTNN hàm nhiều biến','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số')
-    ],
-    'F1-03':[
-      F('2D1?4-1','Bài toán xác định các đường tiệm cận của hàm số (không chứa tham số) hoặc biết BBT, đồ thị','Đường tiệm cận'),
-      F('2D1?4-2','Bài toán xác định các đường tiệm cận của hàm số có chứa tham số','Đường tiệm cận'),
-      F('2D1?4-3','Bài toán liên quan đến đồ thị hàm số và các đường tiệm cận','Đường tiệm cận')
+      F('2D1?3-5','GTLN, GTNN hàm nhiều biến','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số'),
+      F('2D1?3-6','Toán thực tế ứng dụng GTLN, GTNN của hàm số','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số')
     ],
     'F1-04':[
+      F('2D1?4-1','Bài toán xác định các đường tiệm cận của hàm số (không chứa tham số) hoặc biết BBT, đồ thị','Đường tiệm cận'),
+      F('2D1?4-2','Bài toán xác định các đường tiệm cận của hàm số có chứa tham số','Đường tiệm cận'),
+      F('2D1?4-3','Bài toán liên quan đến đồ thị hàm số và các đường tiệm cận','Đường tiệm cận'),
+      F('2D1?4-4','Toán thực tế ứng dụng tiệm cận','Đường tiệm cận')
+    ],
+    'F1-05':[
       F('2D1?5-1','Nhận dạng đồ thị','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
       F('2D1?5-2','Các phép biến đổi đồ thị','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
       F('2D1?5-3','Biện luận số giao điểm dựa vào đồ thị, bảng biến thiên','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
       F('2D1?5-4','Sự tương giao của hai đồ thị (liên quan đến tọa độ giao điểm)','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
       F('2D1?5-5','Đồ thị của hàm đạo hàm','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
       F('2D1?5-6','Phương trình tiếp tuyến của đồ thị hàm số','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
-      F('2D1?5-7','Điểm đặc biệt của đồ thị hàm số','Khảo sát sự biến thiên và vẽ đồ thị hàm số')
-    ],
-    'F1-05':[
-      F('2D1?1-5','Toán thực tế ứng dụng sự đồng biến nghịch biến','Sự đồng biến và nghịch biến của hàm số'),
-      F('2D1?2-7','Toán thực tế ứng dụng cực trị của hàm số','Cực trị của hàm số'),
-      F('2D1?3-6','Toán thực tế ứng dụng GTLN, GTNN của hàm số','Giá trị lớn nhất và giá trị nhỏ nhất của hàm số'),
-      F('2D1?4-4','Toán thực tế ứng dụng tiệm cận','Đường tiệm cận'),
+      F('2D1?5-7','Điểm đặc biệt của đồ thị hàm số','Khảo sát sự biến thiên và vẽ đồ thị hàm số'),
       F('2D1?5-8','Toán thực tế ứng dụng khảo sát hàm số','Khảo sát sự biến thiên và vẽ đồ thị hàm số')
     ],
     'F2-01':[
@@ -182,10 +182,23 @@
     const a=ALIASES[norm(q.form||q.formTitle||'')];if(a)return a;
     const txt=norm(`${q.question||''} ${q.form||''}`);
     if(q.lessonId==='F1-01'){
-      if(/cuc tri|cuc dai|cuc tieu/.test(txt))return /bang bien thien|do thi/.test(txt)?'2D1?2-2':'2D1?2-1';
       if(/tham so|\bm\b/.test(txt))return '2D1?1-3';
       if(/bang bien thien|do thi/.test(txt))return '2D1?1-2';
       return '2D1?1-1';
+    }
+    if(q.lessonId==='F1-02'){
+      if(/tham so|\bm\b/.test(txt))return '2D1?2-3';
+      if(/bang bien thien|do thi/.test(txt))return '2D1?2-2';
+      return '2D1?2-1';
+    }
+    if(q.lessonId==='F1-03')return /thuc te|toi uu/.test(txt)?'2D1?3-6':(/khoang/.test(txt)?'2D1?3-2':'2D1?3-1');
+    if(q.lessonId==='F1-04')return /tham so|\bm\b/.test(txt)?'2D1?4-2':'2D1?4-1';
+    if(q.lessonId==='F1-05'){
+      if(/tiep tuyen/.test(txt))return '2D1?5-6';
+      if(/dao ham|f'|f prime/.test(txt))return '2D1?5-5';
+      if(/giao diem|so nghiem/.test(txt))return '2D1?5-3';
+      if(/tam doi xung|diem dac biet/.test(txt))return '2D1?5-7';
+      return '2D1?5-1';
     }
     return '';
   }
@@ -201,8 +214,7 @@
   }
   function normalizeBank(bank){return (Array.isArray(bank)?bank:[]).map(q=>normalizeQuestion(q))}
 
-  // Replace only question-form taxonomies. Keep the 19 internal learning lessons and 57
-  // mastery knowledge units intact so existing progress/adaptive learning remains compatible.
+  // Inject official question-form taxonomies. V37.7 aligns Chapter 1 lesson IDs one-to-one with official ID6 lessons; total 19 app lessons and 57 mastery units remain unchanged.
   try{
     Object.entries(BY_APP_LESSON).forEach(([lessonId,forms])=>{
       if(typeof lessonCurriculum!=='undefined'&&lessonCurriculum[lessonId])lessonCurriculum[lessonId].forms=forms.map(x=>({...x}));
