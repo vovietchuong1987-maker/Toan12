@@ -1,0 +1,56 @@
+Math12 Hub V38.2.1 — TAXONOMY SYNC VALIDATION
+================================================
+Build: 38.2.1-taxonomy-sync
+Base: V38.2 Mastery + Avatar Evolution
+
+1. OFFICIAL CHAPTER-1 TAXONOMY
+PASS F1-01 = Sự đồng biến và nghịch biến của hàm số = 2D1?1-*
+PASS F1-02 = Cực trị của hàm số = 2D1?2-*
+PASS F1-03 = Giá trị lớn nhất và giá trị nhỏ nhất của hàm số = 2D1?3-*
+PASS F1-04 = Đường tiệm cận = 2D1?4-*
+PASS F1-05 = Khảo sát sự biến thiên và vẽ đồ thị hàm số = 2D1?5-*
+PASS old Chapter-1 lesson objects were removed from the base core taxonomy; no runtime override is required to correct them.
+
+2. TAXONOMY MIGRATION
+PASS official ID6 pattern is authoritative for Chapter-1 lesson assignment.
+PASS migration updates lessonId, knowledgeCode, form/id6 metadata, blueprintKey and taxonomyPath without changing question text or answers.
+PASS questionHistory and exam questionResults are updated when the questionId can be matched to the bank.
+PASS save() canonicalizes Chapter-1 taxonomy before persistence.
+PASS Firebase teacher-bank hydrate calls Taxonomy Sync after cloud data is loaded.
+PASS ID6 normalize/import path calls the canonicalizer for future records.
+PASS lesson content counters derive the Chapter-1 lesson from ID6, preventing stale lessonId races.
+
+3. REGRESSION AGAINST THE 278-QUESTION F1 BANK
+Input: math12-question-bank-F1-MERGED-278-minmax1-minmax2-v37.5.1.json
+PASS 278/278 records canonicalized on first pass.
+PASS second pass is idempotent: 0 records changed.
+PASS 0 records have lessonId inconsistent with their official ID6 after migration.
+Canonical knowledge buckets include:
+  F1-01.K1=13, F1-01.K2=73, F1-01.K3=1
+  F1-02.K1=14, F1-02.K2=45, F1-02.K3=1
+  F1-03.K1=31, F1-03.K2=6,  F1-03.K3=1
+  F1-04.K1=22, F1-04.K2=58, F1-04.K3=13
+This confirms that the former “everything in K1” metadata is split into usable Mastery buckets from ID6.
+
+4. STUDENT / TEACHER UI UNIFICATION
+PASS lesson-content header identifies V38.2.1 + unified ID6.
+PASS Mastery shortage alert uses human lesson/title instead of raw F1-xx.Kx.
+PASS lesson knowledge cards show official ID6 stems.
+PASS question preview, question-bank table, Exam Pro weak-skill view, assignment review, smart navigation and main analytics use official display labels instead of raw legacy-facing codes.
+NOTE F1-xx.Kx is intentionally retained as an INTERNAL storage key for backward compatibility; it is no longer the preferred visible lesson label.
+
+5. RUNTIME / OFFLINE
+PASS 54/54 assets/js/*.js pass node --check.
+PASS index.html local src/href references: 0 missing.
+PASS app-version = 38.2.1; app-build = 38.2.1-taxonomy-sync.
+PASS service worker = sw-v38.2.1.js and caches taxonomy-sync-v38.2.1.js.
+PASS no runtime reference to sw-v38.2.js remains.
+PASS manifest version text = V38.2.1.
+
+6. BACKEND SAFETY
+PASS firestore.rules unchanged from V38.2.
+PASS firestore.indexes.json unchanged from V38.2.
+PASS firebase.json unchanged from V38.2.
+PASS no new Firestore collection is required.
+
+STATUS: PASS — V38.2.1 Taxonomy Sync ready for deployment.
