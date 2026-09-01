@@ -21,13 +21,10 @@ function shuffle(arr,seed=randomSeed()){const a=[...arr],rnd=seededRand(seed);fo
 function formKey(q){return String(q.id6Pattern||q.formId||q.form||q.knowledgeCode||'').trim()||`Q:${q.id}`}
 function lessonKey(q){return String(q.lessonId||'').trim()}
 function levelKey(q){const x=String(q.level||'').toUpperCase();return ['NB','TH','VD','VDC'].includes(x)?x:'TH'}
-function qcPass(q){try{return !window.V3747FigureQC?.qcQuestion||window.V3747FigureQC.qcQuestion(q).pass!==false}catch(_){return true}}
+function qcPass(q){return true}
 function eligiblePool(predicate){
-  const source=window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||(state.questionBank||[]);
-  let pool=source.filter(q=>q&&q.id&&TYPES.has(q.type)&&predicate(q)&&qcPass(q));
-  const hasWorkflow=pool.some(q=>String(q.reviewStatus||'').trim());
-  if(hasWorkflow)pool=pool.filter(q=>q.reviewStatus==='approved');
-  return pool;
+  const source=window.V383PracticeBank?.effectiveBank?.()||window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||(state.questionBank||[]);
+  return source.filter(q=>q&&q.id&&TYPES.has(q.type)&&predicate(q));
 }
 function scopePool(kind,id){
   if(kind==='lesson')return eligiblePool(q=>lessonKey(q)===String(id));
@@ -98,12 +95,12 @@ function normalized(q,part){return typeof normalizeBankQuestion==='function'?nor
 function lessonConfig(id,{fresh=false}={}){
   const item=getLesson(id),set=buildSet('lesson',id,{fresh}),qs=(set.questions||[]).map(q=>normalized(q,'Kiểm tra sau bài'));
   const forms=new Set(qs.map(formKey).filter(Boolean)).size,levels=countMap(qs,levelKey);
-  return {id:`lesson-${id}`,mode:'lesson',lessonId:id,title:`Kiểm tra sau bài • ${item?.common||id}`,subtitle:`${qs.length} câu ngẫu nhiên từ ngân hàng • ${forms} dạng • NB ${levels.get('NB')||0} • TH ${levels.get('TH')||0} • VD+ ${((levels.get('VD')||0)+(levels.get('VDC')||0))}`,durationMinutes:Math.max(8,qs.length*2),questions:qs,scoring:'normalized',attemptType:`lesson-${id}`,passScore:7,dynamicPractice:{version:VERSION,kind:'lesson',setCreatedAt:set.createdAt,poolCount:set.poolCount},rules:'Câu hỏi lấy trực tiếp từ ngân hàng đã duyệt, ưu tiên phủ dạng/kiến thức và cân bằng mức độ. “Bộ hiện tại” được giữ để có thể tiếp tục bài dở; chọn “Tạo bộ câu mới” khi muốn đổi câu.'}
+  return {id:`lesson-${id}`,mode:'lesson',lessonId:id,title:`Kiểm tra sau bài • ${item?.common||id}`,subtitle:`${qs.length} câu ngẫu nhiên từ ngân hàng • ${forms} dạng • NB ${levels.get('NB')||0} • TH ${levels.get('TH')||0} • VD+ ${((levels.get('VD')||0)+(levels.get('VDC')||0))}`,durationMinutes:Math.max(8,qs.length*2),questions:qs,scoring:'normalized',attemptType:`lesson-${id}`,passScore:7,dynamicPractice:{version:VERSION,kind:'lesson',setCreatedAt:set.createdAt,poolCount:set.poolCount},rules:'Câu hỏi lấy trực tiếp từ toàn bộ ngân hàng hiện tại, ưu tiên phủ dạng/kiến thức và cân bằng mức độ. “Bộ hiện tại” được giữ để có thể tiếp tục bài dở; chọn “Tạo bộ câu mới” khi muốn đổi câu.'}
 }
 function chapterConfig(chapterId,{fresh=false}={}){
   const c=chapters.find(x=>x.id===Number(chapterId)),set=buildSet('chapter',chapterId,{fresh}),qs=(set.questions||[]).map(q=>normalized(q,`Ôn Chương ${chapterId}`));
   const lessons=new Set(qs.map(lessonKey).filter(Boolean)).size,forms=new Set(qs.map(formKey).filter(Boolean)).size,levels=countMap(qs,levelKey);
-  return {id:`chapter-${chapterId}`,mode:'chapter',chapterId:Number(chapterId),title:`Ôn tập Chương ${chapterId} • ${c?.title||''}`,subtitle:`${qs.length} câu ngẫu nhiên • phủ ${lessons} bài có dữ liệu • ${forms} dạng ID6 • NB ${levels.get('NB')||0} • TH ${levels.get('TH')||0} • VD+ ${((levels.get('VD')||0)+(levels.get('VDC')||0))}`,durationMinutes:Math.max(20,qs.length*2),questions:qs,scoring:'normalized',attemptType:`chapter-${chapterId}`,dynamicPractice:{version:VERSION,kind:'chapter',setCreatedAt:set.createdAt,poolCount:set.poolCount},rules:'Bài ôn chương lấy trực tiếp từ ngân hàng đã duyệt. Engine ưu tiên phủ các bài có dữ liệu, phủ dạng ID6, sau đó cân bằng NB/TH/VD và lấy ngẫu nhiên các câu còn lại.'}
+  return {id:`chapter-${chapterId}`,mode:'chapter',chapterId:Number(chapterId),title:`Ôn tập Chương ${chapterId} • ${c?.title||''}`,subtitle:`${qs.length} câu ngẫu nhiên • phủ ${lessons} bài có dữ liệu • ${forms} dạng ID6 • NB ${levels.get('NB')||0} • TH ${levels.get('TH')||0} • VD+ ${((levels.get('VD')||0)+(levels.get('VDC')||0))}`,durationMinutes:Math.max(20,qs.length*2),questions:qs,scoring:'normalized',attemptType:`chapter-${chapterId}`,dynamicPractice:{version:VERSION,kind:'chapter',setCreatedAt:set.createdAt,poolCount:set.poolCount},rules:'Bài ôn chương lấy trực tiếp từ toàn bộ ngân hàng hiện tại. Engine ưu tiên phủ các bài có dữ liệu, phủ dạng ID6, sau đó cân bằng NB/TH/VD và lấy ngẫu nhiên các câu còn lại.'}
 }
 function clearScopeDraft(kind,id){try{clearExamDraft?.({id:`${kind}-${id}`})}catch(_){try{localStorage.removeItem(`math12-exam-draft:${kind}-${id}`)}catch(__){}}}
 function openLesson(id,fresh=false){if(fresh)clearScopeDraft('lesson',id);openExamStart(lessonConfig(id,{fresh}))}
@@ -117,7 +114,7 @@ function addLessonControls(){
     if(!b.parentElement?.querySelector('.v3751-new-set')){const n=document.createElement('button');n.type='button';n.className='btn btn-soft v3751-new-set';n.textContent='↻ Tạo bộ câu mới';n.onclick=()=>window.openLessonQuiz(id,true);b.insertAdjacentElement('afterend',n)}
   });
   const card=[...host.querySelectorAll('.study-card')].find(x=>/Luyện tập & kiểm tra/.test(x.textContent||''));
-  if(card&&!card.querySelector('.v3751-practice-note')){const p=document.createElement('div');p.className='v3751-practice-note';p.innerHTML=`<b>Dynamic Practice V37.5.1:</b> ngân hàng có <strong>${info.pool}</strong> câu phù hợp với bài này. Bộ hiện tại ${info.current?`gồm <strong>${info.current}</strong> câu`:'sẽ được tạo khi bắt đầu'}; tạo bộ mới sẽ ưu tiên tránh lặp lại câu của bộ trước.`;card.querySelector('p')?.insertAdjacentElement('afterend',p)}
+  if(card&&!card.querySelector('.v3751-practice-note')){const p=document.createElement('div');p.className='v3751-practice-note';p.innerHTML=`<b>Dynamic Practice V38.3:</b> ngân hàng có <strong>${info.pool}</strong> câu phù hợp với bài này. Bộ hiện tại ${info.current?`gồm <strong>${info.current}</strong> câu`:'sẽ được tạo khi bắt đầu'}; tạo bộ mới sẽ ưu tiên tránh lặp lại câu của bộ trước.`;card.querySelector('p')?.insertAdjacentElement('afterend',p)}
 }
 function enhanceChapterCards(){
   const host=document.getElementById('allChapters');if(!host)return;
@@ -125,7 +122,7 @@ function enhanceChapterCards(){
     btn.textContent='Làm bài ôn chương';btn.removeAttribute('onclick');btn.onclick=()=>window.openChapterReview(c.id,false);
     let box=card.querySelector('.v3751-chapter-actions');if(!box){box=document.createElement('div');box.className='v3751-chapter-actions';btn.parentNode.insertBefore(box,btn);box.appendChild(btn);const fresh=document.createElement('button');fresh.type='button';fresh.className='btn btn-soft';fresh.textContent='↻ Bộ mới';fresh.onclick=()=>window.openChapterReview(c.id,true);box.appendChild(fresh)}
     let note=card.querySelector('.v3751-chapter-note');if(!note){note=document.createElement('div');note.className='v3751-chapter-note';card.querySelector('.progress')?.insertAdjacentElement('afterend',note)}
-    if(note)note.textContent=info.pool?`${info.pool} câu trong ngân hàng • bộ hiện tại ${info.current||'chưa tạo'} câu`:'Chưa có câu Approved phù hợp trong ngân hàng';
+    if(note)note.textContent=info.pool?`${info.pool} câu trong ngân hàng • bộ hiện tại ${info.current||'chưa tạo'} câu`:'Chưa có câu phù hợp trong ngân hàng';
   })
 }
 function install(){

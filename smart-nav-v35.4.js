@@ -22,13 +22,11 @@
     progress:{title:'Tiến độ của em',subtitle:'Theo dõi tiến độ học tập',icon:'↗',keywords:'tiến độ hoàn thành'},
     analytics:{title:'Phân tích năng lực',subtitle:'Điểm mạnh, điểm yếu và mã kiến thức',icon:'◎',keywords:'phân tích năng lực yếu mạnh'},
     reports:{title:'Báo cáo học tập',subtitle:'Báo cáo kết quả và phụ huynh',icon:'▣',keywords:'báo cáo phụ huynh kết quả'},
-    notifications:{title:'Thông báo',subtitle:'Thông báo lớp học và bài giao',icon:'🔔',keywords:'thông báo tin nhắn'},
-    online:{title:'Lớp học online',subtitle:'Lớp, thành viên và bài giao',icon:'☁',keywords:'lớp học online giao bài thành viên'},
+    notifications:{title:'Thông báo',subtitle:'Thông báo hệ thống và học tập',icon:'🔔',keywords:'thông báo tin nhắn học tập'},
     'question-bank':{title:'Ngân hàng câu hỏi',subtitle:'Kho câu hỏi của giáo viên',icon:'▦',keywords:'ngân hàng câu hỏi kho đề'},
     'exam-builder':{title:'Tạo đề kiểm tra',subtitle:'Sinh đề từ ma trận câu hỏi',icon:'▧',keywords:'tạo đề ma trận kiểm tra'},
-    'ai-teacher':{title:'AI Teaching Intelligence',subtitle:'Phân tích lớp, lập kế hoạch và tạo nháp',icon:'✦',keywords:'ai giáo viên gemini teaching intelligence kế hoạch dạy học mastery'},
-    teacher:{title:'Theo dõi lớp',subtitle:'Dashboard lớp và học sinh',icon:'♙',keywords:'theo dõi lớp học sinh dashboard'},
-    admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản, lớp và Production Center',icon:'🛡',keywords:'admin quản trị hệ thống'}
+    'ai-teacher':{title:'AI Teaching Intelligence',subtitle:'Phân tích nội dung, lập kế hoạch và tạo nháp',icon:'✦',keywords:'ai giáo viên gemini teaching intelligence kế hoạch dạy học mastery'},
+    admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản và Production Center',icon:'🛡',keywords:'admin quản trị hệ thống'}
   };
   const FILTER_IDS=['lessonSearch','bankSearch','bankChapter','bankLesson','bankKnowledge','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankQualityV361','bankSort','bankPageSize'];
   let paletteOpen=false,currentResults=[],activeIndex=0,restoreBusy=false;
@@ -62,7 +60,6 @@
       if(s.type==='form'){const f=(typeof v360AllForms==='function'?v360AllForms():[]).find(x=>String(x.id)===String(s.id));return f?itemForm(f):null}
       if(s.type==='question'&&allowed('question-bank')){const q=(typeof state!=='undefined'?state.questionBank||[]:[]).find(x=>String(x.id)===String(s.id));return q?itemQuestion(q):null}
       if(s.type==='exam'&&allowed('exam-builder')){const e=(typeof state!=='undefined'?state.customExams||[]:[]).find(x=>String(x.id)===String(s.id));return e?itemExam(e):null}
-      if(s.type==='class'&&allowed('teacher')){const rows=[...(typeof firebaseOwnedClasses!=='undefined'?firebaseOwnedClasses:[]),...(typeof firebaseMemberships!=='undefined'?firebaseMemberships:[])];const c=rows.find(x=>String(x.id||x.classId)===String(s.id));return c?itemClass(c):null}
     }catch(_){ }
     return null;
   }
@@ -85,7 +82,6 @@
       else if(item.type==='form'){goPage('question-bank');setTimeout(()=>typeof v360ApplyKnowledgeFilter==='function'&&v360ApplyKnowledgeFilter(item.knowledgeCode||'',item.id),180)}
       else if(item.type==='question'){goPage('question-bank');setTimeout(()=>typeof previewBankQuestion==='function'&&previewBankQuestion(item.id),180)}
       else if(item.type==='exam'){goPage('exam-builder');setTimeout(()=>typeof previewSavedCustomExam==='function'&&previewSavedCustomExam(item.id),180)}
-      else if(item.type==='class'){goPage('teacher');setTimeout(()=>typeof firebaseSelectTeacherClass==='function'&&firebaseSelectTeacherClass(item.id),180)}
       addRecent(item);
     }catch(err){console.warn('V36.0 navigation',err)}
   }
@@ -103,7 +99,6 @@
     try{(typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).forEach(k=>out.push(itemKnowledge(k)))}catch(_){}
     try{if(allowed('question-bank')&&typeof v360AllForms==='function')v360AllForms().forEach(f=>out.push(itemForm(f)))}catch(_){}
     if(allowed('exam-builder'))try{(state.customExams||[]).forEach(e=>out.push(itemExam(e)))}catch(_){}
-    if(allowed('teacher'))try{const seen=new Set();[...(firebaseOwnedClasses||[]),...(firebaseMemberships||[])].forEach(c=>{let id=String(c.id||c.classId||'');if(id&&!seen.has(id)){seen.add(id);out.push(itemClass(c))}})}catch(_){}
     return out;
   }
   function searchItems(query){
@@ -116,7 +111,7 @@
   function injectUI(){
     const right=document.querySelector('.topbar-right');
     if(right&&!document.getElementById('v354SearchTrigger')){const b=document.createElement('button');b.id='v354SearchTrigger';b.className='v354-search-trigger';b.type='button';b.innerHTML='<span class="v354-search-icon">⌕</span><span class="v354-search-label">Tìm nhanh</span><kbd>Ctrl K</kbd>';b.setAttribute('aria-label','Tìm nhanh toàn hệ thống');b.addEventListener('click',()=>openPalette());right.prepend(b)}
-    if(!document.getElementById('v354Palette')){const wrap=document.createElement('div');wrap.id='v354Palette';wrap.className='v354-palette-backdrop hidden';wrap.setAttribute('aria-hidden','true');wrap.innerHTML=`<div class="v354-palette" role="dialog" aria-modal="true" aria-labelledby="v354PaletteTitle"><div class="v354-search-head"><span>⌕</span><input id="v354SearchInput" autocomplete="off" spellcheck="false" placeholder="Tìm trang, bài học, mã kiến thức, dạng toán, câu hỏi, lớp…" aria-label="Tìm nhanh toàn hệ thống"><button id="v354CloseSearch" type="button" aria-label="Đóng tìm kiếm">Esc</button></div><div class="v354-search-caption"><b id="v354PaletteTitle">Tìm nhanh Math12 Hub</b><span id="v354SearchHint">Không phát sinh Firestore Reads mới</span></div><div id="v354SearchResults" class="v354-search-results"></div><div class="v354-search-foot"><span><kbd>↑</kbd><kbd>↓</kbd> chọn</span><span><kbd>Enter</kbd> mở</span><span><kbd>☆</kbd> ghim</span><span><kbd>/</kbd> tìm nhanh</span></div></div>`;document.body.appendChild(wrap);wrap.addEventListener('mousedown',e=>{if(e.target===wrap)closePalette()});document.getElementById('v354CloseSearch').addEventListener('click',closePalette);document.getElementById('v354SearchInput').addEventListener('input',e=>renderResults(e.target.value));document.getElementById('v354SearchResults').addEventListener('click',e=>{const pin=e.target.closest('[data-v354-pin]');if(pin){e.stopPropagation();let x=currentResults[Number(pin.dataset.v354Pin)];if(x)togglePin(x);return}const row=e.target.closest('[data-v354-result]');if(row){let x=currentResults[Number(row.dataset.v354Result)];if(x)execute(x)}})}
+    if(!document.getElementById('v354Palette')){const wrap=document.createElement('div');wrap.id='v354Palette';wrap.className='v354-palette-backdrop hidden';wrap.setAttribute('aria-hidden','true');wrap.innerHTML=`<div class="v354-palette" role="dialog" aria-modal="true" aria-labelledby="v354PaletteTitle"><div class="v354-search-head"><span>⌕</span><input id="v354SearchInput" autocomplete="off" spellcheck="false" placeholder="Tìm trang, bài học, mã kiến thức, dạng toán, câu hỏi…" aria-label="Tìm nhanh toàn hệ thống"><button id="v354CloseSearch" type="button" aria-label="Đóng tìm kiếm">Esc</button></div><div class="v354-search-caption"><b id="v354PaletteTitle">Tìm nhanh Math12 Hub</b><span id="v354SearchHint">Không phát sinh Firestore Reads mới</span></div><div id="v354SearchResults" class="v354-search-results"></div><div class="v354-search-foot"><span><kbd>↑</kbd><kbd>↓</kbd> chọn</span><span><kbd>Enter</kbd> mở</span><span><kbd>☆</kbd> ghim</span><span><kbd>/</kbd> tìm nhanh</span></div></div>`;document.body.appendChild(wrap);wrap.addEventListener('mousedown',e=>{if(e.target===wrap)closePalette()});document.getElementById('v354CloseSearch').addEventListener('click',closePalette);document.getElementById('v354SearchInput').addEventListener('input',e=>renderResults(e.target.value));document.getElementById('v354SearchResults').addEventListener('click',e=>{const pin=e.target.closest('[data-v354-pin]');if(pin){e.stopPropagation();let x=currentResults[Number(pin.dataset.v354Pin)];if(x)togglePin(x);return}const row=e.target.closest('[data-v354-result]');if(row){let x=currentResults[Number(row.dataset.v354Result)];if(x)execute(x)}})}
     const crumbBar=document.querySelector('.v353-breadcrumb-bar');if(crumbBar&&!document.getElementById('v354PinCurrent')){const b=document.createElement('button');b.id='v354PinCurrent';b.className='v354-pin-current';b.type='button';b.addEventListener('click',()=>{const item=getCurrentItem();if(item?.pinnable)togglePin(item)});crumbBar.appendChild(b)}
     ensureSmartDock();
   }

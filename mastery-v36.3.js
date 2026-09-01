@@ -2,7 +2,7 @@
    Math12 Hub V36.3 — Mastery Score & Adaptive Learning Engine
    - derives mastery from existing questionHistory (no new Firestore collection)
    - separates verified Secure Exam evidence from self-practice evidence
-   - upgrades adaptive practice with difficulty matching, QC filtering and recency
+   - upgrades adaptive practice with difficulty matching, full-bank availability and recency
    - publishes a compact mastery snapshot through the existing progress document
    ========================================================= */
 (function(){
@@ -15,7 +15,7 @@
   const codeMeta=code=>(typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).find(x=>x.code===code)||{code,title:code,lessonId:'',chapterId:0,level:''};
   const humanCode=code=>window.v3821Taxonomy?.humanCode?.(code,true)||code;
   const humanFull=code=>window.v3821Taxonomy?.humanCode?.(code,false)||code;
-  const practiceBank=()=>window.V3822PracticeBank?.effectiveBank?.({approvedOnly:true})||(state?.questionBank||[]).filter(q=>!q.reviewStatus||q.reviewStatus==='approved');
+  const practiceBank=()=>window.V383PracticeBank?.effectiveBank?.()||window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||(state?.questionBank||[]);
   const bankMap=()=>new Map(practiceBank().map(q=>[q.id,q]));
   function rows(){return typeof analyticsHistory==='function'?analyticsHistory():[]}
   function difficultyOf(h,map){let q=map.get(h.questionId)||null,d=Number(q?.difficulty);if(Number.isFinite(d))return Math.max(1,Math.min(5,d));return h.level==='VD'?4:h.level==='TH'?3:2}
@@ -42,7 +42,7 @@
     const score=w?(c+PRIOR*PRIOR_WEIGHT)/(w+PRIOR_WEIGHT):null,confidence=w?1-Math.exp(-w/4):0,meta=codeMeta(code),trend=trendFor(list),stateName=stateFor(score??0,w,confidence);
     return {...meta,score,confidence,evidence:w,attempts:list.length,verifiedEvidence,practiceEvidence,lastDate,trend,state:stateName,label:labelFor(stateName),targetDifficulty:targetDifficulty(score==null?null:{score,state:stateName})}
   }
-  function masteryAll(){const hist=rows(),map=bankMap(),grouped=new Map();for(const h of hist){if(!grouped.has(h.code))grouped.set(h.code,[]);grouped.get(h.code).push(h)}return (typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).map(k=>masteryForCode(k.code,grouped.get(k.code)||[],map))}
+  function masteryAll(){const hist=rows(),map=bankMap(),available=new Set([...map.values()].map(q=>q?.knowledgeCode).filter(Boolean)),grouped=new Map();for(const h of hist){if(!available.has(h.code))continue;if(!grouped.has(h.code))grouped.set(h.code,[]);grouped.get(h.code).push(h)}return (typeof allKnowledgeCodes==='function'?allKnowledgeCodes():[]).filter(k=>available.has(k.code)).map(k=>masteryForCode(k.code,grouped.get(k.code)||[],map))}
   function masterySummary(){
     const codes=masteryAll(),tested=codes.filter(x=>x.attempts),credible=tested.filter(x=>x.confidence>=.28),weights=credible.reduce((s,x)=>s+x.evidence,0),average=weights?credible.reduce((s,x)=>s+(x.score||0)*x.evidence,0)/weights:null;
     const counts={new:codes.filter(x=>x.state==='new').length,learn:codes.filter(x=>x.state==='learn').length,reinforce:codes.filter(x=>x.state==='reinforce').length,ready:codes.filter(x=>x.state==='ready').length,mastered:codes.filter(x=>x.state==='mastered').length};
@@ -63,16 +63,19 @@
     return fit+recency+reviewed+metadata+qcScore/500+Math.random()*.08
   }
   function adaptiveTargets(forcedCode=''){
-    const sum=masterySummary();if(forcedCode)return sum.codes.filter(x=>x.code===forcedCode);
-    let target=sum.codes.filter(x=>x.attempts&&x.state!=='mastered').sort((a,b)=>{const ua=(1-(a.score??PRIOR))*(.65+.35*a.confidence),ub=(1-(b.score??PRIOR))*(.65+.35*b.confidence);return ub-ua||b.evidence-a.evidence});
-    if(!target.length){const next=(typeof v28NextIncompleteLessons==='function'?v28NextIncompleteLessons():[])[0],first=next?getLessonMeta(next.id)?.knowledge?.[0]?.code:'';if(first)target=sum.codes.filter(x=>x.code===first)}return target.slice(0,6)
+    const sum=masterySummary(),available=new Set(practiceBank().map(q=>q?.knowledgeCode).filter(Boolean));
+    if(forcedCode)return available.has(forcedCode)?sum.codes.filter(x=>x.code===forcedCode):[];
+    let target=sum.codes.filter(x=>available.has(x.code)&&x.attempts&&x.state!=='mastered').sort((a,b)=>{const ua=(1-(a.score??PRIOR))*(.65+.35*a.confidence),ub=(1-(b.score??PRIOR))*(.65+.35*b.confidence);return ub-ua||b.evidence-a.evidence});
+    if(!target.length){const next=(typeof v28NextIncompleteLessons==='function'?v28NextIncompleteLessons():[]).find(l=>practiceBank().some(q=>q.lessonId===l.id)),first=next?getLessonMeta(next.id)?.knowledge?.map(k=>k.code).find(c=>available.has(c)):'';if(first)target=sum.codes.filter(x=>x.code===first)}
+    if(!target.length)target=sum.codes.filter(x=>available.has(x.code)).slice(0,6);
+    return target.slice(0,6)
   }
   function selectAdaptive(count=10,forcedCode=''){
     count=Math.max(3,Math.min(20,Number(count)||10));const targets=adaptiveTargets(forcedCode),codes=targets.map(x=>x.code);if(!codes.length)return {questions:[],targets:[],reason:'no-target'};
-    const lastMap=latestQuestionState(),used=new Set(),selected=[],summary=masterySummary(),masteryMap=new Map(summary.codes.map(x=>[x.code,x])),bank=practiceBank().filter(q=>codes.includes(q.knowledgeCode)&&['mcq','tf','tf4','short'].includes(q.type)&&qcSafe(q));
+    const lastMap=latestQuestionState(),used=new Set(),selected=[],summary=masterySummary(),masteryMap=new Map(summary.codes.map(x=>[x.code,x])),bank=practiceBank().filter(q=>codes.includes(q.knowledgeCode)&&['mcq','tf','tf4','short'].includes(q.type));
     const byCode=new Map(codes.map(c=>{const m=masteryMap.get(c)||targets.find(x=>x.code===c),ranked=bank.filter(q=>q.knowledgeCode===c).map(q=>({q,rank:questionPriority(q,m,lastMap,qualityScore(q))})).sort((a,b)=>b.rank-a.rank).map(x=>x.q);return [c,ranked]}));
     let round=0;while(selected.length<count&&round<12){for(const m of targets){const pool=byCode.get(m.code)||[],q=pool.find(x=>!used.has(x.id));if(q){selected.push(q);used.add(q.id);if(selected.length>=count)break}}round++;if(![...byCode.values()].some(p=>p.some(q=>!used.has(q.id))))break}
-    if(selected.length<count){const lessons=new Set(targets.map(x=>x.lessonId));const fallback=practiceBank().filter(q=>lessons.has(q.lessonId)&&!used.has(q.id)&&qcSafe(q)&&['mcq','tf','tf4','short'].includes(q.type)).map(q=>({q,rank:questionPriority(q,masteryMap.get(q.knowledgeCode),lastMap,qualityScore(q))})).sort((a,b)=>b.rank-a.rank).map(x=>x.q);for(const q of fallback){selected.push(q);used.add(q.id);if(selected.length>=count)break}}
+    if(selected.length<count){const lessons=new Set(targets.map(x=>x.lessonId));const fallback=practiceBank().filter(q=>lessons.has(q.lessonId)&&!used.has(q.id)&&['mcq','tf','tf4','short'].includes(q.type)).map(q=>({q,rank:questionPriority(q,masteryMap.get(q.knowledgeCode),lastMap,qualityScore(q))})).sort((a,b)=>b.rank-a.rank).map(x=>x.q);for(const q of fallback){selected.push(q);used.add(q.id);if(selected.length>=count)break}}
     return {questions:selected.slice(0,count),targets,codes}
   }
   function startAdaptive(count=10,forcedCode=''){
@@ -80,7 +83,7 @@
     // non-destructive to question text/answer and prevents the old lesson shift from
     // producing a false “0 câu khả dụng” warning.
     try{window.v3821Taxonomy?.syncState?.({persist:true,sync:false})}catch(_){}
-    const plan=selectAdaptive(count,forcedCode);if(plan.questions.length<3){const label=forcedCode?humanFull(forcedCode):'các nội dung cần luyện';alert(`Ngân hàng chưa đủ câu đạt QC cho ${label} (${plan.questions.length} câu khả dụng). Hãy bổ sung hoặc rà soát ngân hàng theo ID6 chính thức.`);return}
+    const plan=selectAdaptive(count,forcedCode);if(plan.questions.length<1){const label=forcedCode?humanFull(forcedCode):'các nội dung cần luyện';alert(`Hiện chưa có câu hỏi cho ${label} trong ngân hàng tự học.`);return}
     const target=plan.targets.slice(0,4),targetText=target.map(x=>`${humanCode(x.code)} ${x.score==null?'mới':Math.round(x.score*100)+'%'}`).join(' • '),config={id:`adaptive-v363-${Date.now()}`,mode:'adaptive',attemptType:'adaptive-v363',title:forcedCode?`Luyện thích ứng • ${humanCode(forcedCode)}`:'Luyện thích ứng theo nội dung',subtitle:`${plan.questions.length} câu • ${targetText}`,durationMinutes:Math.max(10,Math.ceil(plan.questions.length*1.8)),questions:plan.questions.map(q=>normalizeBankQuestion(q,'Mastery V36.3')),scoring:'standard',adaptiveCodes:target.map(x=>x.code),v363:{build:BUILD,targets:target.map(x=>({code:x.code,mastery:x.score,confidence:x.confidence,targetDifficulty:x.targetDifficulty})),selectedAt:nowIso()}};openExamStart(config)
   }
   function renderStudentMastery(){

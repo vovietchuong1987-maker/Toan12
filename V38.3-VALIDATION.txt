@@ -1,0 +1,59 @@
+Math12 Hub V38.3 — VALIDATION
+================================
+Build: 38.3-self-study-full-bank
+Base: V38.2.3 Bank Sync
+
+1. FULL LEARNER BANK
+PASS bundled learner bank = 371 questions.
+PASS status distribution = 369 Approved + 2 Draft; both statuses are available in self-study by explicit V38.3 policy.
+PASS type distribution = 341 MCQ + 30 TF4.
+PASS lesson distribution:
+  F1-01 = 91
+  F1-02 = 67
+  F1-03 = 50
+  F1-04 = 102
+  F1-05 = 61
+PASS every question has supported type and valid answer structure.
+
+2. ÔN THEO BÀI / DYNAMIC PRACTICE
+PASS Dynamic Practice no longer filters reviewStatus=approved.
+PASS Dynamic Practice no longer rejects questions through figure-QC gating.
+PASS lesson detail reads the full learner bank.
+PASS V38.3 adds “Làm tất cả N câu” for each lesson.
+PASS V38.3 adds “Tất cả N câu” for each populated ID6 form.
+PASS quick-set / new-set behavior remains available for shorter practice.
+
+3. MASTERY / STUDENT UX
+PASS Mastery practice source uses full learner bank.
+PASS adaptive selection no longer uses QC/Approved as learner eligibility.
+PASS Mastery code list is constrained to knowledge codes present in the current bank.
+PASS old history codes without current bank coverage cannot become adaptive targets.
+PASS Student 7-day plan contains no online assignment flow.
+PASS mistake retry reads the learner bank rather than the teacher-private state bank.
+
+4. CLASSROOM REMOVAL
+PASS no sidebar/mobile navigation target remains for page=online or page=teacher.
+PASS teacher “Dạy học” classroom navigation group removed.
+PASS Smart Navigation no longer indexes online/teacher pages or class entities.
+PASS old online/teacher routes are redirected by V38.3 self-study module.
+PASS online/teacher page sections are absent from release HTML; runtime guard also removes legacy nodes if an old cached shell is restored.
+PASS admin “Quản trị lớp” card is removed from active UI.
+PASS Firebase account/auth remains available for login/profile/progress sync.
+
+5. VERSION / OFFLINE
+PASS app-version = 38.3.
+PASS app-build = 38.3-self-study-full-bank.
+PASS Service Worker = sw-v38.3.js.
+PASS all index local src/href references resolve.
+PASS all Service Worker CORE local files resolve.
+PASS 58 JS/data files + service worker pass node --check.
+
+6. BACKEND SAFETY
+PASS firestore.rules unchanged from V38.2.3.
+PASS firestore.indexes.json unchanged from V38.2.3.
+PASS firebase.json unchanged from V38.2.3.
+PASS no new Firestore collection required.
+
+NOTE Browser runtime visual smoke test was not executed in the local sandbox; validation above covers syntax, references, bank structure and static routing.
+
+STATUS: PASS — V38.3 is ready for self-study-first deployment.
