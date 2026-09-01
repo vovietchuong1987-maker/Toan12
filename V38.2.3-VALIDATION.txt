@@ -1,0 +1,51 @@
+Math12 Hub V38.2.3 — VALIDATION
+================================
+Build: 38.2.3-bank-sync
+Base: V38.2.2 Published Practice Bank
+
+1. MERGE / QC
+PASS base bank = 278 Approved.
+PASS incoming = 106 questions (KSHS1-4 + DSKSHS1-2).
+PASS 13 substantive duplicates removed.
+PASS 93 unique incoming questions retained.
+PASS 91 retained questions promoted to Approved after QC.
+PASS 2 unresolved-source questions remain Draft.
+PASS teacher merged bank = 371 questions (369 Approved + 2 Draft).
+PASS Published Practice Bank = 369 Approved only.
+PASS exact content duplicate groups in Published Bank = 0.
+
+2. PUBLISHED BANK DISTRIBUTION
+PASS F1-01 = 90.
+PASS F1-02 = 67.
+PASS F1-03 = 49.
+PASS F1-04 = 102.
+PASS F1-05 = 61.
+PASS MCQ = 340.
+PASS TF4 = 29.
+PASS every TF4 has 4 statements and 4 answer flags.
+PASS every MCQ has 4 options and answer index 0..3.
+PASS all question IDs are unique.
+PASS ID6 lesson and lessonId are consistent.
+
+3. LEARNER RUNTIME
+PASS V3823PracticeBank publicCount = 369.
+PASS backward-compatible alias V3822PracticeBank is preserved.
+PASS student Approved effective pool = 369.
+PASS F1-05 learner pool = 61.
+PASS TF4 learner pool = 29.
+PASS Published Bank contains no Draft item.
+
+4. VERSION / OFFLINE
+PASS app-version = 38.2.3.
+PASS Service Worker = sw-v38.2.3.js.
+PASS index local src/href references = 0 missing.
+PASS Service Worker CORE local files = 0 missing.
+PASS 56/56 JS/data scripts pass node --check.
+
+5. BACKEND SAFETY
+PASS firestore.rules unchanged from V38.2.2.
+PASS firestore.indexes.json unchanged from V38.2.2.
+PASS firebase.json unchanged from V38.2.2.
+PASS no new Firestore collection is required.
+
+STATUS: PASS — V38.2.3 publishes the QC-clean KSHS/DSKSHS bank and restores Bài 5 practice with 61 Approved questions.

@@ -1,33 +1,29 @@
-# Math12 Hub V38.2.2 — Published Practice Bank
+# Math12 Hub V38.2.3 — Bank Sync
 
-Bản vá kế tiếp V38.2.1, sửa lỗi trang **Nội dung bài học hiển thị 0 câu** khi dùng tài khoản học sinh hoặc khi chạy ở chế độ không mở ngân hàng riêng của giáo viên.
+Nâng trực tiếp từ V38.2.2.
 
-## Nguyên nhân
+## Thay đổi chính
 
-Từ V37.4.3, `SEED_QUESTION_BANK` được cố ý để rỗng. Cơ chế phân quyền cũ gọi `clearTeacherPrivateLocal()` với học sinh và thay `state.questionBank` bằng seed rỗng để bảo vệ ngân hàng riêng của giáo viên. Các mô-đun Học theo bài / Dynamic Practice / Mastery trước đây lại đọc trực tiếp `state.questionBank`, vì vậy học sinh nhìn thấy 0 câu dù giáo viên có ngân hàng thật.
+- Published Practice Bank tăng từ **278** lên **369 câu Approved**.
+- Gộp các bộ KSHS1–4 và DSKSHS1–2 sau QC.
+- Loại **13 câu trùng nội dung thực chất** trước khi xuất bản.
+- Giữ **2 câu Draft** cần giáo viên duyệt thủ công; hai câu này **không** được đưa vào Published Practice Bank.
+- Bài 5 hiện có **61 câu Approved** thay vì 0.
+- Published Bank hiện hỗ trợ **340 MCQ + 29 câu Đúng/Sai 4 ý**.
+- Taxonomy/ID6 được chuẩn hóa theo 5 bài Chương 1 và knowledgeCode K1/K2/K3 của V38.2.1.
+- Không thay đổi Firestore Rules, indexes hoặc Firebase config.
 
-## Sửa trong V38.2.2
+## Phân bố Published Bank
 
-- Tách **Published Practice Bank** khỏi ngân hàng riêng của giáo viên.
-- Gói sẵn 278 câu **Approved** hiện hành của Chương 1 làm ngân hàng luyện tập read-only.
-- Học sinh / chế độ offline chỉ đọc Published Practice Bank, không bao giờ nhận Draft hay ngân hàng riêng của giáo viên.
-- Giáo viên/Admin khi luyện tập dùng hợp nhất Published Bank + ngân hàng riêng, khử trùng theo `id`; bản riêng của giáo viên được ưu tiên.
-- `lesson-content-v37.7.js`, `dynamic-practice-v37.5.1.js` và `mastery-v36.3.js` cùng dùng một nguồn luyện tập thống nhất.
-- Published Bank đã được chuẩn hóa lại `lessonId` và `knowledgeCode` theo ID6 V38.2.1.
+- Bài 1: 90 câu
+- Bài 2: 67 câu
+- Bài 3: 49 câu
+- Bài 4: 102 câu
+- Bài 5: 61 câu
 
-## Dữ liệu Published Bank hiện có
+## Hai câu vẫn Draft
 
-- Tổng: **278 Approved MCQ**.
-- Bài 1: **87** câu (NB 56 / TH 30 / VD 1).
-- Bài 2: **60** câu (NB 37 / TH 22 / VD 1).
-- Bài 3: **38** câu (NB 19 / TH 19).
-- Bài 4: **93** câu (NB 51 / TH 38 / VD 4).
-- Bài 5: **0 Approved trong snapshot 278 hiện tại**.
+1. `LATEX-KSHS1-14`: nguồn thiếu khai báo hệ số `d` trong điều kiện hệ số.
+2. `LATEX-DSKSHS2-11`: ý d của nguồn bị thiếu điều kiện/kết luận.
 
-Các bộ KSHS/DSKSHS mới đang ở trạng thái Draft sẽ không tự xuất bản cho học sinh; điều này là chủ ý an toàn. Sau khi giáo viên duyệt Approved, cần cập nhật Published Bank trong một bản phát hành/publish kế tiếp nếu muốn học sinh trên thiết bị khác dùng ngay.
-
-## Không thay đổi
-
-- Firestore Rules / Indexes / Firebase config.
-- Nội dung, đáp án và lời giải của ngân hàng giáo viên.
-- ID6, chấm điểm, Exam Pro, avatar/game hóa.
+Hai câu này có trong file ngân hàng giáo viên 371 câu nhưng không có trong Published Bank 369 câu.
