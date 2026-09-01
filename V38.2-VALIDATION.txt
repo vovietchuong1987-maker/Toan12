@@ -1,0 +1,33 @@
+Math12 Hub V38.2 — VALIDATION
+======================================
+Build: 38.2-mastery-avatar-evolution
+Base lineage: V37.8 Avatar Foundation → sequential game upgrades
+
+1. VERSION / RUNTIME
+PASS app-version = 38.2
+PASS current Service Worker count = 1
+PASS local index references: 0 missing
+PASS JavaScript files present: 53; syntax checked separately with node --check.
+
+2. GAME MODULES
+PASS game-economy-v37.9.js referenced exactly once in index.html.
+PASS game-shop-v38.0.js referenced exactly once in index.html.
+PASS game-missions-v38.1.js referenced exactly once in index.html.
+PASS game-mastery-v38.2.js referenced exactly once in index.html.
+PASS Mastery source is existing V36.3 Mastery Engine, not a parallel academic score.
+PASS evolution regression: Lv.31 + 16 mastered codes => Cao thủ tier.
+PASS five tiers: Tân binh / Học viên / Học giả / Cao thủ / Bậc thầy.
+PASS evolution unlocks cosmetic outfits only; no auto score benefit.
+
+3. DATA / BACKEND SAFETY
+PASS firestore.rules unchanged from V37.8.
+PASS firestore.indexes.json unchanged from V37.8.
+PASS firebase.json unchanged from V37.8.
+PASS no new Firestore collection required; optional game sync uses fields on users/{uid}.
+PASS local-first state is namespaced per user UID for economy/inventory/missions.
+
+4. RELEASE
+PASS clean package keeps one README and one current VALIDATION file.
+PASS game economy is cosmetic-only and does not alter exam.js scoring logic.
+
+STATUS: PASS — V38.2 Mastery + Avatar Evolution ready.
