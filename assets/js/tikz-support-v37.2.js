@@ -4,6 +4,7 @@
    - Native SVG renderer for common THPT Cartesian TikZ figures.
    - TikZJax 1.6.0 fallback for more complex TikZ when online.
    - Captures generated SVG into question.figureSvg when available.
+   - V37.7.1 hotfix: compact node-at syntax + plain scope/rectangular clip compatibility.
    ========================================================== */
 (function(){
 'use strict';
@@ -112,7 +113,8 @@ function splitCommands(body=''){
   if(cur.trim())out.push(cur.trim());return out;
 }
 function parseNode(cmd=''){
-  const m=cmd.match(/^\\node(?:\[([^\]]*)\])?\s+at\s+\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*\{([\s\S]*)\}\s*;?$/);
+  // Accept both standard `\node[...] at (...)` and compact imported form `\node[...]at(...)`.
+  const m=cmd.match(/^\\node(?:\[([^\]]*)\])?\s*at\s*\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*\{([\s\S]*)\}\s*;?$/);
   if(!m)return null;return {kind:'node',opts:parseOpts(m[1]),x:Number(m[2]),y:Number(m[3]),label:cleanLabel(m[4])};
 }
 function parseFill(cmd=''){
@@ -135,7 +137,16 @@ function parseDraw(cmd=''){
 }
 function parseTikz(tex=''){
   const s=normalize(tex),m=s.match(/\\begin\{tikzpicture\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{tikzpicture\}/);if(!m)return {ok:false,reason:'Không tìm thấy môi trường tikzpicture.'};
-  const topOpts=parseOpts(m[1]),cleanBody=m[2].replace(/(^|[^\\])%.*$/gm,'$1'),commands=splitCommands(cleanBody),items=[],unsupported=[];
+  // V37.7.1 compatibility: Word/LaTeX imports commonly wrap a numeric plot in a plain scope
+  // only to apply a rectangular clip. The Smart SVG renderer already clips graph plots to
+  // the detected Oxy viewport, so this narrow structural wrapper can be removed safely.
+  // Scopes with options/transforms remain unsupported and still fall back to full TeX.
+  const NUM='[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+  let cleanBody=m[2].replace(/(^|[^\\])%.*$/gm,'$1')
+    .replace(/\\begin\{scope\}\s*/g,'')
+    .replace(/\\end\{scope\}\s*/g,'')
+    .replace(new RegExp('\\\\clip\\s*\\(\\s*'+NUM+'\\s*,\\s*'+NUM+'\\s*\\)\\s*rectangle\\s*\\(\\s*'+NUM+'\\s*,\\s*'+NUM+'\\s*\\)\\s*;','g'),'');
+  const topOpts=parseOpts(m[1]),commands=splitCommands(cleanBody),items=[],unsupported=[];
   for(const raw of commands){const cmd=raw.trim();if(!cmd||cmd.startsWith('%'))continue;let x=parseNode(cmd)||parseFill(cmd)||parseDraw(cmd);if(x){if(x.kind==='unsupported')unsupported.push(x.reason);else items.push(x)}else if(/^\\(?:clip|path|coordinate|foreach|tkz|pgf|addplot|filldraw|shade|matrix|graph|pic)\b/.test(cmd))unsupported.push(cmd.slice(0,45));else unsupported.push(cmd.slice(0,45));}
   return {ok:items.length>0,topOpts,items,unsupported,source:s,reason:items.length?'':'Chưa nhận diện được lệnh TikZ.'};
 }
@@ -280,8 +291,15 @@ String.raw`\begin{tikzpicture}[scale=0.8, >=stealth]
 \node[left] at (0,2) {$2$};
 \node[right] at (0,-2) {$-2$};
 \fill (-1,-2) circle (1.5pt) (1,2) circle (1.5pt);
+\end{tikzpicture}`,
+String.raw`\begin{tikzpicture}[scale=.88,>=stealth]
+\draw[->](-2.2,0)--(3.0,0) node[below]{$x$};
+\draw[->](0,-5.0)--(0,2.2) node[left]{$y$};\node[above right]at(0,0){$O$};
+\begin{scope}\clip(-2.2,-5) rectangle (3.2,2);\draw[thick,domain=-1.85:2.45,samples=180,smooth] plot (\x,{\x^3-3*\x-2});\end{scope}
+\draw[dashed](-1,0)--(-1,0);\draw[dashed](1,0)--(1,-4);
+\node[above]at(-1,0){$-1$};\node[above]at(1,0){$1$};\node[above]at(2,0){$2$};\node[left]at(0,-4){$-4$};
 \end{tikzpicture}`
   ];
-  const results=samples.map(sample=>{const r=nativeSvg(sample);return {ok:!!r.ok&&/polyline|path/.test(r.svg||'')&&/circle/.test(r.svg||''),engine:r.engine||'',bytes:(r.svg||'').length,key:keyFor(sample),unsupported:r.unsupported||[]}});
+  const results=samples.map(sample=>{const r=nativeSvg(sample),needsCircle=/\\fill\b/.test(sample);return {ok:!!r.ok&&/polyline|path/.test(r.svg||'')&&(!needsCircle||/circle/.test(r.svg||'')),engine:r.engine||'',bytes:(r.svg||'').length,key:keyFor(sample),unsupported:r.unsupported||[]}});
   return {ok:results.every(x=>x.ok),cases:results};
 };})();

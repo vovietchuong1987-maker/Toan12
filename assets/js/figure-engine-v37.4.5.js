@@ -7,6 +7,7 @@
    - Responsive, tight-crop post-processing for stored SVG.
    - Native support for legacy 2-row tkz-tab (x, f(x)).
    - No question schema migration and no Firestore collection changes.
+   - V37.7.1 hotfix retries Smart SVG before stale TikZJax metadata fallback.
    ========================================================== */
 (function(){
 'use strict';
@@ -165,9 +166,12 @@ function renderTikz(item={},compact=false){
   let stored=sanitizeStoredSvg(item.figureSvg||'');
   if(stored&&item.figureSourceHash&&item.figureSourceHash!==keyFor(tex))stored='';
   if(stored){renderedStats.stored++;return figureWrap(item,stored,'stored-svg',kind,compact)}
-  // A record explicitly marked as TikZJax/cached should keep the full-TeX route when no stored SVG travels with it.
-  if(/tikzjax|cached/i.test(String(item.figureRenderEngine||''))){renderedStats.fallback++;return null}
+  // V37.7.1: always retry the strict Smart SVG parser first. Older imported questions may
+  // carry `tikzjax-pending` only because a previous parser rejected harmless scope/clip or
+  // compact `node[...]at(...)` syntax. If Smart SVG now succeeds, prefer it automatically.
   const native=smartNativeSvg(tex);if(native.ok){renderedStats.smart++;return figureWrap(item,native.svg,'smart-native-svg',native.kind||kind,compact)}
+  // Preserve the full-TeX route only when the current strict parser still cannot render it.
+  if(/tikzjax|cached/i.test(String(item.figureRenderEngine||''))){renderedStats.fallback++;return null}
   renderedStats.fallback++;return null;
 }
 function twoRowTkzTab(tex=''){

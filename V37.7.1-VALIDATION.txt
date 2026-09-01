@@ -1,0 +1,44 @@
+Math12 Hub V37.7.1 — VALIDATION
+=================================
+Build: 37.7.1-tikz-scope-plot-hotfix
+Base: V37.7 Lesson Content Engine
+
+1. VERSION / RUNTIME
+PASS app-version = 37.7.1
+PASS app-build = 37.7.1-tikz-scope-plot-hotfix
+PASS APP_VERSION = 37.7.1
+PASS Service Worker registration points to sw-v37.7.1.js?v=37.7.1
+PASS exactly one root Service Worker: sw-v37.7.1.js
+
+2. JAVASCRIPT / LOCAL REFERENCES
+PASS 48/48 assets/js/*.js pass node --check
+PASS sw-v37.7.1.js passes node --check
+PASS index.html local src/href references: 0 missing
+PASS Service Worker cached local assets: 0 missing
+
+3. TIKZ HOTFIX REGRESSION
+PASS compact node syntax: \\node[...]at(...) is accepted
+PASS plain \\begin{scope}...\\end{scope} wrapper is normalized for native rendering
+PASS numeric rectangular \\clip(...) rectangle (...); is accepted in the Smart SVG pipeline
+PASS screenshot regression source parses as 10 items with 0 unsupported commands
+PASS screenshot regression renders Smart SVG as graph-oxy
+PASS axis viewport = x[-2.2, 3], y[-5, 2.2]
+PASS Smart SVG size = 285 x 373 px
+PASS graph plot is clipped to detected Oxy viewport
+PASS legacy TikZ regression suite = 3/3 cases
+PASS stale tikzjax-pending/cached metadata no longer blocks a current Smart SVG success
+
+4. LESSON CONTENT / QUESTION SAFETY
+PASS V37.7 lesson-content engine retained
+PASS question schema unchanged
+PASS no question-bank reset/import/migration runs in V37.7.1
+PASS original figureLatex remains the source of truth
+PASS no math content, answers, ID6 or reviewStatus are modified by the hotfix
+
+5. DATA / BACKEND SAFETY
+PASS firestore.rules byte-for-byte unchanged from V37.7
+PASS firestore.indexes.json byte-for-byte unchanged from V37.7
+PASS firebase.json byte-for-byte unchanged from V37.7
+PASS no new Firestore collection required
+
+STATUS: PASS — V37.7.1 TikZ Scope/Clip Hotfix ready.
