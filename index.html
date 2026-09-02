@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Math12 Hub 2026–2027</title>
+<title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
 <meta content="40.0" name="app-version"/>
 <meta content="40.0-production-release" name="app-build"/>
@@ -16,33 +16,7 @@
 <link crossorigin="" href="https://www.gstatic.com" rel="preconnect"/>
 <script defer="" src="assets/js/mathjax-config.js?v=40.0"></script>
 <script defer="" src="assets/vendor/mathjax.js?v=40.0"></script>
-<link href="assets/css/app.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/id6-v37.4.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/id6-hierarchy-v37.4.1.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/id6-pure-ui-v37.4.2.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/bank-reset-v37.4.3.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/figure-engine-v37.4.5.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/figure-layout-v37.4.6.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/figure-qc-v37.4.7.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/figure-manager-v37.4.8.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/figure-production-v37.5.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/dynamic-practice-v37.5.1.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/graph-reading-v37.5.2.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/unified-figure-v37.5.3.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/freeform-graph-v37.5.4.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/exam-pro-v37.6.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/lesson-content-v37.7.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/avatar-v37.8.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/avatar3d-v38.4.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/wardrobe-v38.5.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/mega-shop-v38.6.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/pets-effects-v38.7.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/achievement-collections-v38.8.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/math-room-v39.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/game-economy-v37.9.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/game-shop-v38.0.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/game-missions-v38.1.css?v=40.0" rel="stylesheet"/>
-<link href="assets/css/game-mastery-v38.2.css?v=40.0" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/css/app.bundle.css">
 </head>
 <body>
 <div class="v33-public-shell hidden" id="v33PublicReportShell"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập </small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -725,73 +699,14 @@
 <div class="mobile-overlay hidden" id="mobileOverlay"></div>
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><div><h3 id="modalTitle">Bài kiểm tra</h3><small id="modalSub" style="color:var(--muted)"></small></div><button class="close" onclick="closeModal()">×</button></div><div class="modal-body" id="modalBody"></div><div class="quiz-footer" id="modalFooter"></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
-<!-- V37.1 App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
+<!--  App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
      Để trống = App Check chưa kích hoạt; KHÔNG bật enforcement trước khi đã kiểm tra request metrics. -->
 <script>window.MATH12_APP_CHECK_SITE_KEY = window.MATH12_APP_CHECK_SITE_KEY || '';</script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=40.0"></script>
-<script src="assets/js/id6-taxonomy-v37.4.js?v=40.0"></script>
-<script src="assets/js/lesson-content-v37.7.js?v=40.0"></script>
-<script src="assets/js/taxonomy-sync-v38.2.1.js?v=40.0"></script>
+<script src="assets/js/app-core.bundle.js"></script>
 <script src="assets/data/all-practice-bank-v38.3.js?v=40.0"></script>
-<script src="assets/js/full-bank-v38.3.js?v=40.0"></script>
-<script src="assets/js/authoring.js?v=40.0"></script>
-<script src="assets/js/data-vault.js?v=40.0"></script>
-<script src="assets/js/exam.js?v=40.0"></script>
-<script src="assets/js/firebase.js?v=40.0"></script>
-<script src="assets/js/dashboard-v22.js?v=40.0"></script>
-<script src="assets/js/admin-v25.js?v=40.0"></script>
-<script src="assets/js/integrity-v26.js?v=40.0"></script>
-<script src="assets/js/teacher-ops-v27.js?v=40.0"></script>
-<script src="assets/js/student-ux-v28.js?v=40.0"></script>
-<script src="assets/js/avatar-v37.8.js?v=40.0"></script>
-<script src="assets/js/question-bank-v29.js?v=40.0"></script>
-<script src="assets/js/exam-pro-v30.js?v=40.0"></script>
-<script src="assets/js/analytics-pro-v31.js?v=40.0"></script>
-<script src="assets/js/scale-v34.js?v=40.0"></script>
-<script src="assets/js/hardening-v35.js?v=40.0"></script>
-<script src="assets/js/ui-v35.js?v=40.0"></script>
-<script src="assets/js/bootstrap.js?v=40.0"></script>
-<script src="assets/js/ux-v35.3.js?v=40.0"></script>
-<script src="assets/js/smart-nav-v35.4.js?v=40.0"></script>
-<script src="assets/js/knowledge-map-v36.js?v=40.0"></script>
-<script src="assets/js/quality-engine-v36.1.js?v=40.0"></script>
-<script src="assets/js/smart-exam-v36.2.js?v=40.0"></script>
-<script src="assets/js/mastery-v36.3.js?v=40.0"></script>
-<script src="assets/js/ai-intelligence-v37.js?v=40.0"></script>
-<script src="assets/js/bank-backup-v37.1.js?v=40.0"></script>
-<script src="assets/js/tikz-support-v37.2.js?v=40.0"></script>
-<script src="assets/js/graph-engine-v37.3.3.js?v=40.0"></script>
-<script src="assets/js/tools-menu-v37.3.1.js?v=40.0"></script>
-<script src="assets/js/variation-exam-v37.3.6.js?v=40.0"></script>
-<script src="assets/js/id6-ui-v37.4.js?v=40.0"></script>
-<script src="assets/js/id6-hierarchy-v37.4.1.js?v=40.0"></script>
-<script src="assets/js/id6-pure-ui-v37.4.2.js?v=40.0"></script>
-<script src="assets/js/bank-reset-v37.4.3.js?v=40.0"></script>
-<script src="assets/js/figure-engine-v37.4.5.js?v=40.0"></script>
-<script src="assets/js/figure-layout-v37.4.6.js?v=40.0"></script>
-<script src="assets/js/figure-qc-v37.4.7.js?v=40.0"></script>
-<script src="assets/js/figure-manager-v37.4.8.js?v=40.0"></script>
-<script src="assets/js/figure-production-v37.5.js?v=40.0"></script>
-<script src="assets/js/dynamic-practice-v37.5.1.js?v=40.0"></script>
-<script src="assets/js/graph-reading-v37.5.2.js?v=40.0"></script>
-<script src="assets/js/unified-figure-v37.5.3.js?v=40.0"></script>
-<script src="assets/js/freeform-graph-v37.5.4.js?v=40.0"></script>
-<script src="assets/js/exam-pro-v37.6.js?v=40.0"></script>
-<script src="assets/js/game-economy-v37.9.js?v=40.0"></script>
-<script src="assets/js/game-shop-v38.0.js?v=40.0"></script>
-<script src="assets/js/game-missions-v38.1.js?v=40.0"></script>
-<script src="assets/js/game-mastery-v38.2.js?v=40.0"></script>
-<script src="assets/js/avatar3d-v38.4.js?v=40.0"></script>
-<script src="assets/js/wardrobe-v38.5.js?v=40.0"></script>
-<script src="assets/js/mega-shop-v38.6.js?v=40.0"></script>
-<script src="assets/js/pets-effects-v38.7.js?v=40.0"></script>
-<script src="assets/js/achievement-collections-v38.8.js?v=40.0"></script>
-<script src="assets/js/math-room-v39.js?v=40.0"></script>
-<script src="assets/js/self-study-v38.3.js?v=40.0"></script>
-<script src="assets/js/platform-v40.js?v=40.0"></script>
-<script src="assets/js/clean-ui.js?v=40.0.1"></script>
+<script src="assets/js/app-features.bundle.js"></script>
 </body>
 </html>

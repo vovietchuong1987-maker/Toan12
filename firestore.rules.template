@@ -1,0 +1,97 @@
+// TEMPLATE THAM KHẢO — cần đối chiếu với Firestore Rules đang dùng trước khi Publish.
+// Mục tiêu: khóa tự nâng quyền, bảo vệ đáp án, giới hạn dữ liệu theo chủ lớp/thành viên.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return /databases/$(database)/documents/users/$(request.auth.uid); }
+    function profile() { return get(me()).data; }
+    function active() { return signedIn() && profile().accountStatus != 'locked'; }
+    function admin() { return active() && profile().role == 'admin'; }
+    function teacher() { return active() && (profile().role == 'teacher' || profile().role == 'admin'); }
+    function classDoc(cid) { return get(/databases/$(database)/documents/classes/$(cid)).data; }
+    function classOwner(cid) { return teacher() && classDoc(cid).ownerId == request.auth.uid; }
+    function member(cid) { return active() && exists(/databases/$(database)/documents/classes/$(cid)/members/$(request.auth.uid)); }
+    function classStaff(cid) { return admin() || classOwner(cid); }
+
+    match /users/{uid} {
+      allow read: if active() && (request.auth.uid == uid || admin());
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role == 'student'
+        && request.resource.data.accountStatus == 'active';
+      allow update: if admin() || (active() && request.auth.uid == uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.accountStatus == resource.data.accountStatus);
+      allow delete: if admin();
+
+      match /learning/{doc} { allow read, write: if active() && request.auth.uid == uid; }
+      match /syncMeta/{doc} { allow read, write: if active() && request.auth.uid == uid; }
+      match /memberships/{cid} {
+        allow read: if active() && request.auth.uid == uid;
+        // Join/transfer rules may need refinement for your current flow.
+        allow create, update: if active() && request.auth.uid == uid;
+        allow delete: if active() && request.auth.uid == uid || admin();
+      }
+      match /questionBank/{doc} { allow read, write: if teacher() && request.auth.uid == uid; }
+      match /customExams/{doc} { allow read, write: if teacher() && request.auth.uid == uid; }
+      match /recycleBinV26/{doc} { allow read, write: if teacher() && request.auth.uid == uid; }
+      match /{other=**} { allow read, write: if active() && request.auth.uid == uid; }
+    }
+
+    match /classes/{cid} {
+      allow create: if teacher() && request.resource.data.ownerId == request.auth.uid;
+      allow read: if classStaff(cid) || member(cid);
+      allow update, delete: if classStaff(cid);
+
+      match /members/{uid} {
+        allow read: if classStaff(cid) || (active() && request.auth.uid == uid);
+        allow create: if classStaff(cid) || (active() && request.auth.uid == uid
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role == 'student');
+        allow update, delete: if classStaff(cid);
+      }
+      match /progress/{uid} {
+        allow read: if classStaff(cid) || (active() && request.auth.uid == uid);
+        allow create, update: if active() && request.auth.uid == uid;
+        allow delete: if classStaff(cid);
+      }
+      match /assignmentsV18/{aid} {
+        allow read: if classStaff(cid) || (member(cid) && (resource.data.targetMode == 'all' || request.auth.uid in resource.data.targetUids));
+        allow write: if classStaff(cid);
+        match /submissions/{uid} {
+          allow read: if classStaff(cid) || (active() && request.auth.uid == uid);
+          allow create: if active() && request.auth.uid == uid
+            && request.resource.data.uid == request.auth.uid
+            && !request.resource.data.keys().hasAny(['score','questionResults','gradedAt']);
+          allow update, delete: if classStaff(cid);
+        }
+        match /attemptHistoryV27/{doc} {
+          allow read: if classStaff(cid);
+          allow create: if active() && request.resource.data.uid == request.auth.uid;
+          allow update, delete: if classStaff(cid);
+        }
+        match /draftsV30/{uid} { allow read, write: if active() && request.auth.uid == uid; }
+      }
+      match /answerKeysV18/{aid} { allow read, write: if classStaff(cid); }
+      match /submissionIndexV19/{doc} {
+        allow read: if classStaff(cid) || (active() && resource.data.uid == request.auth.uid);
+        allow create: if active() && request.resource.data.uid == request.auth.uid
+          && !request.resource.data.keys().hasAny(['score','questionResults','gradedAt']);
+        allow update, delete: if classStaff(cid);
+      }
+      match /studentStatsV19/{uid} { allow read: if classStaff(cid) || (active() && request.auth.uid == uid); allow write: if classStaff(cid); }
+      match /rosterV27/{doc} { allow read, write: if classStaff(cid); }
+      match /groupsV27/{doc} { allow read, write: if classStaff(cid); }
+      match /transfersV27/{doc} { allow read, write: if classStaff(cid); }
+      match /reportsV33/{doc} { allow read, write: if classStaff(cid); }
+      match /{other=**} { allow read, write: if classStaff(cid); }
+    }
+
+    match /joinCodes/{code} {
+      allow read: if active();
+      // Creation/update/deletion should be restricted to class owner/admin after validating classId.
+      allow create, update, delete: if teacher();
+    }
+    match /adminAudit/{doc} { allow read, write: if admin(); }
+  }
+}

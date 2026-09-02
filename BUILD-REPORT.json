@@ -1,0 +1,14 @@
+{
+  "before_script_tags": 67,
+  "after_script_tags": 9,
+  "after_css_links": 1,
+  "core_modules_bundled": 4,
+  "feature_modules_bundled": 56,
+  "files": 15,
+  "local_refs": 8,
+  "missing_local_refs": [],
+  "clean_ui_runtime_observer_removed": true,
+  "service_worker": "sw.js",
+  "security_audit_included": true,
+  "firestore_rules_template_included": true
+}
