@@ -1,5 +1,5 @@
 /* Math12 Hub V40 — lightweight offline shell + runtime cache */
-const V='40.0';
+const V='40.0.1';
 const SHELL=`math12hub-${V}-shell`;
 const RUNTIME=`math12hub-${V}-runtime`;
 const CORE=[
@@ -8,7 +8,7 @@ const CORE=[
   './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
   './assets/js/core.js','./assets/js/id6-taxonomy-v37.4.js','./assets/js/lesson-content-v37.7.js',
   './assets/data/all-practice-bank-v38.3.js','./assets/js/full-bank-v38.3.js',
-  './assets/js/authoring.js','./assets/js/exam.js','./assets/js/platform-v40.js',
+  './assets/js/authoring.js','./assets/js/exam.js','./assets/js/platform-v40.js','./assets/js/clean-ui.js',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));

@@ -1,793 +1,728 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="vi">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Math12 Hub V40 2026–2027 - Production</title>
-<meta name="description" content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." />
-<meta name="app-version" content="40.0" />
-<meta name="app-build" content="40.0-production-release" />
-<meta name="app-architecture" content="modular-static-github-pages" />
-<meta name="release-channel" content="production" />
-<meta name="theme-color" content="#172033" />
-<link rel="manifest" href="manifest.webmanifest?v=40.0" />
-<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=40.0" />
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin />
-<script defer src="assets/js/mathjax-config.js?v=40.0"></script>
-<script defer src="assets/vendor/mathjax.js?v=40.0"></script>
-<link rel="stylesheet" href="assets/css/app.css?v=40.0">
-<link rel="stylesheet" href="assets/css/id6-v37.4.css?v=40.0">
-<link rel="stylesheet" href="assets/css/id6-hierarchy-v37.4.1.css?v=40.0">
-<link rel="stylesheet" href="assets/css/id6-pure-ui-v37.4.2.css?v=40.0">
-<link rel="stylesheet" href="assets/css/bank-reset-v37.4.3.css?v=40.0">
-<link rel="stylesheet" href="assets/css/figure-engine-v37.4.5.css?v=40.0">
-<link rel="stylesheet" href="assets/css/figure-layout-v37.4.6.css?v=40.0">
-<link rel="stylesheet" href="assets/css/figure-qc-v37.4.7.css?v=40.0">
-<link rel="stylesheet" href="assets/css/figure-manager-v37.4.8.css?v=40.0">
-<link rel="stylesheet" href="assets/css/figure-production-v37.5.css?v=40.0">
-<link rel="stylesheet" href="assets/css/dynamic-practice-v37.5.1.css?v=40.0">
-<link rel="stylesheet" href="assets/css/graph-reading-v37.5.2.css?v=40.0">
-<link rel="stylesheet" href="assets/css/unified-figure-v37.5.3.css?v=40.0">
-<link rel="stylesheet" href="assets/css/freeform-graph-v37.5.4.css?v=40.0">
-<link rel="stylesheet" href="assets/css/exam-pro-v37.6.css?v=40.0">
-<link rel="stylesheet" href="assets/css/lesson-content-v37.7.css?v=40.0">
-<link rel="stylesheet" href="assets/css/avatar-v37.8.css?v=40.0">
-<link rel="stylesheet" href="assets/css/avatar3d-v38.4.css?v=40.0">
-<link rel="stylesheet" href="assets/css/wardrobe-v38.5.css?v=40.0">
-<link rel="stylesheet" href="assets/css/mega-shop-v38.6.css?v=40.0">
-<link rel="stylesheet" href="assets/css/pets-effects-v38.7.css?v=40.0">
-<link rel="stylesheet" href="assets/css/achievement-collections-v38.8.css?v=40.0">
-<link rel="stylesheet" href="assets/css/math-room-v39.css?v=40.0">
-<link rel="stylesheet" href="assets/css/game-economy-v37.9.css?v=40.0">
-<link rel="stylesheet" href="assets/css/game-shop-v38.0.css?v=40.0">
-<link rel="stylesheet" href="assets/css/game-missions-v38.1.css?v=40.0">
-<link rel="stylesheet" href="assets/css/game-mastery-v38.2.css?v=40.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Math12 Hub 2026–2027</title>
+<meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
+<meta content="40.0" name="app-version"/>
+<meta content="40.0-production-release" name="app-build"/>
+<meta content="modular-static-github-pages" name="app-architecture"/>
+<meta content="production" name="release-channel"/>
+<meta content="#172033" name="theme-color"/>
+<link href="manifest.webmanifest?v=40.0" rel="manifest"/>
+<link href="assets/icons/icon-192.png?v=40.0" rel="icon" sizes="192x192" type="image/png"/>
+<link crossorigin="" href="https://www.gstatic.com" rel="preconnect"/>
+<script defer="" src="assets/js/mathjax-config.js?v=40.0"></script>
+<script defer="" src="assets/vendor/mathjax.js?v=40.0"></script>
+<link href="assets/css/app.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/id6-v37.4.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/id6-hierarchy-v37.4.1.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/id6-pure-ui-v37.4.2.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/bank-reset-v37.4.3.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/figure-engine-v37.4.5.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/figure-layout-v37.4.6.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/figure-qc-v37.4.7.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/figure-manager-v37.4.8.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/figure-production-v37.5.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/dynamic-practice-v37.5.1.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/graph-reading-v37.5.2.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/unified-figure-v37.5.3.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/freeform-graph-v37.5.4.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/exam-pro-v37.6.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/lesson-content-v37.7.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/avatar-v37.8.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/avatar3d-v38.4.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/wardrobe-v38.5.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/mega-shop-v38.6.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/pets-effects-v38.7.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/achievement-collections-v38.8.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/math-room-v39.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/game-economy-v37.9.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/game-shop-v38.0.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/game-missions-v38.1.css?v=40.0" rel="stylesheet"/>
+<link href="assets/css/game-mastery-v38.2.css?v=40.0" rel="stylesheet"/>
 </head>
 <body>
-<div id="v33PublicReportShell" class="v33-public-shell hidden"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập V33</small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
+<div class="v33-public-shell hidden" id="v33PublicReportShell"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập </small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
 <div class="app" id="app">
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="brand-logo">∑</div>
-      <div class="brand-copy"><h1>Math12 Hub</h1><small>Ôn tập thông minh • 2026–2027</small></div>
-      <button class="sidebar-compact-btn" id="sidebarCompactBtn" type="button" title="Thu gọn thanh điều hướng" aria-label="Thu gọn thanh điều hướng">‹</button>
-    </div>
-    <div class="nav" id="nav">
-      <button class="nav-home active" data-page="dashboard" title="Tổng quan"><span class="ico">⌂</span><span class="nav-label">Tổng quan</span></button>
-
-      <div class="student-nav-block">
-        <div class="nav-group open" data-nav-group="student-study">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="student-study" aria-expanded="true"><span class="nav-group-label">Học tập</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="lessons" title="Học theo bài"><span class="ico">▤</span><span class="nav-label">Học theo bài</span></button>
-            <button data-page="chapters" title="Ôn theo chương"><span class="ico">◫</span><span class="nav-label">Ôn theo chương</span></button>
-          </div>
-        </div>
-        <div class="nav-group open" data-nav-group="student-exam">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="student-exam" aria-expanded="true"><span class="nav-group-label">Luyện & thi</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="periodic" title="Kiểm tra định kỳ"><span class="ico">◷</span><span class="nav-label">Kiểm tra định kỳ</span></button>
-            <button data-page="thpt" title="Ôn thi THPT"><span class="ico">★</span><span class="nav-label">Ôn thi THPT</span></button>
-          </div>
-        </div>
-        <div class="nav-group open" data-nav-group="student-personal">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="student-personal" aria-expanded="true"><span class="nav-group-label">Cá nhân</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="learning-plan" title="Lộ trình của em"><span class="ico">✦</span><span class="nav-label">Lộ trình của em</span></button>
-            <button data-page="avatar" title="Nhân vật của em"><span class="ico">♟</span><span class="nav-label">Nhân vật của em</span></button>
-            <button data-page="progress" title="Tiến độ của em"><span class="ico">↗</span><span class="nav-label">Tiến độ của em</span></button>
-            <button data-page="analytics" title="Phân tích năng lực"><span class="ico">◎</span><span class="nav-label">Phân tích năng lực</span></button>
-            <button data-page="reports" title="Báo cáo học tập"><span class="ico">▣</span><span class="nav-label">Báo cáo học tập</span></button>
-          </div>
-        </div>
-        <div class="nav-group" data-nav-group="student-connect">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="student-connect" aria-expanded="false"><span class="nav-group-label">Kết nối</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="notifications" title="Thông báo"><span class="ico">🔔</span><span class="nav-label">Thông báo</span><span id="notificationBadge" class="nav-notify-badge">0</span></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="teacher-nav-block">
-        <div class="nav-group open" data-nav-group="teacher-tools">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="teacher-tools" aria-expanded="true"><span class="nav-group-label">Công cụ giáo viên</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="question-bank" title="Ngân hàng câu hỏi"><span class="ico">▦</span><span class="nav-label">Ngân hàng câu hỏi</span></button>
-            <button data-page="exam-builder" title="Tạo đề kiểm tra"><span class="ico">▧</span><span class="nav-label">Tạo đề kiểm tra</span></button>
-            <button data-page="ai-teacher" title="Trợ lý AI"><span class="ico">✦</span><span class="nav-label">Trợ lý AI</span></button>
-          </div>
-        </div>
-        <div class="nav-group" data-nav-group="teacher-reference">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="teacher-reference" aria-expanded="false"><span class="nav-group-label">Xem nội dung học sinh</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="lessons" title="Học theo bài"><span class="ico">▤</span><span class="nav-label">Học theo bài</span></button>
-            <button data-page="chapters" title="Ôn theo chương"><span class="ico">◫</span><span class="nav-label">Ôn theo chương</span></button>
-            <button data-page="periodic" title="Kiểm tra định kỳ"><span class="ico">◷</span><span class="nav-label">Kiểm tra định kỳ</span></button>
-            <button data-page="thpt" title="Ôn thi THPT"><span class="ico">★</span><span class="nav-label">Ôn thi THPT</span></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-nav-block">
-        <div class="nav-group open admin-nav-group" data-nav-group="admin-system">
-          <button class="nav-group-toggle" type="button" data-nav-group-toggle="admin-system" aria-expanded="true"><span class="nav-group-label">Hệ thống</span><span class="nav-chevron">⌄</span></button>
-          <div class="nav-group-items">
-            <button data-page="admin" title="Quản trị hệ thống"><span class="ico">🛡</span><span class="nav-label">Quản trị hệ thống</span></button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="sidebar-foot" title="Math12 Hub • Chương trình Toán 12 GDPT 2018">
-      <div class="sidebar-foot-title">Toán 12 • GDPT 2018</div>
-      <div class="tiny">V40 • Production Release</div>
-    </div>
-  </aside>
-  <main class="main">
-    <header class="topbar">
-      <div class="top-left">
-        <button class="menu-btn" id="menuBtn">☰</button>
-        <div><div class="page-title" id="pageTitle">Tổng quan học tập</div><div class="badge">Lớp 12 • Năm học 2026–2027</div></div>
-      </div>
-      <div class="topbar-right">
-        <button class="avatar-topbar student-only" id="avatarV378Topbar" type="button" onclick="goPage('avatar')" title="Mở nhân vật của em" aria-label="Mở nhân vật của em"></button>
-        <div class="v353-save-state" id="v353SaveState" title="Trạng thái lưu dữ liệu trên thiết bị"><span class="v353-save-icon">✓</span><span class="v353-save-text">Tự lưu sẵn sàng</span></div>
-        <div class="secure-role-badge student" id="secureRoleBadge" title="Vai trò được xác thực từ Firestore">👤 Học sinh</div>
-        <button class="cloud-account" id="firebaseAccountBtn" onclick="openFirebaseAccount()" title="Tài khoản và đồng bộ Firebase"><span class="cloud-dot" id="firebaseDot"></span><span id="firebaseAccountText">Đăng nhập</span></button>
-      </div>
-    </header>
-    <div class="v353-breadcrumb-bar" aria-label="Đường dẫn điều hướng"><div class="v353-breadcrumb" id="v353Breadcrumb"></div></div>
-
-    <div class="content">
-      <section class="section active" id="page-dashboard">
-        <div class="student-only hero">
-          <div>
-            <div class="badge" style="background:rgba(255,255,255,.16);color:white">V40 • LEARNING PLATFORM</div>
-            <h2>Học Toán • Nâng cấp nhân vật • Xây phòng của em</h2>
-            <p>Mỗi bài học có kiểm tra nhanh, mỗi chương có bài tổng hợp, giữa kỳ – học kỳ có đề chuẩn hóa, và cuối lộ trình là đề mô phỏng tốt nghiệp THPT theo định dạng hiện hành.</p>
-            <div class="hero-actions"><button class="btn btn-primary" onclick="v28StartNextAction()">Tiếp tục học</button><button class="btn btn-ghost" onclick="goPage('avatar')">Avatar 3D</button><button class="btn btn-ghost" onclick="goPage('shop')">Mega Shop</button><button class="btn btn-ghost" onclick="goPage('room')">🏠 Phòng của em</button></div>
-          </div>
-          <div class="hero-progress"><div style="display:flex;justify-content:space-between;align-items:end"><div><small>Tiến độ chương trình</small><br><strong id="heroPercent">0%</strong></div><div style="text-align:right"><small>Mục tiêu</small><br><b id="v28GoalScoreHero">8.0+</b></div></div><div class="progress" style="margin-top:14px"><span id="heroBar" style="width:0%"></span></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#d9e3ff"><span id="doneLessonText">0/19 bài đã hoàn thành</span><span id="learningStreakText">Chuỗi học: 0 ngày</span></div></div>
-        </div>
-
-        <div class="student-only mt" id="avatarV378Dashboard"></div>
-
-        <div class="teacher-only hero">
-          <div><div class="badge" style="background:rgba(255,255,255,.16);color:white">V40 • LEARNING PLATFORM</div><h2>Ngân hàng học tập + hệ sinh thái game hóa V39</h2><p>Chức năng lớp học online đã được loại khỏi luồng sử dụng. Giáo viên quản trị ngân hàng câu hỏi, tạo đề, xem nội dung học sinh và dùng trợ lý AI.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('question-bank')">Ngân hàng câu hỏi</button><button class="btn btn-ghost" onclick="goPage('exam-builder')">Tạo đề kiểm tra</button><button class="btn btn-ghost" onclick="goPage('ai-teacher')">Trợ lý AI</button></div></div>
-          <div class="hero-progress"><small>Ngân hàng tự học</small><br><strong>371 câu</strong><div style="font-size:12px;color:#d9e3ff">Bài 1 → Bài 5 • MCQ + Đúng/Sai 4 ý</div><div class="progress" style="margin-top:14px"><span style="width:100%"></span></div><div style="margin-top:10px;font-size:12px">Học sinh có thể luyện toàn bộ câu qua Ôn theo bài.</div></div>
-        </div>
-
-        <div class="teacher-only v353-role-dashboard" aria-label="Tác vụ nhanh giáo viên">
-          <button class="v353-quick-card" type="button" onclick="goPage('ai-teacher')"><span class="v353-quick-icon">✦</span><span><strong>AI</strong><small>Trợ lý giáo viên</small></span></button>
-          <button class="v353-quick-card" type="button" onclick="goPage('question-bank')"><span class="v353-quick-icon">▦</span><span><strong id="v353TeacherBank">0</strong><small>Câu trong ngân hàng</small></span></button>
-          <button class="v353-quick-card" type="button" onclick="goPage('exam-builder')"><span class="v353-quick-icon">▧</span><span><strong id="v353TeacherExams">0</strong><small>Đề đã lưu</small></span></button>
-          <button class="v353-quick-card" type="button" onclick="goPage('notifications')"><span class="v353-quick-icon">🔔</span><span><strong id="v353TeacherNotices">0</strong><small>Thông báo hiện có</small></span></button>
-        </div>
-        <div class="admin-only v353-admin-strip" aria-label="Trạng thái hệ thống nhanh">
-          <div class="v353-admin-status"><span><small>Firebase App Check</small><b>Bảo vệ request từ trình duyệt</b></span><strong id="v353AdminAppCheck">—</strong></div>
-          <div class="v353-admin-status"><span><small>Lỗi runtime phiên này</small><b>Production Center V37.5</b></span><strong id="v353AdminRuntime">0</strong></div>
-        </div>
-
-        <div class="grid grid-4 mt student-only">
-          <div class="card metric"><div><strong id="metricLessons">0</strong><small>Bài đã hoàn thành</small></div><div class="icon">✓</div></div>
-          <div class="card metric"><div><strong id="metricAvg">—</strong><small>Điểm trung bình</small></div><div class="icon">◎</div></div>
-          <div class="card metric"><div><strong id="metricAccuracy">—</strong><small>Tỷ lệ chính xác</small></div><div class="icon">↗</div></div>
-          <div class="card metric"><div><strong id="metricStreak">0</strong><small>Ngày học liên tiếp</small></div><div class="icon">⚡</div></div>
-        </div>
-
-        <div class="student-only v28-command-grid mt">
-          <div class="card v28-next-card">
-            <div class="v28-kicker">VIỆC NÊN LÀM TIẾP</div>
-            <h3 id="v28NextActionTitle">Đang xác định ưu tiên…</h3>
-            <p id="v28NextActionMeta">Dựa trên bài giáo viên giao, câu sai và tiến độ hiện tại.</p>
-            <div class="v28-reason" id="v28NextActionReason">V36.3 kết hợp Mastery Score với kiến trúc Scale của V34, đồng thời hoãn tải Excel, AI và Báo cáo cho tới khi người dùng thực sự cần.</div>
-            <button class="btn btn-blue" id="v28NextActionBtn" onclick="v28StartNextAction()">Bắt đầu</button>
-          </div>
-          <div class="card v28-goal-card">
-            <div class="section-head" style="margin:0 0 10px"><div><h3>Mục tiêu cá nhân</h3><p>Điều chỉnh theo nhịp học của em.</p></div><button class="btn btn-soft" onclick="v28OpenPlanSettings()">Chỉnh</button></div>
-            <div class="v28-goal-stats"><div><small>Mục tiêu</small><b id="v28GoalScore">8.0+</b></div><div><small>Mỗi ngày</small><b id="v28DailyGoal">35 phút</b></div><div><small>Mỗi tuần</small><b id="v28WeeklyGoal">5 ngày</b></div></div>
-            <div class="v28-readiness"><div><b id="v28ReadinessValue">0%</b><span id="v28ReadinessLabel">Đang thu thập dữ liệu</span></div><div class="progress"><span id="v28ReadinessBar" style="width:0%"></span></div><small>Chỉ báo lộ trình, không phải dự đoán điểm thi.</small></div>
-          </div>
-          <div class="card">
-            <div class="section-head" style="margin:0 0 8px"><div><h3>Hôm nay cần chú ý</h3><p>Xếp theo mức ưu tiên.</p></div></div>
-            <div class="v28-mini-metrics"><span><b id="v28PriorityMetric">0</b> khẩn</span><span><b id="v28MistakeMetric">0</b> câu sai</span><span><b id="v28WeakMetric">0</b> mã yếu</span></div>
-            <div id="v28TodayQueue" class="v28-queue"></div>
-          </div>
-        </div>
-
-        <div class="section-head student-only"><div><h3>6 chương cốt lõi Toán 12</h3><p>Hệ thống hóa theo Chương trình GDPT 2018.</p></div><button class="link-btn" onclick="goPage('chapters')">Xem tất cả →</button></div>
-        <div class="chapter-grid student-only" id="dashboardChapters"></div>
-
-        <div class="grid grid-2 mt student-only">
-          <div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Chủ đề cần củng cố</h3><p>Dựa trên các bài em đã làm.</p></div></div><div id="weakList"></div></div>
-          <div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Lộ trình 7 ngày • V36.3</h3><p>Tự điều chỉnh theo hạn bài, điểm yếu, câu sai và mục tiêu cá nhân.</p></div><button class="link-btn" onclick="goPage('learning-plan')">Mở đầy đủ →</button></div><div id="v28WeeklyPlan"></div></div>
-        </div>
-        <div class="card mt student-only"><div class="section-head" style="margin:0 0 10px"><div><h3>Sổ câu sai • V36.3</h3><p>Chỉ giữ các câu mà lần làm gần nhất vẫn chưa đúng hoàn toàn.</p></div><button class="btn btn-soft" onclick="goPage('learning-plan')">Xem lộ trình</button></div><div id="v28MistakeBook"></div></div>
-      </section>
-
-      <section class="section" id="page-lessons">
-        <div class="section-head" style="margin-top:0"><div><h3>Học và ôn tập sau từng bài</h3><p>Chọn bài theo chương trình Toán 12 thống nhất và luyện tập theo từng chuẩn kiến thức.</p></div></div>
-        <div class="notice"><b>Nguyên tắc học tập:</b> Mỗi bài được gắn một mã kiến thức thống nhất để theo dõi tiến độ, kết quả luyện tập và chủ đề học sinh còn yếu. Giáo viên có thể dùng chung một ngân hàng câu hỏi cho từng chuẩn kiến thức.</div>
-        <div class="toolbar mt"><input id="lessonSearch" placeholder="Tìm bài: cực trị, tích phân, mặt cầu..."/></div>
-        <div class="curriculum-layout mt"><div class="card"><div class="chapter-list" id="chapterTabs"></div></div><div class="card"><div id="lessonHeader"></div><div class="lesson-list mt" id="lessonList"></div></div></div>
-      </section>
-
-      <section class="section" id="page-lesson-detail">
-        <div id="lessonDetail"></div>
-      </section>
-
-      <section class="section" id="page-chapters">
-        <div class="section-head" style="margin-top:0"><div><h3>Ôn tập sau mỗi chương</h3><p>Mỗi chương gồm kiến thức trọng tâm, bài kiểm tra chuẩn và phân tích lỗi.</p></div></div>
-        <div class="chapter-grid" id="allChapters"></div>
-      </section>
-
-      <section class="section" id="page-periodic">
-        <div class="section-head" style="margin-top:0"><div><h3>Kiểm tra giữa kỳ & học kỳ</h3><p>Thiết kế theo phạm vi kiến thức đã học và lưu lịch sử làm bài.</p></div></div>
-        <div class="grid grid-2">
-          <div class="card exam-card"><h4>Giữa học kỳ I</h4><p>Chủ yếu Chương I và phần đầu Chương II. Có thể cấu hình theo PPCT của trường.</p><div class="exam-spec"><div><strong>45'</strong><small>Thời gian</small></div><div><strong>20</strong><small>Câu/ý</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('mid1')">Bắt đầu kiểm tra</button></div>
-          <div class="card exam-card"><h4>Cuối học kỳ I</h4><p>Chương I–III, kết hợp câu hỏi cơ bản, vận dụng và tình huống thực tế.</p><div class="exam-spec"><div><strong>90'</strong><small>Thời gian</small></div><div><strong>22</strong><small>Câu</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('final1')">Bắt đầu kiểm tra</button></div>
-          <div class="card exam-card"><h4>Giữa học kỳ II</h4><p>Nguyên hàm, tích phân và phần đầu phương pháp tọa độ trong không gian.</p><div class="exam-spec"><div><strong>45'</strong><small>Thời gian</small></div><div><strong>20</strong><small>Câu/ý</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('mid2')">Bắt đầu kiểm tra</button></div>
-          <div class="card exam-card"><h4>Cuối học kỳ II</h4><p>Tổng hợp Chương IV–VI, ưu tiên các bài toán tích hợp và vận dụng thực tiễn.</p><div class="exam-spec"><div><strong>90'</strong><small>Thời gian</small></div><div><strong>22</strong><small>Câu</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('final2')">Bắt đầu kiểm tra</button></div>
-        </div>
-      </section>
-
-      <section class="section" id="page-thpt">
-        <div class="hero"><div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Định dạng tốt nghiệp THPT hiện hành</div><h2>22 câu • 90 phút • 3 dạng thức</h2><p>Phần I: 12 câu nhiều lựa chọn. Phần II: 4 câu Đúng/Sai, mỗi câu 4 ý. Phần III: 6 câu trả lời ngắn. Website chấm theo đúng thang điểm từng phần.</p><div class="hero-actions"><button class="btn btn-primary" onclick="openFullExam()">Bắt đầu đề mô phỏng</button></div></div><div class="hero-progress"><div class="exam-spec" style="grid-template-columns:repeat(3,1fr)"><div style="background:rgba(255,255,255,.1)"><strong>3đ</strong><small style="color:#d9e3ff">12 câu MCQ</small></div><div style="background:rgba(255,255,255,.1)"><strong>4đ</strong><small style="color:#d9e3ff">4 câu Đ/S</small></div><div style="background:rgba(255,255,255,.1)"><strong>3đ</strong><small style="color:#d9e3ff">6 câu ngắn</small></div></div></div></div>
-        <div class="grid grid-3 mt">
-          <div class="card"><h3 style="margin-top:0">Theo chuyên đề</h3><p style="color:var(--muted);font-size:13px;line-height:1.6">Luyện sâu theo hàm số, Oxyz, tích phân, xác suất, thống kê và các mạch kiến thức lớp 10–11 có thể xuất hiện.</p><button class="btn btn-soft" onclick="goPage('chapters')">Chọn chuyên đề</button></div>
-          <div class="card"><h3 style="margin-top:0">Theo mức điểm</h3><p style="color:var(--muted);font-size:13px;line-height:1.6">Lộ trình 5–6 điểm → 7–8 điểm → 8.5+ dựa trên tỷ lệ đúng và nhóm lỗi của học sinh.</p><button class="btn btn-soft" onclick="goPage('analytics')">Xem năng lực hiện tại</button></div>
-          <div class="card"><h3 style="margin-top:0">Theo đề thi</h3><p style="color:var(--muted);font-size:13px;line-height:1.6">Mỗi lần thi lưu điểm từng phần và chủ đề sai để sinh danh sách ôn bù.</p><button class="btn btn-blue" onclick="openFullExam()">Thi thử ngay</button></div>
-        </div>
-      </section>
-
-      <section class="section student-only" id="page-avatar">
-        <div class="section-head"><div><h2>Nhân vật của em</h2><p>Avatar đi cùng quá trình học. V37.9 đã kích hoạt EXP, cấp độ và vàng với cơ chế chống farm; Shop sẽ mở ở bước tiếp theo.</p></div><span class="pill tag-blue">EXP + Level + Gold • V37.9</span></div>
-        <div id="avatarV378Page"></div>
-      </section>
-
-      <section class="section student-only" id="page-learning-plan">
-        <div class="section-head" style="margin-top:0"><div><h3>Lộ trình học cá nhân • V36.3</h3><p>Từ dữ liệu hiện có, V36.3 ưu tiên việc cần làm, câu sai, Mastery Score và mã kiến thức yếu; kế hoạch này mang tính gợi ý và tự cập nhật sau mỗi lần học.</p></div><button class="btn btn-blue" onclick="v28OpenPlanSettings()">⚙ Mục tiêu học tập</button></div>
-        <div class="v28-plan-hero">
-          <div><div class="v28-kicker">NEXT BEST ACTION</div><h2 id="v28NextActionTitlePlan">Lộ trình được tạo từ dữ liệu thật của em</h2><p>Ưu tiên bài giáo viên giao trước, sau đó đến lỗi sai, kiến thức yếu và bài chưa hoàn thành.</p><button class="btn btn-primary" onclick="v28StartNextAction()">Bắt đầu việc ưu tiên</button></div>
-          <div id="v28ProgressPlanSummary"></div>
-        </div>
-        <div class="grid grid-2 mt">
-          <div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Hàng đợi học tập</h3><p>Việc quan trọng được xếp từ cao xuống thấp.</p></div></div><div id="v28PlanQueue" class="v28-queue"></div></div>
-          <div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Sổ câu sai</h3><p>Ôn lại lỗi cũ trước khi học thêm nội dung mới.</p></div></div><div id="v28PlanMistakes"></div></div>
-        </div>
-        <div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3>Kế hoạch 7 ngày</h3><p>Ngày học được phân theo mục tiêu tuần; hạn bài giáo viên giao luôn được ưu tiên.</p></div><button class="btn btn-soft" onclick="v28RenderStudentUX()">↻ Tạo lại</button></div><div id="v28PlanWeek"></div></div>
-      </section>
-
-      <section class="section student-only" id="page-progress">
-        <div class="section-head" style="margin-top:0"><div><h3>Tiến độ và năng lực cá nhân</h3><p>Dữ liệu lưu trên máy và tự đồng bộ Firestore khi đã đăng nhập.</p></div><button class="btn btn-danger" onclick="resetProgress()">Đặt lại dữ liệu mẫu</button></div>
-        <div class="grid grid-4"><div class="card metric"><div><strong id="pDone">0</strong><small>Bài hoàn thành</small></div><div class="icon">✓</div></div><div class="card metric"><div><strong id="pQuiz">0</strong><small>Lượt kiểm tra</small></div><div class="icon">▤</div></div><div class="card metric"><div><strong id="pBest">—</strong><small>Điểm cao nhất</small></div><div class="icon">★</div></div><div class="card metric"><div><strong id="pLast">—</strong><small>Điểm gần nhất</small></div><div class="icon">◷</div></div></div>
-        <div id="v28ProgressSummary" class="mt"></div><div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Tiến độ theo chương</h3><div id="chapterProgress"></div></div><div class="card"><h3 style="margin-top:0">Khuyến nghị học tiếp</h3><div class="notice"><b>V36.3:</b> Khuyến nghị được ưu tiên theo các mã kiến thức có độ chính xác thấp trong lịch sử làm bài. <button class="link-btn" onclick="goPage('analytics')">Mở phân tích chi tiết →</button></div><div id="recommendations" class="lesson-list mt"></div></div></div>
-      </section>
-
-
-
-      <section class="section student-only" id="page-analytics">
-        <div class="section-head" style="margin-top:0">
-          <div><h3>Phân tích năng lực & luyện thích ứng • V36.3</h3><p>Tách rõ Secure Exam đã xác minh và dữ liệu tự luyện; vẫn phân tích theo Chương → Mức độ → Mã kiến thức.</p></div>
-          <div class="toolbar"><button class="btn btn-soft" onclick="renderAnalytics();v28RenderStudentUX()">↻ Cập nhật</button><button class="btn btn-soft" onclick="v28PracticeMistakes(10)">↺ Luyện câu sai</button><button class="btn btn-blue" onclick="startAdaptivePractice(10)">⚡ Luyện điểm yếu</button></div>
-        </div>
-        <div id="v31StudentTrust" class="v31-student-trust"><div class="teacher-live-empty">V31 đang tách nguồn dữ liệu xác minh và tự luyện.</div></div>
-        <div id="analyticsNoData" class="analytics-empty hidden">Chưa có đủ dữ liệu câu hỏi để phân tích. Hãy làm ít nhất một bài kiểm tra sau bài hoặc đề tổng hợp; V31 sẽ bắt đầu ghi nhận kết quả theo từng mã kiến thức và tách rõ nguồn xác minh/tự luyện.</div>
-        <div id="analyticsContent">
-          <div class="analytics-hero">
-            <div class="analytics-score-card">
-              <h3>Năng lực hiện tại</h3><p>Độ chính xác có tính điểm từng câu; câu Đúng/Sai 4 ý được tính theo tỷ lệ số ý đúng.</p>
-              <div class="analytics-score-main"><div><strong id="analyticsOverall">—</strong><small id="analyticsEvidence">0 lượt câu đã phân tích</small></div><div class="analytics-status" id="analyticsStatus">Chưa đủ dữ liệu</div></div>
-            </div>
-            <div class="analytics-metrics">
-              <div class="analytics-metric"><strong id="analyticsWeak">0</strong><small>Mã kiến thức cần củng cố</small></div>
-              <div class="analytics-metric"><strong id="analyticsStrong">0</strong><small>Mã kiến thức đã vững</small></div>
-              <div class="analytics-metric"><strong id="analyticsAttempts">0</strong><small>Bài thi/kiểm tra đã nộp</small></div>
-              <div class="analytics-metric"><strong id="analyticsBestChapter">—</strong><small>Chương có kết quả tốt nhất</small></div>
-            </div>
-          </div>
-          <div class="analytics-grid mt">
-            <div class="analytics-stack">
-              <div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Năng lực theo chương</h3><p>Tổng hợp phục vụ luyện thích ứng; bảng nguồn V31 phía trên cho biết phần nào là Secure Exam xác minh.</p></div></div><div id="analyticsChapters"></div></div>
-              <div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Chi tiết theo mã kiến thức</h3><p>Ưu tiên mã có ít nhất 2 lượt làm để kết luận yếu/mạnh.</p></div></div><div class="table-wrap"><table class="skill-table"><thead><tr><th>Mã</th><th>Nội dung</th><th>Bài</th><th>Lượt</th><th>Chính xác</th><th>Trạng thái</th><th></th></tr></thead><tbody id="analyticsSkills"></tbody></table></div></div>
-            </div>
-            <div class="analytics-stack">
-              <div class="adaptive-card"><h3>⚡ Luyện thích ứng</h3><p>V36.3 chọn câu theo Mastery Score, độ khó mục tiêu, lịch sử sai/gần đây và QC V36.1. Sau khi nộp, Mastery được tính lại.</p><div id="adaptiveWeakList"></div><div class="adaptive-actions"><button class="btn btn-blue" onclick="startAdaptivePractice(10)">Luyện 10 câu</button><button class="btn btn-soft" onclick="startAdaptivePractice(15)">Luyện 15 câu</button></div></div>
-              <div class="card"><h3 style="margin-top:0">Xu hướng điểm gần đây</h3><div id="analyticsTrend" class="analytics-trend"></div></div>
-              <div class="card"><h3 style="margin-top:0">Lịch sử gần nhất</h3><div id="analyticsRecent" class="analytics-recent"></div></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      <section class="section" id="page-reports">
-        <div class="section-head" style="margin-top:0">
-          <div><h3>Báo cáo học tập & phụ huynh • V33</h3><p>Tổng hợp điểm Secure Exam, năng lực xác minh, tiến độ tự học và khuyến nghị. Báo cáo phụ huynh chỉ được tạo khi giáo viên chủ động xuất bản snapshot đã làm sạch.</p></div>
-          <div class="toolbar"><span class="pill tag-green">Không chứa đáp án</span><span class="pill">Low Reads</span></div>
-        </div>
-
-        <div class="student-only">
-          <div class="v33-report-toolbar card">
-            <div><label>Khoảng thời gian</label><select id="v33StudentPeriod" onchange="v33RenderStudentReport()"><option value="30">30 ngày gần nhất</option><option value="90">90 ngày gần nhất</option><option value="all" selected>Toàn bộ dữ liệu</option></select></div>
-            <div class="v33-report-actions"><button class="btn btn-soft" onclick="v33RefreshStudentReport()">↻ Cập nhật online</button><button class="btn btn-soft" onclick="v33CopyCurrentReportSummary()">Sao chép tóm tắt</button><button class="btn btn-blue" onclick="v33PrintCurrentReport()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ExportCurrentReportHTML()">Xuất HTML</button></div>
-          </div>
-          <div class="firebase-banner mt"><b>Báo cáo cá nhân:</b> Secure Exam đã chấm được tách riêng với tự luyện. Nếu chưa đăng nhập hoặc chưa có điểm xác minh, V33 vẫn tạo báo cáo từ dữ liệu học trên thiết bị và ghi rõ nguồn.</div>
-          <div id="v33StudentReportPreview" class="v33-report-preview mt"><div class="online-empty">Đang chuẩn bị báo cáo…</div></div>
-        </div>
-
-        <div class="teacher-only">
-          <div class="card v33-report-toolbar">
-            <div><label>Lớp</label><select id="v33ReportClass" onchange="v33ReportClassChanged()"></select></div>
-            <div><label>Học sinh</label><select id="v33ReportStudent" onchange="v33LoadTeacherReport()"><option value="">Chọn học sinh</option></select></div>
-            <div><label>Khoảng thời gian</label><select id="v33TeacherPeriod" onchange="v33LoadTeacherReport()"><option value="30">30 ngày gần nhất</option><option value="90">90 ngày gần nhất</option><option value="all" selected>Toàn bộ</option></select></div>
-            <div><label>Link phụ huynh</label><select id="v33ReportExpiry"><option value="7">7 ngày</option><option value="14" selected>14 ngày</option><option value="30">30 ngày</option></select></div>
-          </div>
-          <div class="grid grid-2 mt v33-report-workspace">
-            <div class="card">
-              <div class="section-head" style="margin:0 0 10px"><div><h3>Ghi chú giáo viên</h3><p>Chỉ ghi nội dung phù hợp để chia sẻ với học sinh/phụ huynh.</p></div></div>
-              <textarea id="v33TeacherNote" rows="5" maxlength="1000" placeholder="Ví dụ: Em đã tiến bộ ở phần đạo hàm; tuần tới cần củng cố nguyên hàm và hoàn thành bài còn thiếu."></textarea>
-              <div class="v33-report-actions mt"><button class="btn btn-soft" onclick="v33LoadTeacherReport()">↻ Tạo lại báo cáo</button><button class="btn btn-soft" onclick="v33CopyCurrentReportSummary()">Sao chép tóm tắt</button><button class="btn btn-blue" onclick="v33PrintCurrentReport()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ExportCurrentReportHTML()">Xuất HTML</button><button class="btn btn-blue" onclick="v33PublishParentReport()">🔗 Tạo link phụ huynh</button></div>
-              <div class="math-help mt"><b>Quyền riêng tư V33:</b> link phụ huynh không chứa email, UID, đáp án, câu trả lời hay bài nộp chi tiết. Link tự hết hạn và giáo viên có thể thu hồi bất cứ lúc nào.</div>
-            </div>
-            <div class="card">
-              <div class="section-head" style="margin:0 0 8px"><div><h3>Link đã chia sẻ</h3><p>Tối đa 50 snapshot gần nhất của lớp đang chọn.</p></div><button class="btn btn-soft" onclick="v33LoadSharedReports()">↻</button></div>
-              <div id="v33SharedReports"><div class="online-empty">Chọn lớp để xem link đã chia sẻ.</div></div>
-            </div>
-          </div>
-          <div id="v33TeacherReportPreview" class="v33-report-preview mt"><div class="online-empty">Chọn lớp và học sinh để tạo báo cáo.</div></div>
-        </div>
-
-        <div class="card mt">
-          <div class="section-head" style="margin:0 0 8px"><div><h3>Nguyên tắc báo cáo V33</h3><p>Báo cáo giải thích nguồn dữ liệu thay vì trộn điểm chính thức và tự luyện thành một con số duy nhất.</p></div></div>
-          <div class="v33-principles"><div><b>✓ Điểm xác minh</b><span>Secure Exam đã được giáo viên chấm.</span></div><div><b>◎ Tự luyện</b><span>Dùng để gợi ý học tập, không thay điểm chính thức.</span></div><div><b>▣ Năng lực</b><span>Chương → mã kiến thức → NB/TH/VD từ aggregate V31.</span></div><div><b>🔒 Phụ huynh</b><span>Chỉ đọc snapshot làm sạch, có hạn và có thể thu hồi.</span></div></div>
-        </div>
-      </section>
-
-      <section class="section teacher-only" id="page-question-bank">
-        <div class="question-bank-head v371-bank-head">
-          <div class="v371-bank-primary-actions" aria-label="Thao tác chính ngân hàng câu hỏi">
-            <button class="btn btn-blue" onclick="openQuestionEditor()">+ Thêm câu hỏi</button>
-            <button class="btn btn-soft" onclick="goPage('exam-builder')">▧ Tạo đề</button>
-            <button class="btn btn-soft" onclick="v361OpenQualityCenter()">✓ Quality</button>
-            <button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">◇ Knowledge Map</button>
-            <button class="btn btn-soft" onclick="v29OpenDuplicateCenter()">≈ Quét trùng</button>
-            <details class="v371-tools-menu">
-              <summary class="btn btn-soft" role="button">⋯ Công cụ</summary>
-              <div class="v371-tools-panel">
-                <div class="v371-tool-group"><b>Nhập & hỗ trợ</b>
-                  <button onclick="openBulkLatexImport()">⇧ Import LaTeX / .tex</button>
-                  <button onclick="v3745OpenFigureAudit()">◈ Kiểm tra engine hình</button>
-                  <button onclick="v3746OpenFigureAudit()">⛶ Kiểm tra bố cục hình</button>
-                  <button onclick="v3747OpenFigureQC()">✓ Figure QC</button>
-                  <button onclick="v3748OpenFigureManager()">▦ Trung tâm Hình</button>
-                  <button onclick="v375OpenProductionCenter()">🔒 Production Hình</button>
-                  <button onclick="v373OpenGraphAudit()">📈 Kiểm tra Graph</button>
-                  <button onclick="goPage('ai-teacher')">✦ Trợ lý AI</button>
-                  <button onclick="v360NormalizeBank(true)">↻ Chuẩn hóa metadata</button>
-                </div>
-                <div class="v371-tool-group"><b>Sao lưu & khôi phục</b>
-                  <button data-v371-backup="1" onclick="v371OpenBackupCenter()">⬇ Backup</button>
-                  <button onclick="v371ChooseRestore()">↥ Khôi phục</button>
-                  <button onclick="v371UndoLastRestore()">↶ Hoàn tác khôi phục</button>
-                </div>
-                <div class="v371-tool-group"><b>Xuất dữ liệu</b>
-                  <button onclick="exportQuestionBankCSVV29()">CSV</button>
-                  <button onclick="exportQuestionBankLatexV29()">LaTeX</button>
-                  <button onclick="exportQuestionBank()">JSON</button>
-                  <button onclick="v360ExportKnowledgeMap()">Knowledge Map JSON</button>
-                </div>
-                <div class="v371-tool-group"><b>Bảo trì</b>
-                  <button onclick="v26OpenContentTrash()">🗑 Thùng rác</button>
-                  <button class="v3743-clean-menu-btn" onclick="v3743OpenCleanBankCenter()">🧹 Làm sạch ngân hàng</button>
-                </div>
-              </div>
-            </details>
-          </div>
-        </div>
-
-        <div class="v371-bank-metrics mt">
-          <div class="card metric"><div><strong id="bankTotal">0</strong><small>Tổng câu hỏi</small></div><div class="icon">▦</div></div>
-          <div class="card metric"><div><strong id="bankCoverage">0%</strong><small>Phủ chuẩn kiến thức</small></div><div class="icon">✓</div></div>
-          <div class="card metric"><div><strong id="bankV29Quality">0%</strong><small>Chất lượng dữ liệu</small></div><div class="icon">★</div></div>
-          <div class="card metric"><div><strong id="bankV29Reviewed">0/0</strong><small>Đã duyệt</small></div><div class="icon">☑</div></div>
-        </div>
-
-        <details class="v371-secondary-stats mt">
-          <summary><span>＋ Xem thêm thống kê</span><small>Bài có câu • Câu tự thêm • Nghi trùng • Lịch sử sửa</small></summary>
-          <div class="grid grid-4 v29-bank-secondary v371-secondary-grid">
-            <div class="card metric"><div><strong id="bankLessons">0</strong><small>Bài có câu hỏi</small></div><div class="icon">▤</div></div>
-            <div class="card metric"><div><strong id="bankCustom">0</strong><small>Câu tự thêm/sửa</small></div><div class="icon">✎</div></div>
-            <div class="card metric"><div><strong id="bankV29Duplicates">0</strong><small>Cặp nghi trùng</small></div><div class="icon">≈</div></div>
-            <div class="card metric"><div><strong id="bankV29Versioned">0</strong><small>Câu có lịch sử sửa</small></div><div class="icon">↶</div></div>
-          </div>
-        </details>
-
-        <div class="card mt v360-hero v371-knowledge-summary" id="v360KnowledgeOverview">
-          <div class="v371-knowledge-top">
-            <div><span class="v360-kicker">KNOWLEDGE MAP V36</span><h3>Bản đồ kiến thức Toán 12</h3><p>Chương → Bài → Đơn vị kiến thức → Dạng toán → Câu hỏi.</p></div>
-            <div class="v371-knowledge-actions"><button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">Mở bản đồ</button><button class="btn btn-soft" onclick="v360NormalizeBank(true)">↻ Chuẩn hóa</button></div>
-          </div>
-          <div class="v360-metrics v371-knowledge-metrics">
-            <div class="v360-metric"><b id="v360MetricChapters">6</b><small>Chương</small></div>
-            <div class="v360-metric"><b id="v360MetricLessons">19</b><small>Bài</small></div>
-            <div class="v360-metric"><b id="v360MetricKnowledge">57</b><small>Chuẩn</small></div>
-            <div class="v360-metric"><b id="v360MetricForms">91</b><small>Dạng toán ID6</small></div>
-            <div class="v360-metric"><b id="v360MetricMetadata">—</b><small>Metadata</small></div>
-            <div class="v360-metric"><b id="v360MetricFormCoverage">—</b><small>Dạng đã có câu</small></div>
-          </div>
-          <div class="v360-migration v371-migration"><div id="v360MigrationState"><span class="v360-status warn">Đang kiểm tra metadata…</span></div><small>Chỉ chuẩn hóa khi giáo viên yêu cầu.</small></div>
-        </div>
-
-        <details class="card mt v360-map-card v371-map-details" id="v360KnowledgeMapCard">
-          <summary class="v371-section-summary">
-            <div><b>Knowledge Map chi tiết</b><small>6 chương • 19 bài học nội bộ • 57 chuẩn Mastery • 91 dạng ID6 — nhấn để mở/đóng</small></div>
-            <div class="v360-map-legend"><span class="good">≥ 3 câu</span><span class="partial">1–2 câu</span><span class="missing">Chưa có</span></div>
-          </summary>
-          <div class="v371-details-body"><div id="v360KnowledgeMap"><div class="online-empty">Đang dựng Knowledge Map V36…</div></div></div>
-        </details>
-
-        <div class="card mt v361-quality-strip v371-quality-strip" id="v361QualityStrip">
-          <div class="v361-strip-head">
-            <div><span class="v360-kicker">QUALITY V36.1</span><h3>Chất lượng ngân hàng</h3><p>Quét cục bộ, không tự phát sinh Firestore Reads.</p></div>
-            <div class="v361-strip-actions"><button class="btn btn-soft" onclick="v361ScanBank()">↻ Quét</button><button class="btn btn-soft" onclick="v361OpenQualityCenter()">Chi tiết</button></div>
-          </div>
-          <div class="v361-strip-metrics v371-quality-metrics">
-            <div><b id="v361MetricScore">—</b><small>Điểm TB</small></div>
-            <div><b id="v361MetricCritical">—</b><small>Có lỗi</small></div>
-            <div><b id="v361MetricWarning">—</b><small>Cần rà soát</small></div>
-            <div><b id="v361MetricPass">—</b><small>Đạt sạch</small></div>
-          </div>
-          <div class="v361-last-scan" id="v361LastScan">Chưa quét toàn bộ. Kiểm tra từng câu vẫn chạy khi hiển thị/biên tập.</div>
-        </div>
-
-        <div class="card mt" id="bankFiltersV36Anchor">
-          <div class="section-head" style="margin:0 0 14px"><div><h3>Bộ lọc ngân hàng</h3><p>Tìm theo Chương → Bài → Mã kiến thức → Dạng toán ID6 chính thức → mức độ → loại câu.</p></div><span class="pill" id="bankResultCount">0 câu</span></div>
-          <div class="bank-toolbar v29-bank-toolbar">
-            <input id="bankSearch" placeholder="Tìm nội dung, ID6, mã bản ghi, nguồn, thẻ, lời giải...">
-            <select id="bankChapter"><option value="">Tất cả chương</option></select>
-            <select id="bankLesson"><option value="">Tất cả bài</option></select>
-            <select id="bankKnowledge"><option value="">Tất cả mã kiến thức</option></select>
-            <select id="bankFormV36"><option value="">Tất cả dạng toán</option></select>
-            <select id="bankLevel"><option value="">Tất cả mức độ</option><option value="NB">Nhận biết</option><option value="TH">Thông hiểu</option><option value="VD">Vận dụng</option><option value="VDC">Vận dụng cao</option></select>
-            <select id="bankType"><option value="">Tất cả loại câu</option><option value="mcq">Nhiều lựa chọn</option><option value="tf">Đúng/Sai 1 mệnh đề</option><option value="tf4">Đúng/Sai 4 ý</option><option value="short">Trả lời ngắn</option></select>
-            <select id="bankReviewStatus"><option value="">Tất cả trạng thái</option><option value="approved">Approved</option><option value="reviewed">Đã duyệt chuyên môn</option><option value="draft">Bản nháp</option></select>
-            <select id="bankDifficulty"><option value="">Mọi độ khó</option><option value="1">1/5</option><option value="2">2/5</option><option value="3">3/5</option><option value="4">4/5</option><option value="5">5/5</option></select>
-            <select id="bankSource"><option value="">Tất cả nguồn nhập</option></select>
-            <input id="bankTag" placeholder="Lọc theo thẻ...">
-            <select id="bankDuplicateFilter"><option value="">Trùng: tất cả</option><option value="yes">Có nghi trùng</option><option value="no">Không nghi trùng</option></select>
-            <select id="bankQualityV361"><option value="">QC V36.1: tất cả</option><option value="critical">Có lỗi kỹ thuật</option><option value="warning">Cần rà soát</option><option value="pass">Không lỗi/cảnh báo</option></select>
-            <select id="bankSort"><option value="updated">Mới sửa trước</option><option value="id">Theo mã câu</option><option value="quality">Chất lượng thấp trước</option><option value="difficulty">Độ khó cao trước</option></select><select id="bankPageSize"><option value="25">25 câu/trang</option><option value="50" selected>50 câu/trang</option><option value="100">100 câu/trang</option></select>
-          </div>
-        </div>
-        <div class="card mt">
-          <div class="section-head" style="margin:0 0 12px"><div><h3>Danh sách câu hỏi</h3><p>V36.1 hiển thị điểm QC kỹ thuật theo từng câu; nhấn vào phần trăm để xem lỗi/cảnh báo chi tiết rồi sửa ngay trong trình soạn.</p></div></div>
-          <div class="table-wrap"><table class="table v29-bank-table"><thead><tr><th>Mã</th><th>Câu hỏi</th><th>Chuẩn & nguồn</th><th>Mức độ</th><th>Loại</th><th>QC</th><th>Thao tác</th></tr></thead><tbody id="questionBankTable"></tbody></table></div><div id="bankV29Pager" class="v29-pager"></div>
-        </div>
-        <div class="card mt"><div class="section-head" style="margin:0 0 12px"><div><h3>Độ phủ 57 chuẩn kiến thức • V37.1</h3><p>Chuẩn có câu hỏi được đánh dấu xanh; chuẩn chưa có sẽ được cảnh báo.</p></div></div><div id="bankCoverageCodes" class="bank-coverage-list"></div></div>
-      </section>
-
-      
-
-<section class="section teacher-only" id="page-ai-teacher">
-  <div class="v32-ai-hero">
-    <div>
-      <div class="badge" style="background:rgba(255,255,255,.16);color:white">AI Teaching Intelligence • V37.1</div>
-      <h2>AI hỗ trợ dạy học từ dữ liệu — giáo viên vẫn là người quyết định cuối</h2>
-      <p>V37.1 kết nối Knowledge Map, Quality Engine, Smart Exam Matrix và Mastery để phát hiện ưu tiên lớp, lập kế hoạch dạy học ẩn danh và hỗ trợ biên tập câu hỏi. AI không tự giao bài, không tự sửa điểm và không tự xuất bản nội dung.</p>
-      <div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('v32AiSourceText')?.focus()">Tạo bản nháp từ nguồn</button><button class="btn btn-ghost" onclick="goPage('question-bank')">Mở ngân hàng câu hỏi</button></div>
-    </div>
-    <div class="v32-ai-hero-status">
-      <small>MODEL HIỆN TẠI</small><strong id="v32AiCurrentModel">gemini-3.7-flash</strong><span id="v32AiConnection" class="v32-connection missing">○ Chưa có API key</span><span id="v32AiBusyState">Sẵn sàng</span><small id="v32AiUsageText">0 yêu cầu</small>
-    </div>
-  </div>
-
-  <div class="grid grid-4 mt">
-    <div class="card metric"><div><strong id="v32MetricDrafts">0</strong><small>Bản nháp đang chờ</small></div><div class="icon">✦</div></div>
-    <div class="card metric"><div><strong id="v32MetricAiBank">0</strong><small>Câu có nguồn AI</small></div><div class="icon">▦</div></div>
-    <div class="card metric"><div><strong id="v32MetricReviewed">0</strong><small>Đã duyệt chuyên môn</small></div><div class="icon">✓</div></div>
-    <div class="card metric"><div><strong id="v32MetricRequests">0</strong><small>Yêu cầu AI trên máy</small></div><div class="icon">↗</div></div>
-  </div>
-
-  <div class="card mt v37-intelligence-card" id="v37TeachingIntelligence">
-    <div class="section-head v37-intelligence-head" style="margin:0 0 12px">
-      <div><span class="v360-kicker">V37.1 • AI TEACHING INTELLIGENCE</span><h3>1. Teaching Brief theo lớp</h3><p>Phân tích cục bộ từ Mastery V36.3 + dữ liệu lớp V31. Khi gọi Gemini, V37.1 chỉ gửi số liệu tổng hợp đã ẩn danh; tên, email và UID học sinh không được đưa vào payload AI.</p></div>
-      <div class="online-actions"><button class="btn btn-soft" onclick="v37OpenPlanHistory()">Lịch sử kế hoạch</button><button class="btn btn-blue" onclick="v37RefreshClassIntelligence(true)">↻ Phân tích lớp</button></div>
-    </div>
-    <div class="v37-class-toolbar">
-      <div><label>Lớp đang phân tích</label><select id="v37ClassSelect" onchange="v37RefreshClassIntelligence(false)"><option value="">Chưa có lớp được tải</option></select></div>
-      <div class="v37-privacy"><b id="v37PrivacyStatus">Privacy Guard đang kiểm tra…</b><small>Chỉ số tổng hợp → AI; dữ liệu định danh ở lại trình duyệt/Firestore.</small></div>
-      <div class="v37-class-state"><small>Trạng thái</small><b id="v37ClassStatus">Chưa tải dữ liệu lớp.</b></div>
-    </div>
-    <div class="v37-metrics">
-      <span><b id="v37MetricStudents">—</b><small>Học sinh</small></span>
-      <span><b id="v37MetricAvg">—</b><small>Điểm TB xác minh</small></span>
-      <span><b id="v37MetricMastery">—</b><small>Độ phủ Mastery</small></span>
-      <span><b id="v37MetricPriority">—</b><small>Ưu tiên số 1</small></span>
-    </div>
-    <div class="grid grid-2 mt v37-intel-grid">
-      <div>
-        <div class="v37-subhead"><div><h4>Ưu tiên kiến thức</h4><p>Xếp từ Mastery, độ phủ bằng chứng và tỷ lệ học sinh cần củng cố.</p></div></div>
-        <div id="v37PriorityList"><div class="online-empty">Bấm “Phân tích lớp” để tạo teaching brief.</div></div>
-      </div>
-      <div>
-        <div class="v37-subhead"><div><h4>Nhóm học tập động</h4><p>Nhấn một nhóm để xem danh sách cục bộ; AI chỉ nhận số lượng tổng hợp.</p></div></div>
-        <div id="v37CohortGrid" class="v37-cohort-grid"><div class="online-empty">Chưa có dữ liệu nhóm.</div></div>
-        <div class="v37-subhead mt"><div><h4>Việc nên làm tiếp</h4><p>Luật cục bộ, không cần API key.</p></div></div>
-        <div id="v37LocalBrief"><div class="online-empty">Chưa có teaching brief.</div></div>
-      </div>
-    </div>
-    <div class="v37-ai-plan mt">
-      <div class="section-head" style="margin:0 0 10px"><div><h4 style="margin:0">Kế hoạch dạy học AI — bản nháp</h4><p id="v37PlanStatus">Gemini chỉ được gọi khi giáo viên bấm nút. Không có thao tác tự giao bài.</p></div><button class="btn btn-blue" id="v37GenerateBtn" onclick="v37GenerateTeachingPlan()">✦ Tạo kế hoạch AI</button></div>
-      <div id="v37PlanOutput"><div class="online-empty">Chưa có kế hoạch AI. Phân tích lớp chạy cục bộ ngay cả khi chưa cấu hình Gemini.</div></div>
-    </div>
-  </div>
-
-  <div class="card mt">
-    <div class="section-head" style="margin:0 0 10px"><div><h3>2. Cài đặt Gemini</h3><p>API key chỉ lưu trong trình duyệt theo lựa chọn; không nằm trong <code>state</code>, Firestore, backup hay audit log.</p></div><span class="pill">Client-side adapter</span></div>
-    <div class="v32-ai-settings">
-      <div><label>Gemini API key</label><input id="v32AiKey" type="password" autocomplete="off" placeholder="Dán key từ Google AI Studio"></div>
-      <div><label>Model</label><input id="v32AiModel" list="v32AiModels" value="gemini-3.7-flash" placeholder="gemini-3.7-flash"><datalist id="v32AiModels"><option value="gemini-3.7-flash"><option value="gemini-3.6-flash"><option value="gemini-3.5-flash"><option value="gemini-3.1-flash-lite"></datalist></div>
-      <div><label>Mức suy luận</label><select id="v32AiThinking"><option value="low">Low • nhanh</option><option value="medium" selected>Medium • cân bằng</option><option value="high">High • bài khó</option></select></div>
-      <div><label>Lưu API key</label><select id="v32AiKeyMode"><option value="session">Chỉ phiên này</option><option value="device">Trên thiết bị này</option></select></div>
-    </div>
-    <div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiSaveSettings()">Lưu cài đặt</button><button class="btn btn-soft" onclick="v32AiTestConnection()">Kiểm tra kết nối</button><button class="btn btn-danger" onclick="v32AiClearKey()">Xóa API key</button><span id="v32AiTestResult" class="v32-inline-status"></span></div>
-    <div class="firebase-banner warn mt"><b>Lưu ý bảo mật:</b> GitHub Pages là frontend tĩnh. V32 không hard-code key vào source, nhưng key nhập trên trình duyệt vẫn là khóa client-side. V37.1 vẫn gọi AI từ frontend tĩnh để dễ triển khai. Nếu dùng ở quy mô lớn, nên chuyển adapter AI sang backend/Cloud Functions để kiểm soát quota và khóa tốt hơn.</div>
-  </div>
-
-  <div class="grid grid-2 mt v32-ai-workbench">
-    <div class="card">
-      <div class="section-head" style="margin:0 0 10px"><div><h3>3. Ảnh/PDF/LaTeX → bản nháp câu hỏi</h3><p>V32 đọc nguồn, chuẩn hóa LaTeX và đưa kết quả vào Hàng chờ AI.</p></div></div>
-      <label>Nội dung / LaTeX nguồn</label>
-      <textarea id="v32AiSourceText" class="v32-ai-source" placeholder="Dán nội dung đề, LaTeX hoặc yêu cầu biên tập tại đây…"></textarea>
-      <div class="v32-ai-file-row"><label class="v32-file-pick">＋ Chọn ảnh/PDF<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onchange="v32AiHandleFile(this)"></label><span id="v32AiFileMeta">Chưa chọn tệp.</span></div>
-      <div class="v32-ai-source-options">
-        <div><label>Phạm vi</label><select id="v32AiTargetLesson"><option value="">AI tự phân loại bài</option></select></div>
-        <div><label>Loại câu</label><select id="v32AiTypePolicy"><option value="mixed">Tự phối hợp</option><option value="mcq">MCQ A–D</option><option value="tf4">Đúng/Sai 4 ý</option><option value="short">Trả lời ngắn</option></select></div>
-        <div><label>Tối đa</label><select id="v32AiCount"><option>1</option><option selected>3</option><option>5</option><option>8</option><option>10</option></select></div>
-      </div>
-      <div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiExtractQuestions()">✦ Tạo bản nháp AI</button><span id="v32AiRunStatus" class="v32-inline-status"></span></div>
-      <div class="math-help mt">Ảnh tối đa 8 MB, PDF tối đa 12 MB trong V32 để tránh quá tải trình duyệt. Tệp chỉ được gửi tới Gemini khi thầy/cô bấm tạo bản nháp; V32 không lưu ảnh/PDF vào Firestore.</div>
-    </div>
-
-    <div class="card">
-      <div class="section-head" style="margin:0 0 10px"><div><h3>4. Phản biện câu đã có</h3><p>AI là lớp kiểm tra thứ hai; local QC V29 vẫn chạy độc lập.</p></div></div>
-      <label>Mã câu trong ngân hàng</label>
-      <input id="v32AiBankId" list="v32AiQuestionList" placeholder="VD: F1-01-001"><datalist id="v32AiQuestionList"></datalist>
-      <div class="v32-ai-source-options mt">
-        <div><label>Số biến thể</label><select id="v32AiVariantCount"><option>1</option><option selected>3</option><option>5</option></select></div>
-      </div>
-      <div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiAuditSelected()">✓ Kiểm tra đáp án & metadata</button><button class="btn btn-soft" onclick="v32AiGenerateVariants()">⟳ Tạo biến thể</button></div>
-      <div id="v32AiAuditResult" class="v32-ai-audit mt"><div class="online-empty">Chưa chạy kiểm định AI.</div></div>
-    </div>
-  </div>
-
-  <div class="card mt">
-    <div class="section-head" style="margin:0 0 10px"><div><h3>5. Hàng chờ AI — bắt buộc giáo viên quyết định</h3><p>Bản nháp nằm cục bộ trên thiết bị, tối đa 40 câu. Chỉ nút duyệt của giáo viên mới đưa câu vào Question Bank Pro.</p></div><button class="btn btn-danger" onclick="v32ClearDraftQueue()">Xóa hàng chờ</button></div>
-    <div id="v32AiDraftQueue"><div class="online-empty">Chưa có bản nháp AI.</div></div>
-  </div>
-
-  <div class="card mt">
-    <div class="section-head" style="margin:0 0 8px"><div><h3>Nguyên tắc AI V37.1</h3><p>AI hỗ trợ phân tích và biên tập; giáo viên giữ quyền quyết định chuyên môn.</p></div></div>
-    <div class="v32-ai-principles"><div><b>1. Không auto-publish</b><span>AI không tự đưa câu vào ngân hàng và không tự giao bài.</span></div><div><b>2. Không auto-fix</b><span>AI có thể cảnh báo nhưng không tự sửa đáp án, điểm hay dữ liệu lớp.</span></div><div><b>3. Privacy Guard</b><span>Kế hoạch V37.1 chỉ gửi thống kê lớp đã ẩn danh sang AI.</span></div><div><b>4. Giáo viên duyệt cuối</b><span>Câu hỏi và kế hoạch AI đều là bản nháp trước khi sử dụng.</span></div></div>
-  </div>
-</section>
-
-
-<section class="section teacher-only" id="page-exam-builder">
-  <div class="exam-builder-head">
-    <div><h3>Tạo đề kiểm tra • Smart Exam Matrix V36.2</h3><p>Thiết lập ma trận Chương × Mức độ, lọc câu theo QC V36.1, cân phủ chuẩn/dạng toán, hạn chế lặp câu và sinh nhiều mã đề 101–108 có kiểm soát.</p></div>
-    <div class="exam-builder-presets">
-      <button class="btn btn-soft" onclick="examBuilderPreset('quick')">15 câu luyện nhanh</button>
-      <button class="btn btn-soft" onclick="examBuilderPreset('periodic')">20 câu • 45 phút</button>
-      <button class="btn btn-soft" onclick="examBuilderPreset('final')">22 câu • 90 phút</button>
-      <button class="btn btn-blue" onclick="examBuilderPreset('thpt')">Cấu trúc THPT 12–4–6</button>
-    </div>
-  </div>
-
-  <div class="exam-builder-layout mt">
-    <div class="exam-builder-stack">
-      <div class="card">
-        <div class="section-head" style="margin:0 0 12px"><div><h3>1. Thông tin đề</h3><p>Tên đề và thời gian làm bài.</p></div></div>
-        <div class="exam-builder-meta">
-          <div><label>Tên đề kiểm tra</label><input id="ebTitle" value="Đề kiểm tra tự tạo • Toán 12" oninput="updateExamBuilderSummary()"></div>
-          <div><label>Thời gian (phút)</label><input id="ebDuration" type="number" min="5" max="180" value="45" oninput="updateExamBuilderSummary()"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-head" style="margin:0 0 12px"><div><h3>2. Ma trận Chương × Mức độ</h3><p>Mỗi ô là số câu cần lấy; số nhỏ bên dưới là số câu đang có trong ngân hàng.</p></div><button class="btn btn-soft" onclick="clearExamBuilderMatrix()">Xóa ma trận</button></div>
-        <div class="exam-matrix-wrap"><table class="exam-matrix"><thead><tr><th>Phạm vi</th><th>Nhận biết</th><th>Thông hiểu</th><th>Vận dụng</th><th>Tổng</th></tr></thead><tbody id="examBuilderMatrix"></tbody><tfoot><tr><td><b>Tổng số câu</b></td><td id="ebNBTotal">0</td><td id="ebTHTotal">0</td><td id="ebVDTotal">0</td><td id="ebMatrixTotal" class="exam-matrix-total">0</td></tr></tfoot></table></div>
-      </div>
-
-      <div class="card">
-        <div class="section-head" style="margin:0 0 10px"><div><h3>3. Cơ cấu loại câu</h3><p>Mặc định hệ thống tự chọn loại câu trong từng ô ma trận. Bật khóa để yêu cầu đúng số lượng từng loại.</p></div></div>
-        <div class="exam-type-card">
-          <div class="exam-type-head"><label class="exam-type-toggle"><input type="checkbox" id="ebExactTypes" onchange="toggleExamBuilderTypes()"> Bắt buộc đúng cơ cấu loại câu</label><button class="btn btn-soft" onclick="autoExamBuilderTypes()">Phân bổ tự động</button></div>
-          <div class="exam-type-grid disabled" id="examBuilderTypes">
-            <div><label>Nhiều lựa chọn</label><input id="ebTypeMcq" type="number" min="0" value="0" disabled oninput="updateExamBuilderSummary()"></div>
-            <div><label>Đ/S 1 mệnh đề</label><input id="ebTypeTf" type="number" min="0" value="0" disabled oninput="updateExamBuilderSummary()"></div>
-            <div><label>Đ/S 4 ý</label><input id="ebTypeTf4" type="number" min="0" value="0" disabled oninput="updateExamBuilderSummary()"></div>
-            <div><label>Trả lời ngắn</label><input id="ebTypeShort" type="number" min="0" value="0" disabled oninput="updateExamBuilderSummary()"></div>
-          </div>
-        </div>
-        <div class="exam-builder-summary mt"><div><b id="ebSummaryTotal">0</b><small>Câu trong ma trận</small></div><div><b id="ebSummaryBank">0</b><small>Câu hợp lệ trong ngân hàng</small></div><div><b id="ebSummarySaved">0</b><small>Đề đã lưu</small></div></div>
-        <div id="examBuilderStatus" class="exam-builder-status mt">Chọn một mẫu hoặc nhập số câu vào ma trận.</div>
-        <div class="exam-builder-actions mt"><button class="btn btn-blue" onclick="generateExamBuilderDraft()">⚙ Sinh đề từ ma trận</button><button class="btn btn-soft" onclick="autoExamBuilderTypes()">Cân cơ cấu loại câu</button></div>
-      </div>
-
-      <div class="card v30-engine-card">
-        <div class="section-head" style="margin:0 0 10px"><div><h3>4. Exam Engine Pro • V30</h3><p>Tạo nhiều mã đề từ một đề gốc, đảo câu/phương án có kiểm soát và đặt chính sách công bố đáp án khi giao online.</p></div><span class="pill tag-green">V30</span></div>
-        <div class="v30-engine-grid">
-          <div><label>Số mã đề</label><select id="ebV30VariantCount" onchange="v30RefreshBuilderPolicy()"><option value="1">1 mã</option><option value="2">2 mã A–B</option><option value="3">3 mã A–C</option><option value="4" selected>4 mã A–D</option><option value="5">5 mã A–E</option><option value="6">6 mã A–F</option><option value="7">7 mã A–G</option><option value="8">8 mã A–H</option></select></div>
-          <div><label>Công bố đáp án khi giao</label><select id="ebV30RevealPolicy" onchange="v30RefreshBuilderPolicy()"><option value="never">Không công bố</option><option value="after_due" selected>Sau khi hết hạn</option><option value="after_grade">Sau khi giáo viên chấm</option></select></div>
-          <label class="v30-check"><input id="ebV30ShuffleQuestions" type="checkbox" onchange="v30RefreshBuilderPolicy()" checked> Đảo thứ tự câu</label>
-          <label class="v30-check"><input id="ebV30ShuffleOptions" type="checkbox" onchange="v30RefreshBuilderPolicy()" checked> Đảo phương án MCQ</label>
-          <label class="v30-check"><input id="ebV30PreserveSections" type="checkbox" onchange="v30RefreshBuilderPolicy()" checked> Giữ đúng Phần I–II–III</label>
-        </div>
-        <div class="math-help mt"><b>Nguyên tắc V30:</b> chỉ lưu một bản đề gốc. Mã A/B/C… được tái tạo bằng seed xác định; vì vậy giáo viên chấm đúng mã mà không phải lưu 4–8 bản sao câu hỏi.</div>
-      </div>
-
-      <div class="card">
-        <div class="section-head" style="margin:0 0 10px"><div><h3>Đề đã lưu</h3><p>Mỗi đề lưu một bản chụp câu hỏi để không bị thay đổi khi ngân hàng được chỉnh sửa sau này.</p></div><button class="btn btn-soft" onclick="v26OpenContentTrash()">🗑 Thùng rác nội dung</button></div>
-        <div id="examBuilderSaved" class="saved-exam-list"></div>
-      </div>
-    </div>
-
-    <div class="card" style="position:sticky;top:82px">
-      <div id="examBuilderPreview"><div class="exam-preview-empty"><b>Chưa có đề xem trước</b><br><span style="font-size:12px">Thiết lập ma trận rồi bấm “Sinh đề từ ma trận”.</span></div></div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="page-notifications">
-  <div class="section-head" style="margin-top:0">
-    <div><h3>Trung tâm thông báo • V37.1</h3><p>Tự tổng hợp việc cần xử lý từ hạn nộp, lượt nộp và kết quả học tập. Không tạo thêm dữ liệu thông báo dư thừa trên Firestore.</p></div>
-    <div class="notification-toolbar"><select id="notificationClassSelect" class="teacher-only" onchange="firebaseNotificationSelectClass(this.value)"><option value="">Chọn lớp</option></select><button class="btn btn-soft" onclick="firebaseRefreshNotifications(true)">↻ Làm mới</button></div>
-  </div>
-  <div id="notificationBanner" class="firebase-banner warn">Đăng nhập Firebase để tải thông báo.</div>
-  <div class="notification-metrics mt">
-    <div class="card metric"><div><strong id="notifyMetricUrgent">—</strong><small>Việc khẩn cấp</small></div><div class="icon">!</div></div>
-    <div class="card metric"><div><strong id="notifyMetricDeadline">—</strong><small>Sắp đến hạn</small></div><div class="icon">◷</div></div>
-    <div class="card metric"><div><strong id="notifyMetricSupport">—</strong><small>Cần hỗ trợ</small></div><div class="icon">◎</div></div>
-    <div class="card metric"><div><strong id="notifyMetricTotal">—</strong><small>Tổng thông báo</small></div><div class="icon">🔔</div></div>
-  </div>
-  <div class="grid grid-2 mt teacher-only">
-    <div class="card"><h3 style="margin-top:0">Giao việc nhanh theo nhóm</h3><p style="font-size:12px;color:var(--muted);line-height:1.6">V31 ưu tiên điểm Secure Exam đã xác minh khi chia nhóm từ điểm bài giao, độ chính xác và trạng thái trễ bài. Chọn nhóm để chuyển sang màn hình giao bài với đối tượng đã đặt sẵn.</p><div id="notificationSmartGroups" class="teacher-live-empty">Chọn lớp để phân nhóm.</div></div>
-    <div class="card"><h3 style="margin-top:0">Chủ đề nên can thiệp</h3><p style="font-size:12px;color:var(--muted);line-height:1.6">Ưu tiên mã kiến thức đang yếu ở nhiều học sinh nhất.</p><div id="notificationWeakSkills" class="teacher-live-empty">Chưa có dữ liệu.</div></div>
-  </div>
-  <div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3 id="notificationListTitle">Thông báo ưu tiên</h3><p id="notificationListHint">Các việc được sắp theo mức độ cần xử lý.</p></div></div><div id="notificationList"><div class="notification-empty">Chưa có thông báo.</div></div></div>
-</section>
-
-
-
-<section class="section admin-only" id="page-admin">
-  <div class="section-head" style="margin-top:0">
-    <div><h2 style="margin:0">Quản trị hệ thống • V37.1</h2><p>Quản lý tài khoản, quyền truy cập lớp, cảnh báo vận hành và nhật ký quản trị tập trung.</p></div>
-    <div class="online-actions"><span class="pill">Cập nhật: <b id="v25AdminUpdatedAt">—</b></span><button class="btn btn-blue" onclick="v25AdminRefresh(true)">↻ Làm mới</button></div>
-  </div>
-  <div id="v25AdminBanner" class="firebase-banner warn">Đăng nhập tài khoản Quản trị viên để tải dữ liệu hệ thống.</div>
-
-  <div class="grid grid-5 mt v25-admin-metrics">
-    <div class="card"><small>Tổng tài khoản</small><h2 id="v25MetricUsers">—</h2></div>
-    <div class="card"><small>Giáo viên</small><h2 id="v25MetricTeachers">—</h2></div>
-    <div class="card"><small>Học sinh</small><h2 id="v25MetricStudents">—</h2></div>
-    <div class="card"><small>Tài khoản khóa</small><h2 id="v25MetricLocked">—</h2></div>
-    <div class="card"><small>Lớp hoạt động</small><h2 id="v25MetricClasses">—</h2></div>
-  </div>
-
-  <div class="grid grid-2 mt">
-    <div class="card">
-      <div class="section-head" style="margin:0 0 10px"><div><h3>Cảnh báo hệ thống</h3><p>Kiểm tra nhanh các trạng thái cần quản trị viên chú ý.</p></div></div>
-      <div id="v25AdminAlerts"><div class="online-empty">Đang chờ dữ liệu.</div></div>
-    </div>
-    <div class="card">
-      <div class="section-head" style="margin:0 0 10px"><div><h3>Giới hạn bảo mật</h3><p>V37.1 tiếp tục khóa tài khoản bằng Firestore Rules; lớp hiệu năng không mở thêm quyền dữ liệu.</p></div></div>
-      <div class="firebase-banner warn"><b>Khóa ở cấp ứng dụng:</b> tài khoản bị khóa vẫn tồn tại trong Firebase Authentication nhưng không được đọc/ghi dữ liệu Math12 Hub. Muốn vô hiệu hóa Auth hoàn toàn cần Firebase Admin SDK hoặc backend tin cậy.</div>
-      <div class="cloud-sync-note mt">Không cho phép một admin tự nâng người dùng khác thành admin trên trình duyệt. Admin gốc phải được thiết lập trực tiếp trong Firebase Console.</div>
-    </div>
-  </div>
-
-  <div class="card mt v26-health-card">
-    <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Sức khỏe & toàn vẹn dữ liệu • V37.1</h3><p>Quét theo yêu cầu để phát hiện lớp mất chủ, mã tham gia lệch, member/membership không khớp, bài Secure thiếu khóa đáp án và chỉ mục mồ côi.</p></div>
-      <div class="online-actions"><span id="v26HealthStatus" class="pill">Chưa quét</span><button class="btn btn-soft" onclick="v26SystemHealthScan()">⌕ Quét hệ thống</button><button class="btn btn-blue" onclick="v26RepairSafeIssues()">⚕ Sửa lỗi an toàn</button></div>
-    </div>
-    <div class="grid grid-4 v26-health-metrics">
-      <div class="card"><small>Điểm sức khỏe</small><h2 id="v26HealthScore">—</h2></div>
-      <div class="card"><small>Vấn đề</small><h2 id="v26HealthIssues">0</h2></div>
-      <div class="card"><small>Có thể sửa an toàn</small><h2 id="v26HealthRepairable">0</h2></div>
-      <div class="card"><small>Document đã kiểm tra</small><h2 id="v26HealthDocs">0</h2></div>
-    </div>
-    <div id="v26HealthIssueList" class="v26-health-list mt"><div class="online-empty">Bấm “Quét hệ thống” khi cần kiểm tra. V37.1 không tự chạy quét toàn vẹn nền để tránh tăng Firestore Reads.</div></div>
-    <div id="v26HealthLimitNote" class="cloud-sync-note mt">V37.1 chỉ quét khi admin bấm nút để tránh phát sinh Reads nền.</div>
-  </div>
-
-
-  <div class="card mt v34-scale-card">
-    <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Hiệu năng & quy mô • V37.1</h3><p>Theo dõi tải trong phiên, cache, truy vấn chậm và các giới hạn phân trang. Không gửi telemetry ra ngoài.</p></div>
-      <div class="online-actions"><span id="v34ScaleStatus" class="pill tag-green">Scale mode: Auto</span><button class="btn btn-soft" onclick="v34RenderScaleCenter(true)">↻ Cập nhật</button><button class="btn btn-soft" onclick="v34ClearRuntimeCaches()">Xóa cache</button><button class="btn btn-blue" onclick="v34ExportDiagnostics()">Xuất chẩn đoán</button></div>
-    </div>
-    <div class="grid grid-5 v34-scale-metrics">
-      <div class="card"><small>Reads ước tính / phiên</small><h2 id="v34MetricReads">0</h2></div>
-      <div class="card"><small>Truy vấn</small><h2 id="v34MetricQueries">0</h2></div>
-      <div class="card"><small>Cache hit</small><h2 id="v34MetricCache">—</h2></div>
-      <div class="card"><small>Truy vấn chậm</small><h2 id="v34MetricSlow">0</h2></div>
-      <div class="card"><small>Bộ nhớ trình duyệt</small><h2 id="v34MetricStorage">—</h2></div>
-    </div>
-    <div id="v34ScaleAdvice" class="v34-scale-advice mt"><div class="online-empty">V37.1 sẽ cập nhật khi trang phát sinh truy vấn.</div></div>
-    <div class="cloud-sync-note mt">V37.1 giữ toàn bộ Scale V34: cache thích ứng 60–180 giây, marker migration, 60 học sinh/lần, 60 bài/lần, tối đa 80 bài gần nhất/lớp và Admin 100 document/trang; bổ sung Smart Loading + PWA + Regression Guard.</div>
-  </div>
-
-  <div class="card mt v35-production-card">
-    <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Production Center • V37.9</h3><p>Kiểm tra nhanh phiên bản, cấu trúc đề THPT, phân quyền, PWA, App Check, Smart Loading, Knowledge Map, Quality Engine, Smart Exam Matrix, Mastery Engine V36.3, Privacy Guard, AI Teaching Intelligence và Question Bank Backup V37.1, TikZ Figure Support V37.2 và Native Function Graph Engine V37.3.3, TikZ Plot Parser V37.3.4 và Variation Arrow Rendering Fix V37.3.6 và Official ID6 Taxonomy V37.4 + Pure ID6 Taxonomy UI V37.4.2 + Clean Question Bank Reset V37.4.3 + Hybrid LaTeX Figure Engine V37.4.5 + Auto Crop, Responsive Figure Layout và Vector Zoom V37.4.6 + Figure QC, Preview-before-Approved và source-hash verification V37.4.7 + Bulk Figure Manager, batch QC/re-render và rollback V37.4.8 + Figure Production Engine, Release Gate, Safe Repair và signed snapshot V37.5 + Dynamic Practice V37.5.1 + Graph Reading Engine V37.5.2 (semantic graphData, TikZ/graph2d parser và Graph QC) + Unified Figure Renderer V37.5.3 (TikZ/tkz-tab dùng Stored SVG ưu tiên, auto-fit và zoom BBT) + Native Freeform Graph Renderer V37.5.4 (Bézier, mixed paths, foreach, x/y scale; native SVG trước TikZJax) + Exam Pro Engine V37.6 (đề THPT động từ ngân hàng, autosave/resume, pace, timing từng câu, submit review, luyện lại câu sai và phân tích ID6 sau thi) + Lesson Content Engine V37.7 (5 bài Chương 1 căn thẳng ID6, nội dung học theo mã kiến thức, dạng ID6 có số câu ngân hàng, quy tắc xếp câu tổng hợp theo mốc kiến thức cuối, điều hướng bài trước/sau) + TikZ Scope/Clip Hotfix V37.7.1 (node-at compact, plain scope, rectangular clip, retry Smart SVG cho metadata tikzjax cũ) + Avatar Foundation V37.8 (avatar Nam/Nữ, diện mạo tân thủ, trang phục cơ bản, hồ sơ nhân vật và đồng bộ user profile). Không gửi telemetry ra ngoài.</p></div>
-      <div class="online-actions"><button class="btn btn-soft" onclick="v35RunRegressionChecks({render:true,toast:true})">✓ Chạy kiểm tra</button><button class="btn btn-soft" onclick="v35ClearRuntimeIssues()">Xóa lỗi phiên</button><button class="btn btn-blue" onclick="v35ExportDiagnostics()">Xuất V37.3 diagnostics</button></div>
-    </div>
-    <div class="grid grid-5 v35-production-metrics">
-      <div class="card"><small>Regression</small><h2 id="v35MetricRegression">Chưa chạy</h2></div>
-      <div class="card"><small>App Check</small><h2 id="v35MetricAppCheck">Đang kiểm tra</h2></div>
-      <div class="card"><small>PWA / Offline shell</small><h2 id="v35MetricPWA">Đang kiểm tra</h2></div>
-      <div class="card"><small>Smart Loading</small><h2 id="v35MetricLazy">3/3 hoãn tải</h2></div>
-      <div class="card"><small>Lỗi runtime</small><h2 id="v35MetricErrors">0</h2></div>
-    </div>
-    <div id="v35RegressionList" class="v35-check-list mt"><div class="online-empty">V37.3 sẽ tự chạy kiểm tra nhẹ sau khi trang khởi động; admin có thể chạy lại bất kỳ lúc nào.</div></div>
-    <details class="v35-runtime-details mt"><summary>Lỗi JavaScript đã ghi nhận trong phiên</summary><div id="v35RuntimeIssues"><div class="online-empty">Chưa ghi nhận lỗi JavaScript trong phiên.</div></div></details>
-    <div class="cloud-sync-note mt"><b>App Check:</b> V37.1 chỉ hiển thị trạng thái và giữ cơ chế sẵn sàng. Muốn bật bảo vệ thật, cần nhập reCAPTCHA v3 site key vào cấu hình rồi kiểm tra request metrics trước khi bật Enforcement trong Firebase Console.</div>
-  </div>
-
-  <div class="card mt">
-    <div class="section-head" style="margin:0 0 10px">
-      <div><h3>Quản lý tài khoản</h3><p>Đổi quyền Học sinh ↔ Giáo viên, khóa/mở truy cập và gửi yêu cầu đặt lại mật khẩu.</p></div>
-      <span id="v25UserResultCount" class="pill">0 tài khoản</span>
-    </div>
-    <div class="v25-admin-toolbar">
-      <input id="v25UserSearch" placeholder="Tìm tên, email hoặc UID…" oninput="v25AdminApplyFilters()">
-      <select id="v25UserRoleFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả vai trò</option><option value="student">Học sinh</option><option value="teacher">Giáo viên</option><option value="admin">Quản trị viên</option></select>
-      <select id="v25UserStatusFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả trạng thái</option><option value="active">Hoạt động</option><option value="locked">Đã khóa</option></select>
-    </div>
-    <div class="table-wrap mt"><table class="table"><thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Trạng thái</th><th>Email</th><th>Đăng nhập gần nhất</th><th>Quản lý</th></tr></thead><tbody id="v25UserTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
-    <div id="v34UserPager" class="v34-pager mt"><span>Trang 1</span></div>
-  </div>
-
-  <div class="card mt">
-    <div class="section-head" style="margin:0 0 10px"><div><h3>Quản trị lớp</h3><p>Quan sát toàn hệ thống và tạm khóa/mở quyền học sinh truy cập một lớp khi cần.</p></div></div>
-    <div class="v25-admin-toolbar"><input id="v25ClassSearch" placeholder="Tìm tên lớp, giáo viên hoặc owner UID…" oninput="v25AdminRenderClasses()"></div>
-    <div class="table-wrap mt"><table class="table"><thead><tr><th>Lớp</th><th>Chủ lớp</th><th>Trạng thái</th><th>HS snapshot</th><th>Điểm TB</th><th>Quản lý</th></tr></thead><tbody id="v25ClassTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
-    <div id="v34ClassPager" class="v34-pager mt"><span>Trang 1</span></div>
-  </div>
-
-  <div class="card mt">
-    <div class="section-head" style="margin:0 0 10px"><div><h3>Nhật ký quản trị</h3><p>Chỉ ghi các thao tác quyền cao của V37.1; client không được sửa hoặc xóa lịch sử này.</p></div></div>
-    <div id="v25AdminAudit"><div class="online-empty">Chưa có nhật ký.</div></div>
-  </div>
-</section>
-
-    </div>
-  </main>
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+<div class="brand-logo">∑</div>
+<div class="brand-copy"><h1>Math12 Hub</h1><small>Ôn tập thông minh • 2026–2027</small></div>
+<button aria-label="Thu gọn thanh điều hướng" class="sidebar-compact-btn" id="sidebarCompactBtn" title="Thu gọn thanh điều hướng" type="button">‹</button>
 </div>
-<nav class="v353-mobile-nav" id="v353MobileNav" data-role="student" aria-label="Điều hướng nhanh trên điện thoại">
-  <div class="v353-mobile-role" data-role="student">
-    <button type="button" data-mobile-page="dashboard"><span>⌂</span><span>Trang chủ</span></button>
-    <button type="button" data-mobile-page="lessons"><span>▤</span><span>Học</span></button>
-    <button type="button" data-mobile-page="thpt"><span>★</span><span>Luyện thi</span></button>
-    <button type="button" data-mobile-page="reports"><span>▣</span><span>Báo cáo</span></button>
-    <button type="button" data-mobile-more><span>☰</span><span>Thêm</span></button>
-  </div>
-  <div class="v353-mobile-role" data-role="teacher">
-    <button type="button" data-mobile-page="dashboard"><span>⌂</span><span>Trang chủ</span></button>
-    <button type="button" data-mobile-page="question-bank"><span>▦</span><span>Ngân hàng</span></button>
-    <button type="button" data-mobile-more><span>☰</span><span>Thêm</span></button>
-  </div>
-  <div class="v353-mobile-role" data-role="admin">
-    <button type="button" data-mobile-page="dashboard"><span>⌂</span><span>Trang chủ</span></button>
-    <button type="button" data-mobile-page="question-bank"><span>▦</span><span>Ngân hàng</span></button>
-    <button type="button" data-mobile-page="admin"><span>🛡</span><span>Quản trị</span></button>
-    <button type="button" data-mobile-more><span>☰</span><span>Thêm</span></button>
-  </div>
+<div class="nav" id="nav">
+<button class="nav-home active" data-page="dashboard" title="Tổng quan"><span class="ico">⌂</span><span class="nav-label">Tổng quan</span></button>
+<div class="student-nav-block">
+<div class="nav-group open" data-nav-group="student-study">
+<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-study" type="button"><span class="nav-group-label">Học tập</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="lessons" title="Học theo bài"><span class="ico">▤</span><span class="nav-label">Học theo bài</span></button>
+<button data-page="chapters" title="Ôn theo chương"><span class="ico">◫</span><span class="nav-label">Ôn theo chương</span></button>
+</div>
+</div>
+<div class="nav-group open" data-nav-group="student-exam">
+<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-exam" type="button"><span class="nav-group-label">Luyện &amp; thi</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="periodic" title="Kiểm tra định kỳ"><span class="ico">◷</span><span class="nav-label">Kiểm tra định kỳ</span></button>
+<button data-page="thpt" title="Ôn thi THPT"><span class="ico">★</span><span class="nav-label">Ôn thi THPT</span></button>
+</div>
+</div>
+<div class="nav-group open" data-nav-group="student-personal">
+<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-personal" type="button"><span class="nav-group-label">Cá nhân</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="learning-plan" title="Lộ trình của em"><span class="ico">✦</span><span class="nav-label">Lộ trình của em</span></button>
+<button data-page="avatar" title="Nhân vật của em"><span class="ico">♟</span><span class="nav-label">Nhân vật của em</span></button>
+<button data-page="progress" title="Tiến độ của em"><span class="ico">↗</span><span class="nav-label">Tiến độ của em</span></button>
+<button data-page="analytics" title="Phân tích năng lực"><span class="ico">◎</span><span class="nav-label">Phân tích năng lực</span></button>
+<button data-page="reports" title="Báo cáo học tập"><span class="ico">▣</span><span class="nav-label">Báo cáo học tập</span></button>
+</div>
+</div>
+<div class="nav-group" data-nav-group="student-connect">
+<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="student-connect" type="button"><span class="nav-group-label">Kết nối</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="notifications" title="Thông báo"><span class="ico">🔔</span><span class="nav-label">Thông báo</span><span class="nav-notify-badge" id="notificationBadge">0</span></button>
+</div>
+</div>
+</div>
+<div class="teacher-nav-block">
+<div class="nav-group open" data-nav-group="teacher-tools">
+<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="teacher-tools" type="button"><span class="nav-group-label">Công cụ giáo viên</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="question-bank" title="Ngân hàng câu hỏi"><span class="ico">▦</span><span class="nav-label">Ngân hàng câu hỏi</span></button>
+<button data-page="exam-builder" title="Tạo đề kiểm tra"><span class="ico">▧</span><span class="nav-label">Tạo đề kiểm tra</span></button>
+<button data-page="ai-teacher" title="Trợ lý AI"><span class="ico">✦</span><span class="nav-label">Trợ lý AI</span></button>
+</div>
+</div>
+<div class="nav-group" data-nav-group="teacher-reference">
+<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="teacher-reference" type="button"><span class="nav-group-label">Xem nội dung học sinh</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="lessons" title="Học theo bài"><span class="ico">▤</span><span class="nav-label">Học theo bài</span></button>
+<button data-page="chapters" title="Ôn theo chương"><span class="ico">◫</span><span class="nav-label">Ôn theo chương</span></button>
+<button data-page="periodic" title="Kiểm tra định kỳ"><span class="ico">◷</span><span class="nav-label">Kiểm tra định kỳ</span></button>
+<button data-page="thpt" title="Ôn thi THPT"><span class="ico">★</span><span class="nav-label">Ôn thi THPT</span></button>
+</div>
+</div>
+</div>
+<div class="admin-nav-block">
+<div class="nav-group open admin-nav-group" data-nav-group="admin-system">
+<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="admin-system" type="button"><span class="nav-group-label">Hệ thống</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="admin" title="Quản trị hệ thống"><span class="ico">🛡</span><span class="nav-label">Quản trị hệ thống</span></button>
+</div>
+</div>
+</div>
+</div>
+<div class="sidebar-foot" title="Math12 Hub • Chương trình Toán 12 GDPT 2018">
+<div class="sidebar-foot-title">Toán 12 • GDPT 2018</div>
+<div class="tiny"></div>
+</div>
+</aside>
+<main class="main">
+<header class="topbar">
+<div class="top-left">
+<button class="menu-btn" id="menuBtn">☰</button>
+<div><div class="page-title" id="pageTitle">Tổng quan học tập</div><div class="badge">Lớp 12 • Năm học 2026–2027</div></div>
+</div>
+<div class="topbar-right">
+<button aria-label="Mở nhân vật của em" class="avatar-topbar student-only" id="avatarV378Topbar" onclick="goPage('avatar')" title="Mở nhân vật của em" type="button"></button>
+<div class="v353-save-state" id="v353SaveState" title="Trạng thái lưu dữ liệu trên thiết bị"><span class="v353-save-icon">✓</span><span class="v353-save-text">Tự lưu sẵn sàng</span></div>
+<div class="secure-role-badge student" id="secureRoleBadge" title="Vai trò được xác thực từ Firestore">👤 Học sinh</div>
+<button class="cloud-account" id="firebaseAccountBtn" onclick="openFirebaseAccount()" title="Tài khoản và đồng bộ Firebase"><span class="cloud-dot" id="firebaseDot"></span><span id="firebaseAccountText">Đăng nhập</span></button>
+</div>
+</header>
+<div aria-label="Đường dẫn điều hướng" class="v353-breadcrumb-bar"><div class="v353-breadcrumb" id="v353Breadcrumb"></div></div>
+<div class="content">
+<section class="section active" id="page-dashboard">
+<div class="student-only hero">
+<div>
+<div class="badge" style="background:rgba(255,255,255,.16);color:white">NỀN TẢNG HỌC TOÁN</div>
+<h2>Học Toán • Nâng cấp nhân vật • Xây phòng của em</h2>
+<p>Mỗi bài học có kiểm tra nhanh, mỗi chương có bài tổng hợp, giữa kỳ – học kỳ có đề chuẩn hóa, và cuối lộ trình là đề mô phỏng tốt nghiệp THPT theo định dạng hiện hành.</p>
+<div class="hero-actions"><button class="btn btn-primary" onclick="v28StartNextAction()">Tiếp tục học</button><button class="btn btn-ghost" onclick="goPage('avatar')">Avatar 3D</button><button class="btn btn-ghost" onclick="goPage('shop')">Mega Shop</button><button class="btn btn-ghost" onclick="goPage('room')">🏠 Phòng của em</button></div>
+</div>
+<div class="hero-progress"><div style="display:flex;justify-content:space-between;align-items:end"><div><small>Tiến độ chương trình</small><br/><strong id="heroPercent">0%</strong></div><div style="text-align:right"><small>Mục tiêu</small><br/><b id="v28GoalScoreHero">8.0+</b></div></div><div class="progress" style="margin-top:14px"><span id="heroBar" style="width:0%"></span></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#d9e3ff"><span id="doneLessonText">0/19 bài đã hoàn thành</span><span id="learningStreakText">Chuỗi học: 0 ngày</span></div></div>
+</div>
+<div class="student-only mt" id="avatarV378Dashboard"></div>
+<div class="teacher-only hero">
+<div><div class="badge" style="background:rgba(255,255,255,.16);color:white">NỀN TẢNG HỌC TOÁN</div><h2>Ngân hàng học tập và công cụ hỗ trợ giảng dạy</h2><p>Chức năng lớp học online đã được loại khỏi luồng sử dụng. Giáo viên quản trị ngân hàng câu hỏi, tạo đề, xem nội dung học sinh và dùng trợ lý AI.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('question-bank')">Ngân hàng câu hỏi</button><button class="btn btn-ghost" onclick="goPage('exam-builder')">Tạo đề kiểm tra</button><button class="btn btn-ghost" onclick="goPage('ai-teacher')">Trợ lý AI</button></div></div>
+<div class="hero-progress"><small>Ngân hàng tự học</small><br/><strong>371 câu</strong><div style="font-size:12px;color:#d9e3ff">Bài 1 → Bài 5 • MCQ + Đúng/Sai 4 ý</div><div class="progress" style="margin-top:14px"><span style="width:100%"></span></div><div style="margin-top:10px;font-size:12px">Học sinh có thể luyện toàn bộ câu qua Ôn theo bài.</div></div>
+</div>
+<div aria-label="Tác vụ nhanh giáo viên" class="teacher-only v353-role-dashboard">
+<button class="v353-quick-card" onclick="goPage('ai-teacher')" type="button"><span class="v353-quick-icon">✦</span><span><strong>AI</strong><small>Trợ lý giáo viên</small></span></button>
+<button class="v353-quick-card" onclick="goPage('question-bank')" type="button"><span class="v353-quick-icon">▦</span><span><strong id="v353TeacherBank">0</strong><small>Câu trong ngân hàng</small></span></button>
+<button class="v353-quick-card" onclick="goPage('exam-builder')" type="button"><span class="v353-quick-icon">▧</span><span><strong id="v353TeacherExams">0</strong><small>Đề đã lưu</small></span></button>
+<button class="v353-quick-card" onclick="goPage('notifications')" type="button"><span class="v353-quick-icon">🔔</span><span><strong id="v353TeacherNotices">0</strong><small>Thông báo hiện có</small></span></button>
+</div>
+<div aria-label="Trạng thái hệ thống nhanh" class="admin-only v353-admin-strip">
+<div class="v353-admin-status"><span><small>Firebase App Check</small><b>Bảo vệ request từ trình duyệt</b></span><strong id="v353AdminAppCheck"></strong></div>
+<div class="v353-admin-status"><span><small>Lỗi phiên này</small><b>Trung tâm vận hành </b></span><strong id="v353AdminRuntime">0</strong></div>
+</div>
+<div class="grid grid-4 mt student-only">
+<div class="card metric"><div><strong id="metricLessons">0</strong><small>Bài đã hoàn thành</small></div><div class="icon">✓</div></div>
+<div class="card metric"><div><strong id="metricAvg"></strong><small>Điểm trung bình</small></div><div class="icon">◎</div></div>
+<div class="card metric"><div><strong id="metricAccuracy"></strong><small>Tỷ lệ chính xác</small></div><div class="icon">↗</div></div>
+<div class="card metric"><div><strong id="metricStreak">0</strong><small>Ngày học liên tiếp</small></div><div class="icon">⚡</div></div>
+</div>
+<div class="student-only v28-command-grid mt">
+<div class="card v28-next-card">
+<div class="v28-kicker">VIỆC NÊN LÀM TIẾP</div>
+<h3 id="v28NextActionTitle">Đang xác định ưu tiên…</h3>
+<p id="v28NextActionMeta">Dựa trên bài giáo viên giao, câu sai và tiến độ hiện tại.</p>
+<div class="v28-reason" id="v28NextActionReason">Ưu tiên được xác định từ tiến độ học, câu sai và các nội dung em cần củng cố.</div>
+<button class="btn btn-blue" id="v28NextActionBtn" onclick="v28StartNextAction()">Bắt đầu</button>
+</div>
+<div class="card v28-goal-card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Mục tiêu cá nhân</h3><p>Điều chỉnh theo nhịp học của em.</p></div><button class="btn btn-soft" onclick="v28OpenPlanSettings()">Chỉnh</button></div>
+<div class="v28-goal-stats"><div><small>Mục tiêu</small><b id="v28GoalScore">8.0+</b></div><div><small>Mỗi ngày</small><b id="v28DailyGoal">35 phút</b></div><div><small>Mỗi tuần</small><b id="v28WeeklyGoal">5 ngày</b></div></div>
+<div class="v28-readiness"><div><b id="v28ReadinessValue">0%</b><span id="v28ReadinessLabel">Đang thu thập dữ liệu</span></div><div class="progress"><span id="v28ReadinessBar" style="width:0%"></span></div><small>Chỉ báo lộ trình, không phải dự đoán điểm thi.</small></div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 8px"><div><h3>Hôm nay cần chú ý</h3><p>Xếp theo mức ưu tiên.</p></div></div>
+<div class="v28-mini-metrics"><span><b id="v28PriorityMetric">0</b> khẩn</span><span><b id="v28MistakeMetric">0</b> câu sai</span><span><b id="v28WeakMetric">0</b> mã yếu</span></div>
+<div class="v28-queue" id="v28TodayQueue"></div>
+</div>
+</div>
+<div class="section-head student-only"><div><h3>6 chương cốt lõi Toán 12</h3><p>Hệ thống hóa theo Chương trình GDPT 2018.</p></div><button class="link-btn" onclick="goPage('chapters')">Xem tất cả →</button></div>
+<div class="chapter-grid student-only" id="dashboardChapters"></div>
+<div class="grid grid-2 mt student-only">
+<div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Chủ đề cần củng cố</h3><p>Dựa trên các bài em đã làm.</p></div></div><div id="weakList"></div></div>
+<div class="card"><div class="section-head" style="margin:0 0 12px"><div><h3>Lộ trình 7 ngày</h3><p>Tự điều chỉnh theo hạn bài, điểm yếu, câu sai và mục tiêu cá nhân.</p></div><button class="link-btn" onclick="goPage('learning-plan')">Mở đầy đủ →</button></div><div id="v28WeeklyPlan"></div></div>
+</div>
+<div class="card mt student-only"><div class="section-head" style="margin:0 0 10px"><div><h3>Sổ câu sai</h3><p>Chỉ giữ các câu mà lần làm gần nhất vẫn chưa đúng hoàn toàn.</p></div><button class="btn btn-soft" onclick="goPage('learning-plan')">Xem lộ trình</button></div><div id="v28MistakeBook"></div></div>
+</section>
+<section class="section" id="page-lessons">
+<div class="section-head" style="margin-top:0"><div><h3>Học và ôn tập sau từng bài</h3><p>Chọn bài theo chương trình Toán 12 thống nhất và luyện tập theo từng chuẩn kiến thức.</p></div></div>
+<div class="notice"><b>Nguyên tắc học tập:</b> Mỗi bài được gắn một mã kiến thức thống nhất để theo dõi tiến độ, kết quả luyện tập và chủ đề học sinh còn yếu. Giáo viên có thể dùng chung một ngân hàng câu hỏi cho từng chuẩn kiến thức.</div>
+<div class="toolbar mt"><input id="lessonSearch" placeholder="Tìm bài: cực trị, tích phân, mặt cầu..."/></div>
+<div class="curriculum-layout mt"><div class="card"><div class="chapter-list" id="chapterTabs"></div></div><div class="card"><div id="lessonHeader"></div><div class="lesson-list mt" id="lessonList"></div></div></div>
+</section>
+<section class="section" id="page-lesson-detail">
+<div id="lessonDetail"></div>
+</section>
+<section class="section" id="page-chapters">
+<div class="section-head" style="margin-top:0"><div><h3>Ôn tập sau mỗi chương</h3><p>Mỗi chương gồm kiến thức trọng tâm, bài kiểm tra chuẩn và phân tích lỗi.</p></div></div>
+<div class="chapter-grid" id="allChapters"></div>
+</section>
+<section class="section" id="page-periodic">
+<div class="section-head" style="margin-top:0"><div><h3>Kiểm tra giữa kỳ &amp; học kỳ</h3><p>Thiết kế theo phạm vi kiến thức đã học và lưu lịch sử làm bài.</p></div></div>
+<div class="grid grid-2">
+<div class="card exam-card"><h4>Giữa học kỳ I</h4><p>Chủ yếu Chương I và phần đầu Chương II. Có thể cấu hình theo PPCT của trường.</p><div class="exam-spec"><div><strong>45'</strong><small>Thời gian</small></div><div><strong>20</strong><small>Câu/ý</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('mid1')">Bắt đầu kiểm tra</button></div>
+<div class="card exam-card"><h4>Cuối học kỳ I</h4><p>Chương I–III, kết hợp câu hỏi cơ bản, vận dụng và tình huống thực tế.</p><div class="exam-spec"><div><strong>90'</strong><small>Thời gian</small></div><div><strong>22</strong><small>Câu</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('final1')">Bắt đầu kiểm tra</button></div>
+<div class="card exam-card"><h4>Giữa học kỳ II</h4><p>Nguyên hàm, tích phân và phần đầu phương pháp tọa độ trong không gian.</p><div class="exam-spec"><div><strong>45'</strong><small>Thời gian</small></div><div><strong>20</strong><small>Câu/ý</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('mid2')">Bắt đầu kiểm tra</button></div>
+<div class="card exam-card"><h4>Cuối học kỳ II</h4><p>Tổng hợp Chương IV–VI, ưu tiên các bài toán tích hợp và vận dụng thực tiễn.</p><div class="exam-spec"><div><strong>90'</strong><small>Thời gian</small></div><div><strong>22</strong><small>Câu</small></div><div><strong>10</strong><small>Điểm</small></div></div><button class="btn btn-blue" onclick="openPeriodicExam('final2')">Bắt đầu kiểm tra</button></div>
+</div>
+</section>
+<section class="section" id="page-thpt">
+<div class="hero"><div><div class="badge" style="background:rgba(255,255,255,.16);color:white">Định dạng tốt nghiệp THPT hiện hành</div><h2>22 câu • 90 phút • 3 dạng thức</h2><p>Phần I: 12 câu nhiều lựa chọn. Phần II: 4 câu Đúng/Sai, mỗi câu 4 ý. Phần III: 6 câu trả lời ngắn. Website chấm theo đúng thang điểm từng phần.</p><div class="hero-actions"><button class="btn btn-primary" onclick="openFullExam()">Bắt đầu đề mô phỏng</button></div></div><div class="hero-progress"><div class="exam-spec" style="grid-template-columns:repeat(3,1fr)"><div style="background:rgba(255,255,255,.1)"><strong>3đ</strong><small style="color:#d9e3ff">12 câu MCQ</small></div><div style="background:rgba(255,255,255,.1)"><strong>4đ</strong><small style="color:#d9e3ff">4 câu Đ/S</small></div><div style="background:rgba(255,255,255,.1)"><strong>3đ</strong><small style="color:#d9e3ff">6 câu ngắn</small></div></div></div></div>
+<div class="grid grid-3 mt">
+<div class="card"><h3 style="margin-top:0">Theo chuyên đề</h3><p style="color:var(--muted);font-size:13px;line-height:1.6">Luyện sâu theo hàm số, Oxyz, tích phân, xác suất, thống kê và các mạch kiến thức lớp 10–11 có thể xuất hiện.</p><button class="btn btn-soft" onclick="goPage('chapters')">Chọn chuyên đề</button></div>
+<div class="card"><h3 style="margin-top:0">Theo mức điểm</h3><p style="color:var(--muted);font-size:13px;line-height:1.6">Lộ trình 5–6 điểm → 7–8 điểm → 8.5+ dựa trên tỷ lệ đúng và nhóm lỗi của học sinh.</p><button class="btn btn-soft" onclick="goPage('analytics')">Xem năng lực hiện tại</button></div>
+<div class="card"><h3 style="margin-top:0">Theo đề thi</h3><p style="color:var(--muted);font-size:13px;line-height:1.6">Mỗi lần thi lưu điểm từng phần và chủ đề sai để sinh danh sách ôn bù.</p><button class="btn btn-blue" onclick="openFullExam()">Thi thử ngay</button></div>
+</div>
+</section>
+<section class="section student-only" id="page-avatar">
+<div class="section-head"><div><h2>Nhân vật của em</h2><p>Tùy chỉnh nhân vật, tích lũy EXP, cấp độ và vàng trong quá trình học.</p></div><span class="pill tag-blue">EXP + Level + Gold</span></div>
+<div id="avatarV378Page"></div>
+</section>
+<section class="section student-only" id="page-learning-plan">
+<div class="section-head" style="margin-top:0"><div><h3>Lộ trình học cá nhân</h3><p>Từ dữ liệu hiện có, hệ thống gợi ý việc nên làm, câu cần ôn lại và nội dung còn yếu; lộ trình tự cập nhật sau mỗi lần học.</p></div><button class="btn btn-blue" onclick="v28OpenPlanSettings()">⚙ Mục tiêu học tập</button></div>
+<div class="v28-plan-hero">
+<div><div class="v28-kicker">NEXT BEST ACTION</div><h2 id="v28NextActionTitlePlan">Lộ trình được tạo từ dữ liệu thật của em</h2><p>Ưu tiên bài giáo viên giao trước, sau đó đến lỗi sai, kiến thức yếu và bài chưa hoàn thành.</p><button class="btn btn-primary" onclick="v28StartNextAction()">Bắt đầu việc ưu tiên</button></div>
+<div id="v28ProgressPlanSummary"></div>
+</div>
+<div class="grid grid-2 mt">
+<div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Hàng đợi học tập</h3><p>Việc quan trọng được xếp từ cao xuống thấp.</p></div></div><div class="v28-queue" id="v28PlanQueue"></div></div>
+<div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Sổ câu sai</h3><p>Ôn lại lỗi cũ trước khi học thêm nội dung mới.</p></div></div><div id="v28PlanMistakes"></div></div>
+</div>
+<div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3>Kế hoạch 7 ngày</h3><p>Ngày học được phân theo mục tiêu tuần; hạn bài giáo viên giao luôn được ưu tiên.</p></div><button class="btn btn-soft" onclick="v28RenderStudentUX()">↻ Tạo lại</button></div><div id="v28PlanWeek"></div></div>
+</section>
+<section class="section student-only" id="page-progress">
+<div class="section-head" style="margin-top:0"><div><h3>Tiến độ và năng lực cá nhân</h3><p>Dữ liệu lưu trên máy và tự đồng bộ Firestore khi đã đăng nhập.</p></div><button class="btn btn-danger" onclick="resetProgress()">Đặt lại dữ liệu mẫu</button></div>
+<div class="grid grid-4"><div class="card metric"><div><strong id="pDone">0</strong><small>Bài hoàn thành</small></div><div class="icon">✓</div></div><div class="card metric"><div><strong id="pQuiz">0</strong><small>Lượt kiểm tra</small></div><div class="icon">▤</div></div><div class="card metric"><div><strong id="pBest"></strong><small>Điểm cao nhất</small></div><div class="icon">★</div></div><div class="card metric"><div><strong id="pLast"></strong><small>Điểm gần nhất</small></div><div class="icon">◷</div></div></div>
+<div class="mt" id="v28ProgressSummary"></div><div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Tiến độ theo chương</h3><div id="chapterProgress"></div></div><div class="card"><h3 style="margin-top:0">Khuyến nghị học tiếp</h3><div class="notice"><b>:</b> Khuyến nghị được ưu tiên theo các mã kiến thức có độ chính xác thấp trong lịch sử làm bài. <button class="link-btn" onclick="goPage('analytics')">Mở phân tích chi tiết →</button></div><div class="lesson-list mt" id="recommendations"></div></div></div>
+</section>
+<section class="section student-only" id="page-analytics">
+<div class="section-head" style="margin-top:0">
+<div><h3>Phân tích năng lực &amp; luyện thích ứng</h3><p>Tách rõ Secure Exam đã xác minh và dữ liệu tự luyện; vẫn phân tích theo Chương → Mức độ → Mã kiến thức.</p></div>
+<div class="toolbar"><button class="btn btn-soft" onclick="renderAnalytics();v28RenderStudentUX()">↻ Cập nhật</button><button class="btn btn-soft" onclick="v28PracticeMistakes(10)">↺ Luyện câu sai</button><button class="btn btn-blue" onclick="startAdaptivePractice(10)">⚡ Luyện điểm yếu</button></div>
+</div>
+<div class="v31-student-trust" id="v31StudentTrust"><div class="teacher-live-empty"> Đang tách nguồn dữ liệu xác minh và tự luyện.</div></div>
+<div class="analytics-empty hidden" id="analyticsNoData">Chưa có đủ dữ liệu câu hỏi để phân tích. Hãy làm ít nhất một bài kiểm tra sau bài hoặc đề tổng hợp; sẽ bắt đầu ghi nhận kết quả theo từng mã kiến thức và tách rõ nguồn xác minh/tự luyện.</div>
+<div id="analyticsContent">
+<div class="analytics-hero">
+<div class="analytics-score-card">
+<h3>Năng lực hiện tại</h3><p>Độ chính xác có tính điểm từng câu; câu Đúng/Sai 4 ý được tính theo tỷ lệ số ý đúng.</p>
+<div class="analytics-score-main"><div><strong id="analyticsOverall"></strong><small id="analyticsEvidence">0 lượt câu đã phân tích</small></div><div class="analytics-status" id="analyticsStatus">Chưa đủ dữ liệu</div></div>
+</div>
+<div class="analytics-metrics">
+<div class="analytics-metric"><strong id="analyticsWeak">0</strong><small>Mã kiến thức cần củng cố</small></div>
+<div class="analytics-metric"><strong id="analyticsStrong">0</strong><small>Mã kiến thức đã vững</small></div>
+<div class="analytics-metric"><strong id="analyticsAttempts">0</strong><small>Bài thi/kiểm tra đã nộp</small></div>
+<div class="analytics-metric"><strong id="analyticsBestChapter"></strong><small>Chương có kết quả tốt nhất</small></div>
+</div>
+</div>
+<div class="analytics-grid mt">
+<div class="analytics-stack">
+<div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Năng lực theo chương</h3><p>Tổng hợp phục vụ luyện thích ứng; bảng nguồn phía trên cho biết phần nào là Secure Exam xác minh.</p></div></div><div id="analyticsChapters"></div></div>
+<div class="card"><div class="section-head" style="margin:0 0 10px"><div><h3>Chi tiết theo mã kiến thức</h3><p>Ưu tiên mã có ít nhất 2 lượt làm để kết luận yếu/mạnh.</p></div></div><div class="table-wrap"><table class="skill-table"><thead><tr><th>Mã</th><th>Nội dung</th><th>Bài</th><th>Lượt</th><th>Chính xác</th><th>Trạng thái</th><th></th></tr></thead><tbody id="analyticsSkills"></tbody></table></div></div>
+</div>
+<div class="analytics-stack">
+<div class="adaptive-card"><h3>⚡ Luyện thích ứng</h3><p> Chọn câu theo Mastery Score, độ khó mục tiêu, lịch sử sai/gần đây và QC. Sau khi nộp, Mastery được tính lại.</p><div id="adaptiveWeakList"></div><div class="adaptive-actions"><button class="btn btn-blue" onclick="startAdaptivePractice(10)">Luyện 10 câu</button><button class="btn btn-soft" onclick="startAdaptivePractice(15)">Luyện 15 câu</button></div></div>
+<div class="card"><h3 style="margin-top:0">Xu hướng điểm gần đây</h3><div class="analytics-trend" id="analyticsTrend"></div></div>
+<div class="card"><h3 style="margin-top:0">Lịch sử gần nhất</h3><div class="analytics-recent" id="analyticsRecent"></div></div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="page-reports">
+<div class="section-head" style="margin-top:0">
+<div><h3>Báo cáo học tập &amp; phụ huynh</h3><p>Tổng hợp điểm Secure Exam, năng lực xác minh, tiến độ tự học và khuyến nghị. Báo cáo phụ huynh chỉ được tạo khi giáo viên chủ động xuất bản snapshot đã làm sạch.</p></div>
+<div class="toolbar"><span class="pill tag-green">Không chứa đáp án</span><span class="pill">Low Reads</span></div>
+</div>
+<div class="student-only">
+<div class="v33-report-toolbar card">
+<div><label>Khoảng thời gian</label><select id="v33StudentPeriod" onchange="v33RenderStudentReport()"><option value="30">30 ngày gần nhất</option><option value="90">90 ngày gần nhất</option><option selected="" value="all">Toàn bộ dữ liệu</option></select></div>
+<div class="v33-report-actions"><button class="btn btn-soft" onclick="v33RefreshStudentReport()">↻ Cập nhật online</button><button class="btn btn-soft" onclick="v33CopyCurrentReportSummary()">Sao chép tóm tắt</button><button class="btn btn-blue" onclick="v33PrintCurrentReport()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ExportCurrentReportHTML()">Xuất HTML</button></div>
+</div>
+<div class="firebase-banner mt"><b>Báo cáo cá nhân:</b> Secure Exam đã chấm được tách riêng với tự luyện. Nếu chưa đăng nhập hoặc chưa có điểm xác minh, vẫn tạo báo cáo từ dữ liệu học trên thiết bị và ghi rõ nguồn.</div>
+<div class="v33-report-preview mt" id="v33StudentReportPreview"><div class="online-empty">Đang chuẩn bị báo cáo…</div></div>
+</div>
+<div class="teacher-only">
+<div class="card v33-report-toolbar">
+<div><label>Lớp</label><select id="v33ReportClass" onchange="v33ReportClassChanged()"></select></div>
+<div><label>Học sinh</label><select id="v33ReportStudent" onchange="v33LoadTeacherReport()"><option value="">Chọn học sinh</option></select></div>
+<div><label>Khoảng thời gian</label><select id="v33TeacherPeriod" onchange="v33LoadTeacherReport()"><option value="30">30 ngày gần nhất</option><option value="90">90 ngày gần nhất</option><option selected="" value="all">Toàn bộ</option></select></div>
+<div><label>Link phụ huynh</label><select id="v33ReportExpiry"><option value="7">7 ngày</option><option selected="" value="14">14 ngày</option><option value="30">30 ngày</option></select></div>
+</div>
+<div class="grid grid-2 mt v33-report-workspace">
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Ghi chú giáo viên</h3><p>Chỉ ghi nội dung phù hợp để chia sẻ với học sinh/phụ huynh.</p></div></div>
+<textarea id="v33TeacherNote" maxlength="1000" placeholder="Ví dụ: Em đã tiến bộ ở phần đạo hàm; tuần tới cần củng cố nguyên hàm và hoàn thành bài còn thiếu." rows="5"></textarea>
+<div class="v33-report-actions mt"><button class="btn btn-soft" onclick="v33LoadTeacherReport()">↻ Tạo lại báo cáo</button><button class="btn btn-soft" onclick="v33CopyCurrentReportSummary()">Sao chép tóm tắt</button><button class="btn btn-blue" onclick="v33PrintCurrentReport()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ExportCurrentReportHTML()">Xuất HTML</button><button class="btn btn-blue" onclick="v33PublishParentReport()">🔗 Tạo link phụ huynh</button></div>
+<div class="math-help mt"><b>Quyền riêng tư:</b> link phụ huynh không chứa email, UID, đáp án, câu trả lời hay bài nộp chi tiết. Link tự hết hạn và giáo viên có thể thu hồi bất cứ lúc nào.</div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 8px"><div><h3>Link đã chia sẻ</h3><p>Tối đa 50 snapshot gần nhất của lớp đang chọn.</p></div><button class="btn btn-soft" onclick="v33LoadSharedReports()">↻</button></div>
+<div id="v33SharedReports"><div class="online-empty">Chọn lớp để xem link đã chia sẻ.</div></div>
+</div>
+</div>
+<div class="v33-report-preview mt" id="v33TeacherReportPreview"><div class="online-empty">Chọn lớp và học sinh để tạo báo cáo.</div></div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 8px"><div><h3>Nguyên tắc báo cáo </h3><p>Báo cáo giải thích nguồn dữ liệu thay vì trộn điểm chính thức và tự luyện thành một con số duy nhất.</p></div></div>
+<div class="v33-principles"><div><b>✓ Điểm xác minh</b><span>Secure Exam đã được giáo viên chấm.</span></div><div><b>◎ Tự luyện</b><span>Dùng để gợi ý học tập, không thay điểm chính thức.</span></div><div><b>▣ Năng lực</b><span>Chương → mã kiến thức → NB/TH/VD từ aggregate.</span></div><div><b>🔒 Phụ huynh</b><span>Chỉ đọc snapshot làm sạch, có hạn và có thể thu hồi.</span></div></div>
+</div>
+</section>
+<section class="section teacher-only" id="page-question-bank">
+<div class="question-bank-head v371-bank-head">
+<div aria-label="Thao tác chính ngân hàng câu hỏi" class="v371-bank-primary-actions">
+<button class="btn btn-blue" onclick="openQuestionEditor()">+ Thêm câu hỏi</button>
+<button class="btn btn-soft" onclick="goPage('exam-builder')">▧ Tạo đề</button>
+<button class="btn btn-soft" onclick="v361OpenQualityCenter()">✓ Quality</button>
+<button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">◇ Knowledge Map</button>
+<button class="btn btn-soft" onclick="v29OpenDuplicateCenter()">≈ Quét trùng</button>
+<details class="v371-tools-menu">
+<summary class="btn btn-soft" role="button">⋯ Công cụ</summary>
+<div class="v371-tools-panel">
+<div class="v371-tool-group"><b>Nhập &amp; hỗ trợ</b>
+<button onclick="openBulkLatexImport()">⇧ Import LaTeX /.tex</button>
+<button onclick="v3745OpenFigureAudit()">◈ Kiểm tra hình</button>
+<button onclick="v3746OpenFigureAudit()">⛶ Kiểm tra bố cục hình</button>
+<button onclick="v3747OpenFigureQC()">✓ Figure QC</button>
+<button onclick="v3748OpenFigureManager()">▦ Trung tâm Hình</button>
+<button onclick="v375OpenProductionCenter()">🔒 Quản lý hình</button>
+<button onclick="v373OpenGraphAudit()">📈 Kiểm tra Graph</button>
+<button onclick="goPage('ai-teacher')">✦ Trợ lý AI</button>
+<button onclick="v360NormalizeBank(true)">↻ Chuẩn hóa metadata</button>
+</div>
+<div class="v371-tool-group"><b>Sao lưu &amp; khôi phục</b>
+<button data-v371-backup="1" onclick="v371OpenBackupCenter()">⬇ Backup</button>
+<button onclick="v371ChooseRestore()">↥ Khôi phục</button>
+<button onclick="v371UndoLastRestore()">↶ Hoàn tác khôi phục</button>
+</div>
+<div class="v371-tool-group"><b>Xuất dữ liệu</b>
+<button onclick="exportQuestionBankCSVV29()">CSV</button>
+<button onclick="exportQuestionBankLatexV29()">LaTeX</button>
+<button onclick="exportQuestionBank()">JSON</button>
+<button onclick="v360ExportKnowledgeMap()">Knowledge Map JSON</button>
+</div>
+<div class="v371-tool-group"><b>Bảo trì</b>
+<button onclick="v26OpenContentTrash()">🗑 Thùng rác</button>
+<button class="v3743-clean-menu-btn" onclick="v3743OpenCleanBankCenter()">🧹 Làm sạch ngân hàng</button>
+</div>
+</div>
+</details>
+</div>
+</div>
+<div class="v371-bank-metrics mt">
+<div class="card metric"><div><strong id="bankTotal">0</strong><small>Tổng câu hỏi</small></div><div class="icon">▦</div></div>
+<div class="card metric"><div><strong id="bankCoverage">0%</strong><small>Phủ chuẩn kiến thức</small></div><div class="icon">✓</div></div>
+<div class="card metric"><div><strong id="bankV29Quality">0%</strong><small>Chất lượng dữ liệu</small></div><div class="icon">★</div></div>
+<div class="card metric"><div><strong id="bankV29Reviewed">0/0</strong><small>Đã duyệt</small></div><div class="icon">☑</div></div>
+</div>
+<details class="v371-secondary-stats mt">
+<summary><span>＋ Xem thêm thống kê</span><small>Bài có câu • Câu tự thêm • Nghi trùng • Lịch sử sửa</small></summary>
+<div class="grid grid-4 v29-bank-secondary v371-secondary-grid">
+<div class="card metric"><div><strong id="bankLessons">0</strong><small>Bài có câu hỏi</small></div><div class="icon">▤</div></div>
+<div class="card metric"><div><strong id="bankCustom">0</strong><small>Câu tự thêm/sửa</small></div><div class="icon">✎</div></div>
+<div class="card metric"><div><strong id="bankV29Duplicates">0</strong><small>Cặp nghi trùng</small></div><div class="icon">≈</div></div>
+<div class="card metric"><div><strong id="bankV29Versioned">0</strong><small>Câu có lịch sử sửa</small></div><div class="icon">↶</div></div>
+</div>
+</details>
+<div class="card mt v360-hero v371-knowledge-summary" id="v360KnowledgeOverview">
+<div class="v371-knowledge-top">
+<div><span class="v360-kicker">KNOWLEDGE MAP </span><h3>Bản đồ kiến thức Toán 12</h3><p>Chương → Bài → Đơn vị kiến thức → Dạng toán → Câu hỏi.</p></div>
+<div class="v371-knowledge-actions"><button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">Mở bản đồ</button><button class="btn btn-soft" onclick="v360NormalizeBank(true)">↻ Chuẩn hóa</button></div>
+</div>
+<div class="v360-metrics v371-knowledge-metrics">
+<div class="v360-metric"><b id="v360MetricChapters">6</b><small>Chương</small></div>
+<div class="v360-metric"><b id="v360MetricLessons">19</b><small>Bài</small></div>
+<div class="v360-metric"><b id="v360MetricKnowledge">57</b><small>Chuẩn</small></div>
+<div class="v360-metric"><b id="v360MetricForms">91</b><small>Dạng toán ID6</small></div>
+<div class="v360-metric"><b id="v360MetricMetadata"></b><small>Metadata</small></div>
+<div class="v360-metric"><b id="v360MetricFormCoverage"></b><small>Dạng đã có câu</small></div>
+</div>
+<div class="v360-migration v371-migration"><div id="v360MigrationState"><span class="v360-status warn">Đang kiểm tra metadata…</span></div><small>Chỉ chuẩn hóa khi giáo viên yêu cầu.</small></div>
+</div>
+<details class="card mt v360-map-card v371-map-details" id="v360KnowledgeMapCard">
+<summary class="v371-section-summary">
+<div><b>Knowledge Map chi tiết</b><small>6 chương • 19 bài học nội bộ • 57 chuẩn Mastery • 91 dạng ID6 — nhấn để mở/đóng</small></div>
+<div class="v360-map-legend"><span class="good">≥ 3 câu</span><span class="partial">1–2 câu</span><span class="missing">Chưa có</span></div>
+</summary>
+<div class="v371-details-body"><div id="v360KnowledgeMap"><div class="online-empty">Đang dựng Knowledge Map …</div></div></div>
+</details>
+<div class="card mt v361-quality-strip v371-quality-strip" id="v361QualityStrip">
+<div class="v361-strip-head">
+<div><span class="v360-kicker">QUALITY </span><h3>Chất lượng ngân hàng</h3><p>Quét cục bộ, không tự phát sinh Firestore Reads.</p></div>
+<div class="v361-strip-actions"><button class="btn btn-soft" onclick="v361ScanBank()">↻ Quét</button><button class="btn btn-soft" onclick="v361OpenQualityCenter()">Chi tiết</button></div>
+</div>
+<div class="v361-strip-metrics v371-quality-metrics">
+<div><b id="v361MetricScore"></b><small>Điểm TB</small></div>
+<div><b id="v361MetricCritical"></b><small>Có lỗi</small></div>
+<div><b id="v361MetricWarning"></b><small>Cần rà soát</small></div>
+<div><b id="v361MetricPass"></b><small>Đạt sạch</small></div>
+</div>
+<div class="v361-last-scan" id="v361LastScan">Chưa quét toàn bộ. Kiểm tra từng câu vẫn chạy khi hiển thị/biên tập.</div>
+</div>
+<div class="card mt" id="bankFiltersV36Anchor">
+<div class="section-head" style="margin:0 0 14px"><div><h3>Bộ lọc ngân hàng</h3><p>Tìm theo Chương → Bài → Mã kiến thức → Dạng toán ID6 chính thức → mức độ → loại câu.</p></div><span class="pill" id="bankResultCount">0 câu</span></div>
+<div class="bank-toolbar v29-bank-toolbar">
+<input id="bankSearch" placeholder="Tìm nội dung, ID6, mã bản ghi, nguồn, thẻ, lời giải..."/>
+<select id="bankChapter"><option value="">Tất cả chương</option></select>
+<select id="bankLesson"><option value="">Tất cả bài</option></select>
+<select id="bankKnowledge"><option value="">Tất cả mã kiến thức</option></select>
+<select id="bankFormV36"><option value="">Tất cả dạng toán</option></select>
+<select id="bankLevel"><option value="">Tất cả mức độ</option><option value="NB">Nhận biết</option><option value="TH">Thông hiểu</option><option value="VD">Vận dụng</option><option value="VDC">Vận dụng cao</option></select>
+<select id="bankType"><option value="">Tất cả loại câu</option><option value="mcq">Nhiều lựa chọn</option><option value="tf">Đúng/Sai 1 mệnh đề</option><option value="tf4">Đúng/Sai 4 ý</option><option value="short">Trả lời ngắn</option></select>
+<select id="bankReviewStatus"><option value="">Tất cả trạng thái</option><option value="approved">Approved</option><option value="reviewed">Đã duyệt chuyên môn</option><option value="draft">Bản nháp</option></select>
+<select id="bankDifficulty"><option value="">Mọi độ khó</option><option value="1">1/5</option><option value="2">2/5</option><option value="3">3/5</option><option value="4">4/5</option><option value="5">5/5</option></select>
+<select id="bankSource"><option value="">Tất cả nguồn nhập</option></select>
+<input id="bankTag" placeholder="Lọc theo thẻ..."/>
+<select id="bankDuplicateFilter"><option value="">Trùng: tất cả</option><option value="yes">Có nghi trùng</option><option value="no">Không nghi trùng</option></select>
+<select id="bankQualityV361"><option value="">QC: tất cả</option><option value="critical">Có lỗi kỹ thuật</option><option value="warning">Cần rà soát</option><option value="pass">Không lỗi/cảnh báo</option></select>
+<select id="bankSort"><option value="updated">Mới sửa trước</option><option value="id">Theo mã câu</option><option value="quality">Chất lượng thấp trước</option><option value="difficulty">Độ khó cao trước</option></select><select id="bankPageSize"><option value="25">25 câu/trang</option><option selected="" value="50">50 câu/trang</option><option value="100">100 câu/trang</option></select>
+</div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 12px"><div><h3>Danh sách câu hỏi</h3><p> Hiển thị điểm QC kỹ thuật theo từng câu; nhấn vào phần trăm để xem lỗi/cảnh báo chi tiết rồi sửa ngay trong trình soạn.</p></div></div>
+<div class="table-wrap"><table class="table v29-bank-table"><thead><tr><th>Mã</th><th>Câu hỏi</th><th>Chuẩn &amp; nguồn</th><th>Mức độ</th><th>Loại</th><th>QC</th><th>Thao tác</th></tr></thead><tbody id="questionBankTable"></tbody></table></div><div class="v29-pager" id="bankV29Pager"></div>
+</div>
+<div class="card mt"><div class="section-head" style="margin:0 0 12px"><div><h3>Độ phủ 57 chuẩn kiến thức</h3><p>Chuẩn có câu hỏi được đánh dấu xanh; chuẩn chưa có sẽ được cảnh báo.</p></div></div><div class="bank-coverage-list" id="bankCoverageCodes"></div></div>
+</section>
+<section class="section teacher-only" id="page-ai-teacher">
+<div class="v32-ai-hero">
+<div>
+<div class="badge" style="background:rgba(255,255,255,.16);color:white">AI Teaching Intelligence</div>
+<h2>AI hỗ trợ dạy học từ dữ liệu — giáo viên vẫn là người quyết định cuối</h2>
+<p>Phân tích dữ liệu học tập để gợi ý ưu tiên lớp, hỗ trợ lập kế hoạch dạy học và biên tập câu hỏi.</p>
+<div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('v32AiSourceText')?.focus()">Tạo bản nháp từ nguồn</button><button class="btn btn-ghost" onclick="goPage('question-bank')">Mở ngân hàng câu hỏi</button></div>
+</div>
+<div class="v32-ai-hero-status">
+<small>MODEL HIỆN TẠI</small><strong id="v32AiCurrentModel">gemini-3.7-flash</strong><span class="v32-connection missing" id="v32AiConnection">○ Chưa có API key</span><span id="v32AiBusyState">Sẵn sàng</span><small id="v32AiUsageText">0 yêu cầu</small>
+</div>
+</div>
+<div class="grid grid-4 mt">
+<div class="card metric"><div><strong id="v32MetricDrafts">0</strong><small>Bản nháp đang chờ</small></div><div class="icon">✦</div></div>
+<div class="card metric"><div><strong id="v32MetricAiBank">0</strong><small>Câu có nguồn AI</small></div><div class="icon">▦</div></div>
+<div class="card metric"><div><strong id="v32MetricReviewed">0</strong><small>Đã duyệt chuyên môn</small></div><div class="icon">✓</div></div>
+<div class="card metric"><div><strong id="v32MetricRequests">0</strong><small>Yêu cầu AI trên máy</small></div><div class="icon">↗</div></div>
+</div>
+<div class="card mt v37-intelligence-card" id="v37TeachingIntelligence">
+<div class="section-head v37-intelligence-head" style="margin:0 0 12px">
+<div><span class="v360-kicker">AI TEACHING INTELLIGENCE</span><h3>1. Teaching Brief theo lớp</h3><p>Phân tích cục bộ từ Mastery + dữ liệu lớp. Khi gọi Gemini, chỉ gửi số liệu tổng hợp đã ẩn danh; tên, email và UID học sinh không được đưa vào payload AI.</p></div>
+<div class="online-actions"><button class="btn btn-soft" onclick="v37OpenPlanHistory()">Lịch sử kế hoạch</button><button class="btn btn-blue" onclick="v37RefreshClassIntelligence(true)">↻ Phân tích lớp</button></div>
+</div>
+<div class="v37-class-toolbar">
+<div><label>Lớp đang phân tích</label><select id="v37ClassSelect" onchange="v37RefreshClassIntelligence(false)"><option value="">Chưa có lớp được tải</option></select></div>
+<div class="v37-privacy"><b id="v37PrivacyStatus">Privacy Guard đang kiểm tra…</b><small>Chỉ số tổng hợp → AI; dữ liệu định danh ở lại trình duyệt/Firestore.</small></div>
+<div class="v37-class-state"><small>Trạng thái</small><b id="v37ClassStatus">Chưa tải dữ liệu lớp.</b></div>
+</div>
+<div class="v37-metrics">
+<span><b id="v37MetricStudents"></b><small>Học sinh</small></span>
+<span><b id="v37MetricAvg"></b><small>Điểm TB xác minh</small></span>
+<span><b id="v37MetricMastery"></b><small>Độ phủ Mastery</small></span>
+<span><b id="v37MetricPriority"></b><small>Ưu tiên số 1</small></span>
+</div>
+<div class="grid grid-2 mt v37-intel-grid">
+<div>
+<div class="v37-subhead"><div><h4>Ưu tiên kiến thức</h4><p>Xếp từ Mastery, độ phủ bằng chứng và tỷ lệ học sinh cần củng cố.</p></div></div>
+<div id="v37PriorityList"><div class="online-empty">Bấm “Phân tích lớp” để tạo teaching brief.</div></div>
+</div>
+<div>
+<div class="v37-subhead"><div><h4>Nhóm học tập động</h4><p>Nhấn một nhóm để xem danh sách cục bộ; AI chỉ nhận số lượng tổng hợp.</p></div></div>
+<div class="v37-cohort-grid" id="v37CohortGrid"><div class="online-empty">Chưa có dữ liệu nhóm.</div></div>
+<div class="v37-subhead mt"><div><h4>Việc nên làm tiếp</h4><p>Luật cục bộ, không cần API key.</p></div></div>
+<div id="v37LocalBrief"><div class="online-empty">Chưa có teaching brief.</div></div>
+</div>
+</div>
+<div class="v37-ai-plan mt">
+<div class="section-head" style="margin:0 0 10px"><div><h4 style="margin:0">Kế hoạch dạy học AI — bản nháp</h4><p id="v37PlanStatus">Gemini chỉ được gọi khi giáo viên bấm nút. Không có thao tác tự giao bài.</p></div><button class="btn btn-blue" id="v37GenerateBtn" onclick="v37GenerateTeachingPlan()">✦ Tạo kế hoạch AI</button></div>
+<div id="v37PlanOutput"><div class="online-empty">Chưa có kế hoạch AI. Phân tích lớp chạy cục bộ ngay cả khi chưa cấu hình Gemini.</div></div>
+</div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 10px"><div><h3>2. Cài đặt Gemini</h3><p>API key chỉ lưu trong trình duyệt theo lựa chọn; không nằm trong <code>state</code>, Firestore, backup hay audit log.</p></div><span class="pill">Cấu hình kết nối AI</span></div>
+<div class="v32-ai-settings">
+<div><label>Gemini API key</label><input autocomplete="off" id="v32AiKey" placeholder="Dán key từ Google AI Studio" type="password"/></div>
+<div><label>Model</label><input id="v32AiModel" list="v32AiModels" placeholder="gemini-3.7-flash" value="gemini-3.7-flash"/><datalist id="v32AiModels"><option value="gemini-3.7-flash"><option value="gemini-3.6-flash"><option value="gemini-3.5-flash"><option value="gemini-3.1-flash-lite"></option></option></option></option></datalist></div>
+<div><label>Mức suy luận</label><select id="v32AiThinking"><option value="low">Low • nhanh</option><option selected="" value="medium">Medium • cân bằng</option><option value="high">High • bài khó</option></select></div>
+<div><label>Lưu API key</label><select id="v32AiKeyMode"><option value="session">Chỉ phiên này</option><option value="device">Trên thiết bị này</option></select></div>
+</div>
+<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiSaveSettings()">Lưu cài đặt</button><button class="btn btn-soft" onclick="v32AiTestConnection()">Kiểm tra kết nối</button><button class="btn btn-danger" onclick="v32AiClearKey()">Xóa API key</button><span class="v32-inline-status" id="v32AiTestResult"></span></div>
+<div class="firebase-banner warn mt"><b>Lưu ý bảo mật:</b>Khóa API được lưu trên trình duyệt theo lựa chọn của thầy/cô. Khi triển khai quy mô lớn, nên dùng máy chủ trung gian để bảo vệ khóa và kiểm soát hạn mức tốt hơn.</div>
+</div>
+<div class="grid grid-2 mt v32-ai-workbench">
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>3. Ảnh/PDF/LaTeX → bản nháp câu hỏi</h3><p> Đọc nguồn, chuẩn hóa LaTeX và đưa kết quả vào Hàng chờ AI.</p></div></div>
+<label>Nội dung / LaTeX nguồn</label>
+<textarea class="v32-ai-source" id="v32AiSourceText" placeholder="Dán nội dung đề, LaTeX hoặc yêu cầu biên tập tại đây…"></textarea>
+<div class="v32-ai-file-row"><label class="v32-file-pick">＋ Chọn ảnh/PDF<input accept="image/png,image/jpeg,image/webp,application/pdf" onchange="v32AiHandleFile(this)" type="file"/></label><span id="v32AiFileMeta">Chưa chọn tệp.</span></div>
+<div class="v32-ai-source-options">
+<div><label>Phạm vi</label><select id="v32AiTargetLesson"><option value="">AI tự phân loại bài</option></select></div>
+<div><label>Loại câu</label><select id="v32AiTypePolicy"><option value="mixed">Tự phối hợp</option><option value="mcq">MCQ A–D</option><option value="tf4">Đúng/Sai 4 ý</option><option value="short">Trả lời ngắn</option></select></div>
+<div><label>Tối đa</label><select id="v32AiCount"><option>1</option><option selected="">3</option><option>5</option><option>8</option><option>10</option></select></div>
+</div>
+<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiExtractQuestions()">✦ Tạo bản nháp AI</button><span class="v32-inline-status" id="v32AiRunStatus"></span></div>
+<div class="math-help mt">Ảnh tối đa 8 MB, PDF tối đa 12 MB trong để tránh quá tải trình duyệt. Tệp chỉ được gửi tới Gemini khi thầy/cô bấm tạo bản nháp; không lưu ảnh/PDF vào Firestore.</div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>4. Phản biện câu đã có</h3><p>AI là lớp kiểm tra thứ hai; local QC vẫn chạy độc lập.</p></div></div>
+<label>Mã câu trong ngân hàng</label>
+<input id="v32AiBankId" list="v32AiQuestionList" placeholder="VD: F1-01-001"/><datalist id="v32AiQuestionList"></datalist>
+<div class="v32-ai-source-options mt">
+<div><label>Số biến thể</label><select id="v32AiVariantCount"><option>1</option><option selected="">3</option><option>5</option></select></div>
+</div>
+<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiAuditSelected()">✓ Kiểm tra đáp án &amp; metadata</button><button class="btn btn-soft" onclick="v32AiGenerateVariants()">⟳ Tạo biến thể</button></div>
+<div class="v32-ai-audit mt" id="v32AiAuditResult"><div class="online-empty">Chưa chạy kiểm định AI.</div></div>
+</div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 10px"><div><h3>5. Hàng chờ AI — bắt buộc giáo viên quyết định</h3><p>Bản nháp nằm cục bộ trên thiết bị, tối đa 40 câu. Chỉ nút duyệt của giáo viên mới đưa câu vào Question Bank Pro.</p></div><button class="btn btn-danger" onclick="v32ClearDraftQueue()">Xóa hàng chờ</button></div>
+<div id="v32AiDraftQueue"><div class="online-empty">Chưa có bản nháp AI.</div></div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 8px"><div><h3>Nguyên tắc AI </h3><p>AI hỗ trợ phân tích và biên tập; giáo viên giữ quyền quyết định chuyên môn.</p></div></div>
+<div class="v32-ai-principles"><div><b>1. Không auto-publish</b><span>AI không tự đưa câu vào ngân hàng và không tự giao bài.</span></div><div><b>2. Không auto-fix</b><span>AI có thể cảnh báo nhưng không tự sửa đáp án, điểm hay dữ liệu lớp.</span></div><div><b>3. Privacy Guard</b><span>Kế hoạch chỉ gửi thống kê lớp đã ẩn danh sang AI.</span></div><div><b>4. Giáo viên duyệt cuối</b><span>Câu hỏi và kế hoạch AI đều là bản nháp trước khi sử dụng.</span></div></div>
+</div>
+</section>
+<section class="section teacher-only" id="page-exam-builder">
+<div class="exam-builder-head">
+<div><h3>Tạo đề kiểm tra • Smart Exam Matrix </h3><p>Thiết lập ma trận Chương × Mức độ, lọc câu theo QC, cân phủ chuẩn/dạng toán, hạn chế lặp câu và sinh nhiều mã đề 101–108 có kiểm soát.</p></div>
+<div class="exam-builder-presets">
+<button class="btn btn-soft" onclick="examBuilderPreset('quick')">15 câu luyện nhanh</button>
+<button class="btn btn-soft" onclick="examBuilderPreset('periodic')">20 câu • 45 phút</button>
+<button class="btn btn-soft" onclick="examBuilderPreset('final')">22 câu • 90 phút</button>
+<button class="btn btn-blue" onclick="examBuilderPreset('thpt')">Cấu trúc THPT 12–4–6</button>
+</div>
+</div>
+<div class="exam-builder-layout mt">
+<div class="exam-builder-stack">
+<div class="card">
+<div class="section-head" style="margin:0 0 12px"><div><h3>1. Thông tin đề</h3><p>Tên đề và thời gian làm bài.</p></div></div>
+<div class="exam-builder-meta">
+<div><label>Tên đề kiểm tra</label><input id="ebTitle" oninput="updateExamBuilderSummary()" value="Đề kiểm tra tự tạo • Toán 12"/></div>
+<div><label>Thời gian (phút)</label><input id="ebDuration" max="180" min="5" oninput="updateExamBuilderSummary()" type="number" value="45"/></div>
+</div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 12px"><div><h3>2. Ma trận Chương × Mức độ</h3><p>Mỗi ô là số câu cần lấy; số nhỏ bên dưới là số câu đang có trong ngân hàng.</p></div><button class="btn btn-soft" onclick="clearExamBuilderMatrix()">Xóa ma trận</button></div>
+<div class="exam-matrix-wrap"><table class="exam-matrix"><thead><tr><th>Phạm vi</th><th>Nhận biết</th><th>Thông hiểu</th><th>Vận dụng</th><th>Tổng</th></tr></thead><tbody id="examBuilderMatrix"></tbody><tfoot><tr><td><b>Tổng số câu</b></td><td id="ebNBTotal">0</td><td id="ebTHTotal">0</td><td id="ebVDTotal">0</td><td class="exam-matrix-total" id="ebMatrixTotal">0</td></tr></tfoot></table></div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>3. Cơ cấu loại câu</h3><p>Mặc định hệ thống tự chọn loại câu trong từng ô ma trận. Bật khóa để yêu cầu đúng số lượng từng loại.</p></div></div>
+<div class="exam-type-card">
+<div class="exam-type-head"><label class="exam-type-toggle"><input id="ebExactTypes" onchange="toggleExamBuilderTypes()" type="checkbox"/> Bắt buộc đúng cơ cấu loại câu</label><button class="btn btn-soft" onclick="autoExamBuilderTypes()">Phân bổ tự động</button></div>
+<div class="exam-type-grid disabled" id="examBuilderTypes">
+<div><label>Nhiều lựa chọn</label><input disabled="" id="ebTypeMcq" min="0" oninput="updateExamBuilderSummary()" type="number" value="0"/></div>
+<div><label>Đ/S 1 mệnh đề</label><input disabled="" id="ebTypeTf" min="0" oninput="updateExamBuilderSummary()" type="number" value="0"/></div>
+<div><label>Đ/S 4 ý</label><input disabled="" id="ebTypeTf4" min="0" oninput="updateExamBuilderSummary()" type="number" value="0"/></div>
+<div><label>Trả lời ngắn</label><input disabled="" id="ebTypeShort" min="0" oninput="updateExamBuilderSummary()" type="number" value="0"/></div>
+</div>
+</div>
+<div class="exam-builder-summary mt"><div><b id="ebSummaryTotal">0</b><small>Câu trong ma trận</small></div><div><b id="ebSummaryBank">0</b><small>Câu hợp lệ trong ngân hàng</small></div><div><b id="ebSummarySaved">0</b><small>Đề đã lưu</small></div></div>
+<div class="exam-builder-status mt" id="examBuilderStatus">Chọn một mẫu hoặc nhập số câu vào ma trận.</div>
+<div class="exam-builder-actions mt"><button class="btn btn-blue" onclick="generateExamBuilderDraft()">⚙ Sinh đề từ ma trận</button><button class="btn btn-soft" onclick="autoExamBuilderTypes()">Cân cơ cấu loại câu</button></div>
+</div>
+<div class="card v30-engine-card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>4. Tạo nhiều mã đề</h3><p>Tạo nhiều mã đề từ một đề gốc, đảo câu/phương án có kiểm soát và đặt chính sách công bố đáp án khi giao online.</p></div><span class="pill tag-green"></span></div>
+<div class="v30-engine-grid">
+<div><label>Số mã đề</label><select id="ebV30VariantCount" onchange="v30RefreshBuilderPolicy()"><option value="1">1 mã</option><option value="2">2 mã A–B</option><option value="3">3 mã A–C</option><option selected="" value="4">4 mã A–D</option><option value="5">5 mã A–E</option><option value="6">6 mã A–F</option><option value="7">7 mã A–G</option><option value="8">8 mã A–H</option></select></div>
+<div><label>Công bố đáp án khi giao</label><select id="ebV30RevealPolicy" onchange="v30RefreshBuilderPolicy()"><option value="never">Không công bố</option><option selected="" value="after_due">Sau khi hết hạn</option><option value="after_grade">Sau khi giáo viên chấm</option></select></div>
+<label class="v30-check"><input checked="" id="ebV30ShuffleQuestions" onchange="v30RefreshBuilderPolicy()" type="checkbox"/> Đảo thứ tự câu</label>
+<label class="v30-check"><input checked="" id="ebV30ShuffleOptions" onchange="v30RefreshBuilderPolicy()" type="checkbox"/> Đảo phương án MCQ</label>
+<label class="v30-check"><input checked="" id="ebV30PreserveSections" onchange="v30RefreshBuilderPolicy()" type="checkbox"/> Giữ đúng Phần I–II–III</label>
+</div>
+<div class="math-help mt"><b>Nguyên tắc:</b> chỉ lưu một bản đề gốc. Mã A/B/C… được tái tạo bằng seed xác định; vì vậy giáo viên chấm đúng mã mà không phải lưu 4–8 bản sao câu hỏi.</div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Đề đã lưu</h3><p>Mỗi đề lưu một bản chụp câu hỏi để không bị thay đổi khi ngân hàng được chỉnh sửa sau này.</p></div><button class="btn btn-soft" onclick="v26OpenContentTrash()">🗑 Thùng rác nội dung</button></div>
+<div class="saved-exam-list" id="examBuilderSaved"></div>
+</div>
+</div>
+<div class="card" style="position:sticky;top:82px">
+<div id="examBuilderPreview"><div class="exam-preview-empty"><b>Chưa có đề xem trước</b><br/><span style="font-size:12px">Thiết lập ma trận rồi bấm “Sinh đề từ ma trận”.</span></div></div>
+</div>
+</div>
+</section>
+<section class="section" id="page-notifications">
+<div class="section-head" style="margin-top:0">
+<div><h3>Trung tâm thông báo</h3><p>Tự tổng hợp việc cần xử lý từ hạn nộp, lượt nộp và kết quả học tập. Không tạo thêm dữ liệu thông báo dư thừa trên Firestore.</p></div>
+<div class="notification-toolbar"><select class="teacher-only" id="notificationClassSelect" onchange="firebaseNotificationSelectClass(this.value)"><option value="">Chọn lớp</option></select><button class="btn btn-soft" onclick="firebaseRefreshNotifications(true)">↻ Làm mới</button></div>
+</div>
+<div class="firebase-banner warn" id="notificationBanner">Đăng nhập Firebase để tải thông báo.</div>
+<div class="notification-metrics mt">
+<div class="card metric"><div><strong id="notifyMetricUrgent"></strong><small>Việc khẩn cấp</small></div><div class="icon">!</div></div>
+<div class="card metric"><div><strong id="notifyMetricDeadline"></strong><small>Sắp đến hạn</small></div><div class="icon">◷</div></div>
+<div class="card metric"><div><strong id="notifyMetricSupport"></strong><small>Cần hỗ trợ</small></div><div class="icon">◎</div></div>
+<div class="card metric"><div><strong id="notifyMetricTotal"></strong><small>Tổng thông báo</small></div><div class="icon">🔔</div></div>
+</div>
+<div class="grid grid-2 mt teacher-only">
+<div class="card"><h3 style="margin-top:0">Giao việc nhanh theo nhóm</h3><p style="font-size:12px;color:var(--muted);line-height:1.6"> Ưu tiên điểm Secure Exam đã xác minh khi chia nhóm từ điểm bài giao, độ chính xác và trạng thái trễ bài. Chọn nhóm để chuyển sang màn hình giao bài với đối tượng đã đặt sẵn.</p><div class="teacher-live-empty" id="notificationSmartGroups">Chọn lớp để phân nhóm.</div></div>
+<div class="card"><h3 style="margin-top:0">Chủ đề nên can thiệp</h3><p style="font-size:12px;color:var(--muted);line-height:1.6">Ưu tiên mã kiến thức đang yếu ở nhiều học sinh nhất.</p><div class="teacher-live-empty" id="notificationWeakSkills">Chưa có dữ liệu.</div></div>
+</div>
+<div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3 id="notificationListTitle">Thông báo ưu tiên</h3><p id="notificationListHint">Các việc được sắp theo mức độ cần xử lý.</p></div></div><div id="notificationList"><div class="notification-empty">Chưa có thông báo.</div></div></div>
+</section>
+<section class="section admin-only" id="page-admin">
+<div class="section-head" style="margin-top:0">
+<div><h2 style="margin:0">Quản trị hệ thống</h2><p>Quản lý tài khoản, quyền truy cập lớp, cảnh báo vận hành và nhật ký quản trị tập trung.</p></div>
+<div class="online-actions"><span class="pill">Cập nhật: <b id="v25AdminUpdatedAt"></b></span><button class="btn btn-blue" onclick="v25AdminRefresh(true)">↻ Làm mới</button></div>
+</div>
+<div class="firebase-banner warn" id="v25AdminBanner">Đăng nhập tài khoản Quản trị viên để tải dữ liệu hệ thống.</div>
+<div class="grid grid-5 mt v25-admin-metrics">
+<div class="card"><small>Tổng tài khoản</small><h2 id="v25MetricUsers"></h2></div>
+<div class="card"><small>Giáo viên</small><h2 id="v25MetricTeachers"></h2></div>
+<div class="card"><small>Học sinh</small><h2 id="v25MetricStudents"></h2></div>
+<div class="card"><small>Tài khoản khóa</small><h2 id="v25MetricLocked"></h2></div>
+<div class="card"><small>Lớp hoạt động</small><h2 id="v25MetricClasses"></h2></div>
+</div>
+<div class="grid grid-2 mt">
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Cảnh báo hệ thống</h3><p>Kiểm tra nhanh các trạng thái cần quản trị viên chú ý.</p></div></div>
+<div id="v25AdminAlerts"><div class="online-empty">Đang chờ dữ liệu.</div></div>
+</div>
+<div class="card">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Giới hạn bảo mật</h3><p> Tiếp tục khóa tài khoản bằng Firestore Rules; lớp hiệu năng không mở thêm quyền dữ liệu.</p></div></div>
+<div class="firebase-banner warn"><b>Khóa ở cấp ứng dụng:</b>Tài khoản bị khóa sẽ không được đọc hoặc ghi dữ liệu Math12 Hub. Việc vô hiệu hóa hoàn toàn tài khoản đăng nhập cần thực hiện trong hệ thống quản trị Firebase.</div>
+<div class="cloud-sync-note mt">Không cho phép một admin tự nâng người dùng khác thành admin trên trình duyệt. Admin gốc phải được thiết lập trực tiếp trong Firebase Console.</div>
+</div>
+</div>
+<div class="card mt v26-health-card">
+<div class="section-head" style="margin:0 0 10px">
+<div><h3>Sức khỏe &amp; toàn vẹn dữ liệu</h3><p>Quét theo yêu cầu để phát hiện lớp mất chủ, mã tham gia lệch, member/membership không khớp, bài Secure thiếu khóa đáp án và chỉ mục mồ côi.</p></div>
+<div class="online-actions"><span class="pill" id="v26HealthStatus">Chưa quét</span><button class="btn btn-soft" onclick="v26SystemHealthScan()">⌕ Quét hệ thống</button><button class="btn btn-blue" onclick="v26RepairSafeIssues()">⚕ Sửa lỗi an toàn</button></div>
+</div>
+<div class="grid grid-4 v26-health-metrics">
+<div class="card"><small>Điểm sức khỏe</small><h2 id="v26HealthScore"></h2></div>
+<div class="card"><small>Vấn đề</small><h2 id="v26HealthIssues">0</h2></div>
+<div class="card"><small>Có thể sửa an toàn</small><h2 id="v26HealthRepairable">0</h2></div>
+<div class="card"><small>Document đã kiểm tra</small><h2 id="v26HealthDocs">0</h2></div>
+</div>
+<div class="v26-health-list mt" id="v26HealthIssueList"><div class="online-empty">Bấm “Quét hệ thống” khi cần kiểm tra. không tự chạy quét toàn vẹn nền để tránh tăng Firestore Reads.</div></div>
+<div class="cloud-sync-note mt" id="v26HealthLimitNote"> Chỉ quét khi admin bấm nút để tránh phát sinh Reads nền.</div>
+</div>
+<div class="card mt v34-scale-card">
+<div class="section-head" style="margin:0 0 10px">
+<div><h3>Hiệu năng &amp; quy mô</h3><p>Theo dõi tải trong phiên, cache, truy vấn chậm và các giới hạn phân trang. Không gửi telemetry ra ngoài.</p></div>
+<div class="online-actions"><span class="pill tag-green" id="v34ScaleStatus">Scale mode: Auto</span><button class="btn btn-soft" onclick="v34RenderScaleCenter(true)">↻ Cập nhật</button><button class="btn btn-soft" onclick="v34ClearRuntimeCaches()">Xóa cache</button><button class="btn btn-blue" onclick="v34ExportDiagnostics()">Xuất chẩn đoán</button></div>
+</div>
+<div class="grid grid-5 v34-scale-metrics">
+<div class="card"><small>Reads ước tính / phiên</small><h2 id="v34MetricReads">0</h2></div>
+<div class="card"><small>Truy vấn</small><h2 id="v34MetricQueries">0</h2></div>
+<div class="card"><small>Cache hit</small><h2 id="v34MetricCache"></h2></div>
+<div class="card"><small>Truy vấn chậm</small><h2 id="v34MetricSlow">0</h2></div>
+<div class="card"><small>Bộ nhớ trình duyệt</small><h2 id="v34MetricStorage"></h2></div>
+</div>
+<div class="v34-scale-advice mt" id="v34ScaleAdvice"><div class="online-empty"> Sẽ cập nhật khi trang phát sinh truy vấn.</div></div>
+<div class="cloud-sync-note mt"> Giữ toàn bộ Scale: cache thích ứng 60–180 giây, marker migration, 60 học sinh/lần, 60 bài/lần, tối đa 80 bài gần nhất/lớp và Admin 100 document/trang; bổ sung Smart Loading + PWA + Regression Guard.</div>
+</div>
+<div class="card mt v35-production-card">
+<div class="section-head" style="margin:0 0 10px">
+<div><h3>Trung tâm vận hành</h3><p>Kiểm tra trạng thái các chức năng chính của hệ thống. Không gửi dữ liệu theo dõi ra bên ngoài.</p></div>
+<div class="online-actions"><button class="btn btn-soft" onclick="v35RunRegressionChecks({render:true,toast:true})">✓ Chạy kiểm tra</button><button class="btn btn-soft" onclick="v35ClearRuntimeIssues()">Xóa lỗi phiên</button><button class="btn btn-blue" onclick="v35ExportDiagnostics()">Xuất diagnostics</button></div>
+</div>
+<div class="grid grid-5 v35-production-metrics">
+<div class="card"><small>Regression</small><h2 id="v35MetricRegression">Chưa chạy</h2></div>
+<div class="card"><small>App Check</small><h2 id="v35MetricAppCheck">Đang kiểm tra</h2></div>
+<div class="card"><small>PWA / Offline shell</small><h2 id="v35MetricPWA">Đang kiểm tra</h2></div>
+<div class="card"><small>Smart Loading</small><h2 id="v35MetricLazy">3/3 hoãn tải</h2></div>
+<div class="card"><small>Lỗi hệ thống</small><h2 id="v35MetricErrors">0</h2></div>
+</div>
+<div class="v35-check-list mt" id="v35RegressionList"><div class="online-empty"> Sẽ tự chạy kiểm tra nhẹ sau khi trang khởi động; admin có thể chạy lại bất kỳ lúc nào.</div></div>
+<details class="v35-runtime-details mt"><summary>Lỗi JavaScript đã ghi nhận trong phiên</summary><div id="v35RuntimeIssues"><div class="online-empty">Chưa ghi nhận lỗi JavaScript trong phiên.</div></div></details>
+<div class="cloud-sync-note mt"><b>App Check:</b> Chỉ hiển thị trạng thái và giữ cơ chế sẵn sàng. Muốn bật bảo vệ thật, cần nhập reCAPTCHA v3 site key vào cấu hình rồi kiểm tra request metrics trước khi bật Enforcement trong Firebase Console.</div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 10px">
+<div><h3>Quản lý tài khoản</h3><p>Đổi quyền Học sinh ↔ Giáo viên, khóa/mở truy cập và gửi yêu cầu đặt lại mật khẩu.</p></div>
+<span class="pill" id="v25UserResultCount">0 tài khoản</span>
+</div>
+<div class="v25-admin-toolbar">
+<input id="v25UserSearch" oninput="v25AdminApplyFilters()" placeholder="Tìm tên, email hoặc UID…"/>
+<select id="v25UserRoleFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả vai trò</option><option value="student">Học sinh</option><option value="teacher">Giáo viên</option><option value="admin">Quản trị viên</option></select>
+<select id="v25UserStatusFilter" onchange="v25AdminApplyFilters()"><option value="">Tất cả trạng thái</option><option value="active">Hoạt động</option><option value="locked">Đã khóa</option></select>
+</div>
+<div class="table-wrap mt"><table class="table"><thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Trạng thái</th><th>Email</th><th>Đăng nhập gần nhất</th><th>Quản lý</th></tr></thead><tbody id="v25UserTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
+<div class="v34-pager mt" id="v34UserPager"><span>Trang 1</span></div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Quản trị lớp</h3><p>Quan sát toàn hệ thống và tạm khóa/mở quyền học sinh truy cập một lớp khi cần.</p></div></div>
+<div class="v25-admin-toolbar"><input id="v25ClassSearch" oninput="v25AdminRenderClasses()" placeholder="Tìm tên lớp, giáo viên hoặc owner UID…"/></div>
+<div class="table-wrap mt"><table class="table"><thead><tr><th>Lớp</th><th>Chủ lớp</th><th>Trạng thái</th><th>HS snapshot</th><th>Điểm TB</th><th>Quản lý</th></tr></thead><tbody id="v25ClassTable"><tr><td colspan="6">Chưa tải dữ liệu.</td></tr></tbody></table></div>
+<div class="v34-pager mt" id="v34ClassPager"><span>Trang 1</span></div>
+</div>
+<div class="card mt">
+<div class="section-head" style="margin:0 0 10px"><div><h3>Nhật ký quản trị</h3><p>Chỉ ghi các thao tác quyền cao của; client không được sửa hoặc xóa lịch sử này.</p></div></div>
+<div id="v25AdminAudit"><div class="online-empty">Chưa có nhật ký.</div></div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<nav aria-label="Điều hướng nhanh trên điện thoại" class="v353-mobile-nav" data-role="student" id="v353MobileNav">
+<div class="v353-mobile-role" data-role="student">
+<button data-mobile-page="dashboard" type="button"><span>⌂</span><span>Trang chủ</span></button>
+<button data-mobile-page="lessons" type="button"><span>▤</span><span>Học</span></button>
+<button data-mobile-page="thpt" type="button"><span>★</span><span>Luyện thi</span></button>
+<button data-mobile-page="reports" type="button"><span>▣</span><span>Báo cáo</span></button>
+<button data-mobile-more="" type="button"><span>☰</span><span>Thêm</span></button>
+</div>
+<div class="v353-mobile-role" data-role="teacher">
+<button data-mobile-page="dashboard" type="button"><span>⌂</span><span>Trang chủ</span></button>
+<button data-mobile-page="question-bank" type="button"><span>▦</span><span>Ngân hàng</span></button>
+<button data-mobile-more="" type="button"><span>☰</span><span>Thêm</span></button>
+</div>
+<div class="v353-mobile-role" data-role="admin">
+<button data-mobile-page="dashboard" type="button"><span>⌂</span><span>Trang chủ</span></button>
+<button data-mobile-page="question-bank" type="button"><span>▦</span><span>Ngân hàng</span></button>
+<button data-mobile-page="admin" type="button"><span>🛡</span><span>Quản trị</span></button>
+<button data-mobile-more="" type="button"><span>☰</span><span>Thêm</span></button>
+</div>
 </nav>
-<div id="v353ToastRegion" aria-live="polite" aria-atomic="false"></div>
-<div id="mobileOverlay" class="mobile-overlay hidden"></div>
+<div aria-atomic="false" aria-live="polite" id="v353ToastRegion"></div>
+<div class="mobile-overlay hidden" id="mobileOverlay"></div>
 <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><div><h3 id="modalTitle">Bài kiểm tra</h3><small id="modalSub" style="color:var(--muted)"></small></div><button class="close" onclick="closeModal()">×</button></div><div class="modal-body" id="modalBody"></div><div class="quiz-footer" id="modalFooter"></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
 <!-- V37.1 App Check-ready: điền reCAPTCHA v3 site key sau khi đăng ký Web App trong Firebase App Check.
@@ -857,5 +792,6 @@
 <script src="assets/js/math-room-v39.js?v=40.0"></script>
 <script src="assets/js/self-study-v38.3.js?v=40.0"></script>
 <script src="assets/js/platform-v40.js?v=40.0"></script>
+<script src="assets/js/clean-ui.js?v=40.0.1"></script>
 </body>
 </html>
