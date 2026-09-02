@@ -294,6 +294,7 @@
 <div class="question-bank-head v371-bank-head">
 <div aria-label="Thao tác chính ngân hàng câu hỏi" class="v371-bank-primary-actions">
 <button class="btn btn-blue" onclick="openQuestionEditor()">+ Thêm câu hỏi</button>
+<button class="btn btn-soft" onclick="QuestionIdV40.openEditorById()">⌕ Sửa theo ID</button>
 <button class="btn btn-soft" onclick="goPage('exam-builder')">▧ Tạo đề</button>
 <button class="btn btn-soft" onclick="v361OpenQualityCenter()">✓ Quality</button>
 <button class="btn btn-soft" onclick="v360ScrollKnowledgeMap()">◇ Knowledge Map</button>
@@ -384,7 +385,7 @@
 <div class="card mt" id="bankFiltersV36Anchor">
 <div class="section-head" style="margin:0 0 14px"><div><h3>Bộ lọc ngân hàng</h3><p>Tìm theo Chương → Bài → Mã kiến thức → Dạng toán ID6 chính thức → mức độ → loại câu.</p></div><span class="pill" id="bankResultCount">0 câu</span></div>
 <div class="bank-toolbar v29-bank-toolbar">
-<input id="bankSearch" placeholder="Tìm nội dung, ID6, mã bản ghi, nguồn, thẻ, lời giải..."/>
+<input id="bankSearch" placeholder="Tìm ID câu (Q000001), nội dung, ID6, nguồn, thẻ, lời giải..."/>
 <select id="bankChapter"><option value="">Tất cả chương</option></select>
 <select id="bankLesson"><option value="">Tất cả bài</option></select>
 <select id="bankKnowledge"><option value="">Tất cả mã kiến thức</option></select>
@@ -397,12 +398,12 @@
 <input id="bankTag" placeholder="Lọc theo thẻ..."/>
 <select id="bankDuplicateFilter"><option value="">Trùng: tất cả</option><option value="yes">Có nghi trùng</option><option value="no">Không nghi trùng</option></select>
 <select id="bankQualityV361"><option value="">QC: tất cả</option><option value="critical">Có lỗi kỹ thuật</option><option value="warning">Cần rà soát</option><option value="pass">Không lỗi/cảnh báo</option></select>
-<select id="bankSort"><option value="updated">Mới sửa trước</option><option value="id">Theo mã câu</option><option value="quality">Chất lượng thấp trước</option><option value="difficulty">Độ khó cao trước</option></select><select id="bankPageSize"><option value="25">25 câu/trang</option><option selected="" value="50">50 câu/trang</option><option value="100">100 câu/trang</option></select>
+<select id="bankSort"><option value="updated">Mới sửa trước</option><option value="id">Theo ID câu</option><option value="quality">Chất lượng thấp trước</option><option value="difficulty">Độ khó cao trước</option></select><select id="bankPageSize"><option value="25">25 câu/trang</option><option selected="" value="50">50 câu/trang</option><option value="100">100 câu/trang</option></select>
 </div>
 </div>
 <div class="card mt">
 <div class="section-head" style="margin:0 0 12px"><div><h3>Danh sách câu hỏi</h3><p> Hiển thị điểm QC kỹ thuật theo từng câu; nhấn vào phần trăm để xem lỗi/cảnh báo chi tiết rồi sửa ngay trong trình soạn.</p></div></div>
-<div class="table-wrap"><table class="table v29-bank-table"><thead><tr><th>Mã</th><th>Câu hỏi</th><th>Chuẩn &amp; nguồn</th><th>Mức độ</th><th>Loại</th><th>QC</th><th>Thao tác</th></tr></thead><tbody id="questionBankTable"></tbody></table></div><div class="v29-pager" id="bankV29Pager"></div>
+<div class="table-wrap"><table class="table v29-bank-table"><thead><tr><th>ID câu</th><th>Câu hỏi</th><th>Chuẩn &amp; nguồn</th><th>Mức độ</th><th>Loại</th><th>QC</th><th>Thao tác</th></tr></thead><tbody id="questionBankTable"></tbody></table></div><div class="v29-pager" id="bankV29Pager"></div>
 </div>
 <div class="card mt"><div class="section-head" style="margin:0 0 12px"><div><h3>Độ phủ 57 chuẩn kiến thức</h3><p>Chuẩn có câu hỏi được đánh dấu xanh; chuẩn chưa có sẽ được cảnh báo.</p></div></div><div class="bank-coverage-list" id="bankCoverageCodes"></div></div>
 </section>
@@ -706,7 +707,66 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
 <script src="assets/js/app-core.bundle.js"></script>
+
+
+
 <script src="assets/data/all-practice-bank-v38.3.js?v=40.0"></script>
 <script src="assets/js/app-features.bundle.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>

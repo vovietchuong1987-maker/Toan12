@@ -1,5 +1,5 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260902-core';
+const CACHE_REV='20260902-question-id';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[

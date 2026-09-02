@@ -1,4 +1,3 @@
-
 /* ===== assets/js/core.js ===== */
 const APP_VERSION='39.2'; // Avatar 3D Visual Upgrade on  platform.
 const chapters=[

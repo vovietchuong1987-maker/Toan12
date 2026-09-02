@@ -1,14 +1,18 @@
 {
-  "before_script_tags": 67,
-  "after_script_tags": 9,
-  "after_css_links": 1,
+  "release": "stable-core-permanent-question-id",
+  "published_questions": 371,
+  "question_ids": 371,
+  "unique_question_ids": 371,
+  "first_question_id": "Q000001",
+  "last_question_id": "Q000371",
+  "permanent_id_non_reuse": true,
+  "legacy_record_id_preserved": true,
+  "id6_preserved": true,
   "core_modules_bundled": 4,
-  "feature_modules_bundled": 56,
-  "files": 15,
+  "feature_modules_bundled": 57,
+  "after_css_links": 1,
   "local_refs": 8,
   "missing_local_refs": [],
-  "clean_ui_runtime_observer_removed": true,
   "service_worker": "sw.js",
-  "security_audit_included": true,
-  "firestore_rules_template_included": true
+  "cache_revision": "20260902-question-id"
 }
