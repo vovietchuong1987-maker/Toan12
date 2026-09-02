@@ -112,6 +112,13 @@ function avatarV378GenericSvg(size='mini'){
 }
 function avatarV378MiniHtml(a){return `<span class="avatar-v378-mini">${a?avatarV378Svg(a,'mini'):avatarV378GenericSvg('mini')}</span>`}
 
+function avatarV378NotifyChanged(field,value){
+  const detail={field,value,avatar:avatarV378Draft?{...avatarV378Draft}:avatarV378Current(),at:Date.now()};
+  requestAnimationFrame(()=>{
+    try{window.dispatchEvent(new CustomEvent('math12hub:avatar-changed',{detail}))}catch(_){}
+    try{window.v384Avatar3D?.rebuild?.()}catch(_){}
+  });
+}
 function avatarV378Set(field,value){
   let a=avatarV378Current();
   if(field==='gender'){
@@ -121,7 +128,11 @@ function avatarV378Set(field,value){
   else if(field==='hair'&&AVATAR_V378_HAIR[a.gender].some(x=>x.id===value))a.hair=value;
   else if(field==='outfit'&&AVATAR_V378_OUTFITS.some(x=>x.id===value))a.outfit=value;
   avatarV378Draft={...a,ownerUid:avatarV378OwnerUid(),updatedAt:new Date().toISOString()};
+  // V39.2.1: keep the starter editor and the layered wardrobe in sync.
+  // Without this, the wardrobe's starter slots can override the newly selected hair/outfit.
+  try{window.v385Wardrobe?.syncBase?.(field,avatarV378Draft)}catch(_){}
   avatarV378RenderPage();
+  avatarV378NotifyChanged(field,value);
 }
 function avatarV378OptionButton(field,id,label,current,extra=''){
   return `<button class="avatar-choice ${current===id?'selected':''}" type="button" onclick="avatarV378Set('${field}','${id}')"><span>${extra||label}</span><small>${esc(label)}</small><em>Miễn phí</em></button>`;
@@ -158,7 +169,7 @@ function avatarV378RenderPage(){
     <div class="card avatar-future-card"><span>🛍</span><div><b>Shop & Inventory</b><small>Vật phẩm nâng cấp sẽ mở sau khi nền avatar ổn định.</small></div><em>Sắp có</em></div>
   </div>`;
 }
-function avatarV378ResetDraft(){avatarV378Draft=avatarV378Stored()||avatarV378Starter(avatarV378Current().gender);avatarV378RenderPage()}
+function avatarV378ResetDraft(){avatarV378Draft=avatarV378Stored()||avatarV378Starter(avatarV378Current().gender);try{window.v385Wardrobe?.syncBase?.('reset',avatarV378Draft)}catch(_){}avatarV378RenderPage();avatarV378NotifyChanged('reset','')}
 async function avatarV378Save(){
   let a=avatarV378Current();a={...a,initialized:true,ownerUid:avatarV378OwnerUid(),updatedAt:new Date().toISOString()};
   state.avatarV378=a;avatarV378Draft=null;save({sync:false,reason:'avatar-v37.8'});

@@ -1,0 +1,2 @@
+Math12 Hub V39.2.1 — Avatar Live Sync Hotfix
+Fixes UI -> 3D renderer synchronization and starter wardrobe override.

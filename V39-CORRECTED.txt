@@ -1,11 +1,17 @@
-Math12 Hub V39.1 — Student 3D World Hotfix
-Build: 39.1-student-3d-world-hotfix
+Math12 Hub V39.2 — Avatar 3D Visual Upgrade
+Build: 39.2-avatar-3d-visual-upgrade
+Base: V39.1 Student 3D World Hotfix
 
-Sửa trực tiếp trên nền V39:
-- Fix Mega Shop bị rơi về giao diện V38.0 do module V38.6 dùng window.state trong khi state là global lexical binding.
-- Fix Wardrobe / Achievement / Room dùng sai window.firebaseUser, window.firebaseProfile và window.ROLE_ACCESS.
-- Học sinh được phép truy cập trực tiếp: Shop, Nhiệm vụ, Hành trình, Bộ sưu tập, Phòng của em.
-- Mega Shop mở rộng: 304 vật phẩm V39.1 + tự nhập 12 vật phẩm V38.0 legacy = 316 mục khi chạy đủ module.
-- Shop có tìm kiếm, lọc theo slot/rarity, 40 vật phẩm/trang và bộ sưu tập Toán học.
-- My Math Room tiếp tục dùng dữ liệu theo UID thực thay vì bucket local dùng chung.
-- Cache/version đổi sang 39.1 để tránh GitHub Pages giữ giao diện cũ.
+Mục tiêu: nâng chất lượng nhân vật 3D nhưng không thay đổi dữ liệu học sinh hay phá các chức năng cũ.
+
+Visual forms:
+- Hair: 16
+- Tops: 9
+- Bottoms: 5
+- Shoes: 5
+- Headgear: 6
+- Glasses: 5
+- Back items: 4
+- Hand tools: compass / book / calculator / ruler
+
+Mega Shop catalog mới: 304 mục trước khi nhập legacy V38.0.
