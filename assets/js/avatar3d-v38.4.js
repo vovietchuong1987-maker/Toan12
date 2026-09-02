@@ -1,12 +1,12 @@
 /* =========================================================
-   Math12 Hub V39.2 — Avatar 3D Visual Upgrade
+   Math12 Hub V40 — Avatar 3D Visual Upgrade
    Upgrades the existing V38.4 procedural foundation without changing
    student data schemas: expressive chibi proportions, richer face,
    real cosmetic geometry, natural idle/blink, 360° orbit and fallback.
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='39.2.1-avatar-live-sync';
+const BUILD='40.0-avatar-production';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -240,12 +240,12 @@ function createScene(){
   });return scene;
 }
 function destroy(){if(rafMount)cancelAnimationFrame(rafMount);rafMount=0;try{scene?.dispose()}catch(_){}try{engine?.dispose()}catch(_){}scene=null;engine=null;root=null;canvas=null;parts={}}
-function controls(shell){shell.insertAdjacentHTML('beforeend',`<div class="v384-avatar3d-badge">3D • V39.2.1 LIVE</div><div class="v392-quality-chip">CHIBI HD</div><div class="v384-avatar3d-controls"><button type="button" data-act="left" title="Xoay trái">↶</button><button type="button" data-act="reset" title="Góc nhìn mặc định">◎</button><button type="button" data-act="celebrate" title="Ăn mừng">✦</button><button type="button" data-act="right" title="Xoay phải">↷</button></div>`);shell.querySelector('[data-act="left"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha-=.35};shell.querySelector('[data-act="right"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha+=.35};shell.querySelector('[data-act="reset"]').onclick=()=>{const c=scene?.activeCamera;if(c){c.alpha=-Math.PI/2;c.beta=Math.PI/2.23;c.radius=6.15}};shell.querySelector('[data-act="celebrate"]').onclick=()=>{celebrateUntil=performance.now()+1800}}
+function controls(shell){shell.insertAdjacentHTML('beforeend',`<div class="v384-avatar3d-badge">3D • V40 PRODUCTION</div><div class="v392-quality-chip">CHIBI HD</div><div class="v384-avatar3d-controls"><button type="button" data-act="left" title="Xoay trái">↶</button><button type="button" data-act="reset" title="Góc nhìn mặc định">◎</button><button type="button" data-act="celebrate" title="Ăn mừng">✦</button><button type="button" data-act="right" title="Xoay phải">↷</button></div>`);shell.querySelector('[data-act="left"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha-=.35};shell.querySelector('[data-act="right"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha+=.35};shell.querySelector('[data-act="reset"]').onclick=()=>{const c=scene?.activeCamera;if(c){c.alpha=-Math.PI/2;c.beta=Math.PI/2.23;c.radius=6.15}};shell.querySelector('[data-act="celebrate"]').onclick=()=>{celebrateUntil=performance.now()+1800}}
 async function mount(){
   const stage=document.querySelector('#page-avatar.active .avatar-preview-stage')||document.querySelector('#page-avatar .avatar-preview-stage');if(!stage)return;
   if(stage.querySelector('.v384-avatar3d-shell'))return;
-  destroy();const shell=document.createElement('div');shell.className='v384-avatar3d-shell v392-avatar3d-shell';shell.innerHTML='<div class="v384-avatar3d-loading"><div><b>Đang dựng Avatar 3D V39.2.1…</b><span>Chibi HD • blink • vật phẩm 3D thật • xoay 360°</span></div></div><canvas class="v384-avatar3d-canvas" aria-label="Nhân vật 3D Math12 Hub V39.2"></canvas>';stage.appendChild(shell);controls(shell);
-  try{await loadBabylon();if(!document.body.contains(shell))return;canvas=shell.querySelector('canvas');engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,adaptToDeviceRatio:true});createScene();try{window.dispatchEvent(new CustomEvent('math12hub:avatar3d-ready',{detail:{scene,root,engine,build:BUILD}}))}catch(_){}engine.runRenderLoop(()=>scene?.render());const resize=()=>engine?.resize();window.addEventListener('resize',resize);shell._v384Resize=resize;requestAnimationFrame(()=>engine?.resize());setTimeout(()=>shell.querySelector('.v384-avatar3d-loading')?.remove(),180)}catch(err){console.warn('V39.2.1 3D fallback',err);shell.innerHTML='<div class="v384-webgl-fallback">3D chưa sẵn sàng • đang dùng avatar 2D an toàn</div>';setTimeout(()=>shell.remove(),2600)}
+  destroy();const shell=document.createElement('div');shell.className='v384-avatar3d-shell v392-avatar3d-shell';shell.innerHTML='<div class="v384-avatar3d-loading"><div><b>Đang dựng Avatar 3D…</b><span>Chibi HD • blink • vật phẩm 3D thật • xoay 360°</span></div></div><canvas class="v384-avatar3d-canvas" aria-label="Nhân vật 3D Math12 Hub V40"></canvas>';stage.appendChild(shell);controls(shell);
+  try{await loadBabylon();if(!document.body.contains(shell))return;canvas=shell.querySelector('canvas');engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,adaptToDeviceRatio:true});try{if(window.Math12Platform?.perf?.lowPower?.())engine.setHardwareScalingLevel(Math.max(1.35,window.devicePixelRatio||1));}catch(_){}createScene();try{window.dispatchEvent(new CustomEvent('math12hub:avatar3d-ready',{detail:{scene,root,engine,build:BUILD}}))}catch(_){}engine.runRenderLoop(()=>scene?.render());const resize=()=>engine?.resize();window.addEventListener('resize',resize);shell._v384Resize=resize;requestAnimationFrame(()=>engine?.resize());setTimeout(()=>shell.querySelector('.v384-avatar3d-loading')?.remove(),180)}catch(err){console.warn('V40 3D fallback',err);shell.innerHTML='<div class="v384-webgl-fallback">3D chưa sẵn sàng • đang dùng avatar 2D an toàn</div>';setTimeout(()=>shell.remove(),2600)}
 }
 function remountSoon(){clearTimeout(remountSoon.t);remountSoon.t=setTimeout(()=>{const old=document.querySelector('.v384-avatar3d-shell');if(old?._v384Resize)window.removeEventListener('resize',old._v384Resize);destroy();mount()},45)}
 function install(){
