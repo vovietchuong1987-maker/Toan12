@@ -1,5 +1,6 @@
 {
-  "release": "stable-core-permanent-question-id",
+  "release": "stable-core-soft3d-avatar-room",
+  "base": "stable-core-permanent-question-id",
   "published_questions": 371,
   "question_ids": 371,
   "unique_question_ids": 371,
@@ -8,11 +9,18 @@
   "permanent_id_non_reuse": true,
   "legacy_record_id_preserved": true,
   "id6_preserved": true,
+  "avatar_upgrade": "soft-3d-premium-procedural",
+  "room_upgrade": "warm-study-room-soft-3d",
+  "interactive_3d_preserved": true,
+  "wardrobe_integration_preserved": true,
+  "room_progress_integration_preserved": true,
+  "visual_fallback_posters": [
+    "assets/img/avatar-premium-concept.webp",
+    "assets/img/room-premium-concept.webp"
+  ],
   "core_modules_bundled": 4,
   "feature_modules_bundled": 57,
-  "after_css_links": 1,
-  "local_refs": 8,
-  "missing_local_refs": [],
-  "service_worker": "sw.js",
-  "cache_revision": "20260902-question-id"
+  "css_files_bundled": 27,
+  "cache_revision": "20260902-soft3d-room-avatar",
+  "artifact": "github-pages"
 }

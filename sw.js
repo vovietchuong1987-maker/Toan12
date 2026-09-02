@@ -1,12 +1,13 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260902-question-id';
+const CACHE_REV='20260902-soft3d-room-avatar';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
   './','./index.html','./manifest.webmanifest',
-  './assets/css/app.bundle.css',
-  './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
+  './assets/css/app.bundle.css','./assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
   './assets/js/app-core.bundle.js','./assets/data/all-practice-bank-v38.3.js','./assets/js/app-features.bundle.js',
+  './assets/js/ai-teacher-v32.js','./assets/js/reports-v33.js',
+  './assets/img/avatar-premium-concept.webp','./assets/img/room-premium-concept.webp',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));

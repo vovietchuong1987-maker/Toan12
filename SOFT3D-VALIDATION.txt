@@ -1,0 +1,45 @@
+MATH12 HUB — SOFT 3D AVATAR & ROOM VALIDATION
+Date: 2026-09-02
+
+BASE
+- Built directly from math12-hub-stable-core-question-id-source.zip.
+- Permanent Question ID system preserved.
+- 371 published questions preserved.
+- Firestore rules/template unchanged.
+
+AVATAR
+- Interactive Babylon.js 3D preserved.
+- Softer head/body proportions.
+- Larger expressive eyes, iris/highlight, cheeks, nose and curved smile.
+- School-uniform rendering with white shirt, vest, tie and badge for base uniform style.
+- Longer legs, cleaner shoes/soles/laces.
+- Hair and wardrobe cosmetics preserved.
+- Default school backpack when no back cosmetic is equipped.
+- Warm key light, cool fill/rim light, ACES tone mapping, blur shadows.
+- Idle, blink, rotate and celebration remain available.
+
+ROOM
+- Interactive Babylon.js 3D preserved.
+- Avatar is seated at the desk and visually follows the account's avatar colors/hair/cosmetics.
+- New window, warm light, desk lamp, plant, open notebook, pencils, stacked books.
+- Blackboard rebuilt with frame, chalk tray and readable quadratic formula.
+- Shelf rebuilt with books, trophies, plant, hero trophy and storage boxes.
+- Chair and rug rebuilt; unfinished loose posts removed.
+- Room themes, night mode, Pet, Mastery, achievements and Room Level preserved.
+- Soft shadows + ACES tone mapping added.
+
+PERFORMANCE / FALLBACK
+- Approved concept images compressed to WebP (~104 KB total) and used only as loading/fallback posters.
+- Actual main experience remains procedural interactive 3D.
+- Existing Babylon CDN loading path preserved.
+- Low-power hardware scaling preserved.
+- Service Worker cache revision bumped so browsers do not stay on the old visual assets.
+- Removed one stale service-worker preload reference to a nonexistent clean-ui.js; all current CORE cache paths verified to exist.
+
+STATIC QA
+- node --check passed for every JS/data file and sw.js in source package.
+- node --check passed for GitHub Pages app-core.bundle.js, app-features.bundle.js and sw.js.
+- All local src/href references in source package: present.
+- All local src/href references in GitHub Pages package: present.
+- All Service Worker CORE paths in both packages: present.
+- Diff against the prior source confirms only Avatar/Room CSS+JS, index cache tags, SW/build report and new visual poster assets changed.
