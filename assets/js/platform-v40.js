@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const VERSION='40.0',BUILD='40.0-production-release';
+const VERSION='40.6',BUILD='40.6-native-bbt-row-aware';
 const bus=new EventTarget();
 const issues=[];
 const now=()=>new Date().toISOString();
