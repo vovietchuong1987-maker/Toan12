@@ -13,6 +13,7 @@ const slots=[
 ];
 const catalog=[
  {id:'hair-classic',slot:'hair',label:'Tóc cổ điển',icon:'✦',free:true,hairStyle:'short',hairColor:'#263248'},
+ {id:'hair-campus-modern',slot:'hair',label:'Campus Modern',icon:'✦',free:true,hairStyle:'messy',hairColor:'#20283B'},
  {id:'hair-side',slot:'hair',label:'Rẽ ngôi',icon:'〽',free:true,hairStyle:'side',hairColor:'#2b3143'},
  {id:'hair-spiky',slot:'hair',label:'Năng động',icon:'✦',free:true,hairStyle:'spiky',hairColor:'#293044'},
  {id:'hair-bob',slot:'hair',label:'Tóc bob',icon:'◖',free:true,hairStyle:'bob',hairColor:'#293044'},
@@ -21,16 +22,19 @@ const catalog=[
  {id:'top-school-blue',slot:'top',label:'Áo đồng phục xanh',icon:'👕',free:true,color:'#EAF2FF',accent:'#315BC7',topStyle:'shirt'},
  {id:'top-school-white',slot:'top',label:'Áo đồng phục trắng',icon:'👔',free:true,color:'#FFFFFF',accent:'#64748B',topStyle:'shirt'},
  {id:'top-sport',slot:'top',label:'Áo thể thao',icon:'🎽',free:true,color:'#E8F7EF',accent:'#27845A',topStyle:'sport'},
+ {id:'top-campus-green',slot:'top',label:'Hoodie Campus Φ',icon:'Φ',free:true,color:'#F8FAFC',accent:'#25805B',topStyle:'hoodie'},
  {id:'top-hoodie-pi',slot:'top',label:'Hoodie π',icon:'π',free:false,color:'#F1EAFE',accent:'#7048C8',topStyle:'hoodie'},
  {id:'bottom-navy',slot:'bottom',label:'Quần navy',icon:'▥',free:true,color:'#27364E',bottomStyle:'trousers'},
  {id:'bottom-skirt-navy',slot:'bottom',label:'Váy đồng phục navy',icon:'▥',free:true,color:'#27364E',bottomStyle:'skirt'},
  {id:'bottom-slate',slot:'bottom',label:'Quần slate',icon:'▥',free:true,color:'#334155',bottomStyle:'trousers'},
  {id:'bottom-skirt-slate',slot:'bottom',label:'Váy đồng phục slate',icon:'▥',free:true,color:'#334155',bottomStyle:'skirt'},
  {id:'bottom-green',slot:'bottom',label:'Quần xanh',icon:'▥',free:true,color:'#1F4D3A',bottomStyle:'jogger'},
+ {id:'bottom-campus-green',slot:'bottom',label:'Jogger Campus',icon:'▥',free:true,color:'#17623F',bottomStyle:'jogger'},
  {id:'bottom-violet',slot:'bottom',label:'Quần tím',icon:'▥',free:false,color:'#3D315F',bottomStyle:'pleated'},
  {id:'shoes-school',slot:'shoes',label:'Giày học đường',icon:'👟',free:true,color:'#263248',shoeStyle:'school'},
  {id:'shoes-white',slot:'shoes',label:'Sneaker trắng',icon:'👟',free:false,color:'#F8FAFC',shoeStyle:'sneaker'},
  {id:'shoes-blue',slot:'shoes',label:'Sneaker Vector',icon:'👟',free:false,color:'#315BC7',shoeStyle:'runner'},
+ {id:'shoes-campus',slot:'shoes',label:'Sneaker Campus',icon:'👟',free:true,color:'#263248',accent:'#25805B',shoeStyle:'runner'},
  {id:'head-none',slot:'head',label:'Không đội mũ',icon:'○',free:true,clear:true},
  {id:'head-sigma',slot:'head',label:'Mũ Sigma',icon:'Σ',free:false,color:'#315BC7',shape:'scholar'},
  {id:'head-crown',slot:'head',label:'Vương miện 10',icon:'♛',free:false,color:'#FFD65A',shape:'crown'},
@@ -38,6 +42,7 @@ const catalog=[
  {id:'glasses-scholar',slot:'glasses',label:'Kính học giả',icon:'👓',free:false,color:'#334155',glassesShape:'round'},
  {id:'back-none',slot:'back',label:'Không đeo',icon:'○',free:true,clear:true},
  {id:'back-bookbag',slot:'back',label:'Ba lô sách',icon:'🎒',free:false,color:'#284D8F',backStyle:'backpack'},
+ {id:'back-campus',slot:'back',label:'Ba lô Campus',icon:'🎒',free:true,color:'#26704E',accent:'#164C35',backStyle:'backpack'},
  {id:'hand-none',slot:'hand',label:'Tay không',icon:'○',free:true,clear:true},
  {id:'hand-compass',slot:'hand',label:'Compa Toán học',icon:'📐',free:false,color:'#E3B341',tool:'compass'}
 ];

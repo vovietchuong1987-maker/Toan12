@@ -1,17 +1,14 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260903-avatar-premium-material-light-step5';
+const CACHE_REV='20260903-character-pro-step10-under100';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
-  './','./index.html','./manifest.webmanifest',
-  './assets/css/app.css','./assets/css/id6-v37.4.css',
-  './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
-  './assets/js/core.js','./assets/js/id6-taxonomy-v37.4.js','./assets/js/lesson-content-v37.7.js',
-  './assets/data/all-practice-bank-v38.3.js','./assets/js/full-bank-v38.3.js',
-  './assets/js/authoring.js','./assets/js/exam.js','./assets/js/question-id-v40.js','./assets/js/platform-v40.js',
-  './assets/css/avatar3d-v38.4.css','./assets/css/math-room-v39.css','./assets/js/avatar3d-v38.4.js','./assets/js/math-room-v39.js',
-  './assets/img/avatar-premium-concept.webp','./assets/img/room-premium-concept.webp',
-  './assets/icons/icon-192.png','./assets/icons/icon-512.png'
+  './','./index.html','./manifest.webmanifest','./assets/css/app-bundle.css','./assets/js/mathjax-config.js',
+  './assets/vendor/mathjax.js','./assets/js/core.js','./assets/js/id6-taxonomy-v37.4.js','./assets/js/lesson-content-v37.7.js','./assets/data/all-practice-bank-v38.3.js',
+  './assets/js/full-bank-v38.3.js','./assets/js/authoring.js','./assets/js/exam.js','./assets/js/question-id-v40.js','./assets/js/platform-v40.js',
+  './assets/js/avatar3d-v38.4.js','./assets/js/avatar-engine-v40.1.js','./assets/js/avatar-motion-v40.2.js','./assets/js/avatar-studio-v40.3.js','./assets/js/avatar-live-v40.4.js',
+  './assets/js/avatar-pro-v40.5.js','./assets/js/math-room-v39.js','./assets/img/avatar-premium-concept.webp','./assets/img/room-premium-concept.webp','./assets/icons/icon-192.png',
+  './assets/icons/icon-512.png'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('math12hub-')&&![SHELL,RUNTIME].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

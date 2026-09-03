@@ -5,7 +5,7 @@
 (function(){
 'use strict';
 const BUILD='38.7-pets-effects';let fxRoot=null,obs=null,sceneRef=null,emoteUntil=0;
-function eq(slot){const id=window.v386MegaShop?.profile?.().equipped?.[slot]||'';return window.v386MegaShop?.item?.(id)||null}
+function eq(slot){const unified=window.AvatarEngine?.effect?.(slot);if(unified)return unified;const id=window.v386MegaShop?.profile?.().equipped?.[slot]||'';return window.v386MegaShop?.item?.(id)||null}
 function c3(hex,f='#315BC7'){try{return BABYLON.Color3.FromHexString(hex||f)}catch(_){return BABYLON.Color3.FromHexString(f)}}
 function mat(scene,name,color,{emissive=false,metal=.02,rough=.7}={}){const m=new BABYLON.PBRMaterial(name,scene);m.albedoColor=c3(color);m.roughness=rough;m.metallic=metal;if(emissive)m.emissiveColor=c3(color).scale(.55);return m}
 function sph(scene,name,d,pos,material,parent,scale={x:1,y:1,z:1}){const x=BABYLON.MeshBuilder.CreateSphere(name,{diameter:d,segments:18},scene);x.position.set(pos.x,pos.y,pos.z);x.scaling.set(scale.x,scale.y,scale.z);x.material=material;x.parent=parent;return x}

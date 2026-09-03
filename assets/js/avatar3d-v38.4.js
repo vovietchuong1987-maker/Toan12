@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-step5-premium-material-lighting';
+const BUILD='avatar-step6-unified-avatar-engine';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -58,7 +58,7 @@ function cyl(name,h,dt,db,pos,material,parent=root,tess=28){const m=BABYLON.Mesh
 function torus(name,diam,thick,pos,material,parent=root){const m=BABYLON.MeshBuilder.CreateTorus(name,{diameter:diam,thickness:thick,tessellation:32},scene);m.position.set(pos.x,pos.y,pos.z);m.material=material;m.parent=parent;return m}
 function cone(name,h,diam,pos,material,parent=root){return cyl(name,h,0,diam,pos,material,parent,20)}
 function tube(name,pts,r,material,parent=root){const path=pts.map(p=>new BABYLON.Vector3(p.x,p.y,p.z));const m=BABYLON.MeshBuilder.CreateTube(name,{path,radius:r,tessellation:12,cap:BABYLON.Mesh.CAP_ALL},scene);m.material=material;m.parent=parent;return m}
-function avatar(){return window.avatarV378Current?.()||window.avatarV378Stored?.()||{gender:'male',skin:'warm',face:'smile',hair:'short',outfit:'school-blue'}}
+function avatar(){return window.AvatarEngine?.base?.()||window.avatarV378Current?.()||window.avatarV378Stored?.()||{gender:'male',skin:'warm',face:'smile',hair:'short',outfit:'school-blue'}}
 function outfit(a){return AVATAR_V378_OUTFITS?.find?.(x=>x.id===a.outfit)||[{top:'#EAF2FF',accent:'#315BC7',bottom:'#27364E'}][0]}
 function skinColor(a){return AVATAR_V378_SKINS?.[a.skin]?.fill||({light:'#F4C7A1',warm:'#E6AD7B',tan:'#B97850'}[a.skin]||'#E6AD7B')}
 function disposeModel(){if(root){try{root.dispose(false,true)}catch(_){}root=null}parts={}}
@@ -84,18 +84,19 @@ function buildFace(a,mSkin,mEye,mIris,mWhite,mAccent,parent=root){
 
   const socketMat=transparentMat('eye-socket','#6A483F',.075);
   const lidMat=mat('eyelid-line','#3A2D2B',.80);
-  parts.eyes=[];
+  parts.eyes=[];parts.gaze=[];
   for(const [i,x] of [-.235,.235].entries()){
     sphere('eye-socket-'+i,.285,{x,y:2.835,z:-.647},socketMat,{x:.88,y:1.08,z:.10},face);
     const eye=makeNode('eye-group-'+i,face);eye.position.set(x,2.835,-.650);
     sphere('eye-white-'+i,.252,{x:0,y:0,z:0},mWhite,{x:.80,y:1.06,z:.14},eye);
     // Iris, pupil and highlights now sit only millimetres in front of the eye
     // surface instead of floating far outside the head.
-    sphere('iris-'+i,.137,{x:0,y:-.006,z:-.034},mIris,{x:.90,y:1,z:.12},eye);
-    sphere('pupil-'+i,.072,{x:0,y:-.007,z:-.050},mEye,{x:.86,y:1,z:.10},eye);
+    const gaze=makeNode('eye-gaze-'+i,eye);parts.gaze.push(gaze);
+    sphere('iris-'+i,.137,{x:0,y:-.006,z:-.034},mIris,{x:.90,y:1,z:.12},gaze);
+    sphere('pupil-'+i,.072,{x:0,y:-.007,z:-.050},mEye,{x:.86,y:1,z:.10},gaze);
     const hi=mat('eye-highlight-'+i,'#ffffff',.12,0,'#ffffff');
-    sphere('eye-hi-main-'+i,.034,{x:-.023,y:.031,z:-.061},hi,{x:1,y:1,z:.07},eye,18);
-    sphere('eye-hi-soft-'+i,.015,{x:.020,y:-.020,z:-.062},hi,{x:1,y:1,z:.07},eye,14);
+    sphere('eye-hi-main-'+i,.034,{x:-.023,y:.031,z:-.061},hi,{x:1,y:1,z:.07},gaze,18);
+    sphere('eye-hi-soft-'+i,.015,{x:.020,y:-.020,z:-.062},hi,{x:1,y:1,z:.07},gaze,14);
     const lid=capsule('upper-lid-'+i,.205,.012,{x:0,y:.112,z:-.009},lidMat,eye);lid.rotation.z=Math.PI/2+(i?-.035:.035);
     if(a.gender==='female'){
       const lash=capsule('lash-'+i,.075,.010,{x:i?.112:-.112,y:.088,z:-.012},lidMat,eye);lash.rotation.z=Math.PI/2+(i?-.32:.32);
@@ -139,36 +140,38 @@ function buildHair(a,hairMat,parent=root,headItem=null){
   const blob=(name,x,y,z,sx,sy,sz,material=hairMat,parentNode=modules.front)=>sphere(name,.40,{x,y,z},material,{x:sx,y:sy,z:sz},parentNode);
   const strand=(name,x,y,z,len=.35,width=.085,angle=0,material=hairMat,parentNode=modules.front)=>{const s=capsule(name,len,width,{x,y,z},material,parentNode);s.rotation.z=angle;s.scaling.z=.72;return s};
   const curl=(name,x,y,z,size=.24,material=hairMat,parentNode=modules.side)=>sphere(name,size,{x,y,z},material,{x:1,y:.92,z:.86},parentNode,18);
-  const cap=(y=3.035,sy=.56,z=.14)=>sphere('hair-cap',1.32,{x:0,y,z},hairMat,{x:1.01,y:hatSafe?Math.min(sy,.45):sy,z:.96},modules.base);
+  // Keep the cap on the upper skull and slightly in front of the skin. The old
+  // deep rear cap was hidden inside the head, leaving a bald forehead.
+  const cap=(y=3.30,sy=.32,z=-.03)=>sphere('hair-cap',1.32,{x:0,y,z},hairMat,{x:1.01,y:hatSafe?Math.min(sy,.27):sy,z:.96},modules.base);
   const softPart=(x,y,len,angle,parentNode=modules.front)=>strand('hair-part-'+x+'-'+y,x,y,-.552,len,.020,angle,highlightMat,parentNode);
 
   if(['crew','buzz'].includes(style)){
-    sphere('crew-cap',1.29,{x:0,y:3.045,z:.13},hairMat,{x:1.00,y:hatSafe?.34:.41,z:.96},modules.base);
+    sphere('crew-cap',1.29,{x:0,y:3.27,z:-.025},hairMat,{x:1.00,y:hatSafe?.25:.30,z:.96},modules.base);
     if(!hatSafe)for(let i=0;i<7;i++)curl('crew-texture-'+i,-.39+i*.13,3.19+(i%2)*.035,-.485,.085,i%2?highlightMat:shadowMat,modules.detail);
   }else if(!['undercut','fade'].includes(style))cap();
 
   if(['side','sidesweep'].includes(style)){
-    strand('side-sweep-a',-.15,3.115,-.548,.54,.125,-.64,hairMat);
-    strand('side-sweep-b',.18,3.075,-.550,.43,.115,-.47,hairMat);
+    strand('side-sweep-a',-.15,3.19,-.548,.38,.105,-.64,hairMat);
+    strand('side-sweep-b',.18,3.16,-.550,.31,.095,-.47,hairMat);
     strand('side-temple',.49,2.89,-.39,.37,.11,-.05,shadowMat,modules.side);
     softPart(-.18,3.205,.29,-.60);
   }else if(style==='layered'){
-    for(const [i,x] of [-.38,-.20,0,.20,.38].entries())strand('layered-front-'+i,x,3.055+(i%2)*.045,-.55,.34+(i%3)*.045,.092,(i-2)*-.14,hairMat);
+    for(const [i,x] of [-.38,-.20,0,.20,.38].entries())strand('layered-front-'+i,x,3.16+(i%2)*.025,-.55,.23+(i%3)*.025,.075,(i-2)*-.14,hairMat);
     for(const x of [-.51,.51])strand('layered-side-'+x,x,2.76,-.22,.62,.145,x<0?.08:-.08,shadowMat,modules.side);
     softPart(-.12,3.20,.25,-.18);
   }else if(['spiky','spike','mohawk'].includes(style)){
-    for(const [i,x] of [-.36,-.22,-.07,.09,.24,.37].entries())strand('spiky-fringe-'+i,x,3.02+(i%2)*.035,-.55,.28,.075,(i-2.5)*-.12,hairMat);
+    for(const [i,x] of [-.36,-.22,-.07,.09,.24,.37].entries())strand('spiky-fringe-'+i,x,3.15+(i%2)*.025,-.55,.21,.065,(i-2.5)*-.12,hairMat);
     if(!hatSafe)for(const [i,x] of [-.38,-.23,-.07,.10,.26,.40].entries()){
       const tuft=cone('soft-tuft-'+i,.34+(i%2)*.055,.20,{x,y:3.36+(i%3)*.025,z:.03},i%3===0?highlightMat:hairMat,modules.top);tuft.rotation.z=(i-2.5)*-.13;
     }
   }else if(['bob','roundbob'].includes(style)){
     sphere('bob-back',1.30,{x:0,y:2.72,z:.20},shadowMat,{x:1.035,y:1.02,z:.82},modules.back);
     for(const x of [-.52,.52]){strand('bob-side-'+x,x,2.63,-.16,.78,.175,x<0?.035:-.035,hairMat,modules.side);curl('bob-tip-'+x,x,2.27,-.15,.30,hairMat,modules.side)}
-    for(const [i,x] of [-.29,-.10,.10,.29].entries())strand('bob-fringe-'+i,x,3.02,-.55,.31,.090,(i-1.5)*-.12,hairMat);
+    for(const [i,x] of [-.29,-.10,.10,.29].entries())strand('bob-fringe-'+i,x,3.15,-.55,.22,.072,(i-1.5)*-.12,hairMat);
     softPart(-.16,3.17,.22,-.16);
   }else if(['pony','ponytail','highpony'].includes(style)){
-    strand('pony-sweep-a',-.15,3.10,-.55,.50,.115,-.56,hairMat);
-    strand('pony-sweep-b',.18,3.06,-.55,.39,.105,-.42,hairMat);
+    strand('pony-sweep-a',-.15,3.19,-.55,.34,.098,-.56,hairMat);
+    strand('pony-sweep-b',.18,3.16,-.55,.28,.088,-.42,hairMat);
     const tieY=hatSafe?2.92:3.08;curl('pony-tie',.02,tieY,.65,.20,highlightMat,modules.back);
     strand('pony-upper',.10,tieY-.22,.66,.56,.19,-.18,hairMat,modules.back);
     strand('pony-lower',.20,tieY-.64,.60,.56,.17,-.27,shadowMat,modules.back);
@@ -186,7 +189,7 @@ function buildHair(a,hairMat,parent=root,headItem=null){
       }
       strand('long-highlight-'+x,x+(x<0?.035:-.035),2.29,-.255,.74,.025,x<0?.02:-.02,highlightMat,modules.detail);
     }
-    for(const [i,x] of [-.28,-.09,.10,.29].entries())strand('long-fringe-'+i,x,3.02,-.55,.31,.09,(i-1.5)*-.10,hairMat);
+    for(const [i,x] of [-.28,-.09,.10,.29].entries())strand('long-fringe-'+i,x,3.15,-.55,.22,.072,(i-1.5)*-.10,hairMat);
   }else if(['curly','curls'].includes(style)){
     const curls=[[-.43,3.24],[-.22,3.36],[0,3.39],[.22,3.36],[.43,3.24],[-.52,3.05],[.52,3.05],[-.55,2.82],[.55,2.82],[-.39,2.94],[-.13,3.04],[.14,3.04],[.39,2.94]];
     for(const [i,p] of curls.entries())if(!hatSafe||p[1]<3.18)curl('curl-'+i,p[0],p[1],p[1]<3.10?-.43:-.12,.27,i%4===0?highlightMat:hairMat,p[1]<3.10?modules.front:modules.top);
@@ -201,26 +204,28 @@ function buildHair(a,hairMat,parent=root,headItem=null){
       strand('twin-lower-'+i,x+(i?.07:-.07),2.14,.13,.54,.15,i?.20:-.20,shadowMat,modules.side);
       curl('twin-tip-'+i,x+(i?.13:-.13),1.87,.10,.29,hairMat,modules.side);
     }
-    for(const [i,x] of [-.27,-.09,.09,.27].entries())strand('twin-fringe-'+i,x,3.01,-.55,.30,.085,(i-1.5)*-.10,hairMat);
+    for(const [i,x] of [-.27,-.09,.09,.27].entries())strand('twin-fringe-'+i,x,3.15,-.55,.22,.070,(i-1.5)*-.10,hairMat);
   }else if(['bun','topbun'].includes(style)){
     const bunY=hatSafe?2.78:3.48,bunZ=hatSafe?.61:.18;
     sphere('bun-shadow',.62,{x:0,y:bunY,z:bunZ+.025},shadowMat,{x:1,y:.88,z:1},modules.back);
     sphere('bun-main',.52,{x:-.02,y:bunY+.02,z:bunZ-.015},hairMat,{x:1,y:.88,z:1},modules.back);
-    strand('bun-sweep',-.12,3.08,-.55,.46,.11,-.52,hairMat);
+    strand('bun-sweep',-.12,3.18,-.55,.32,.095,-.52,hairMat);
     softPart(-.17,3.18,.23,-.50);
   }else if(['braid','braids'].includes(style)){
     for(const [j,x] of [-.54,.54].entries()){
       for(let k=0;k<6;k++)curl('braid-'+j+'-'+k,x+(j?.025:-.025)*k,2.62-k*.18,.01,.245-k*.012,k%2?shadowMat:hairMat,modules.side);
       curl('braid-tie-'+j,x+(j?.13:-.13),1.55,.01,.14,highlightMat,modules.side);
     }
-    for(const [i,x] of [-.27,-.09,.09,.27].entries())strand('braid-fringe-'+i,x,3.02,-.55,.30,.085,(i-1.5)*-.11,hairMat);
+    for(const [i,x] of [-.27,-.09,.09,.27].entries())strand('braid-fringe-'+i,x,3.15,-.55,.22,.070,(i-1.5)*-.11,hairMat);
   }else if(['messy','wavy'].includes(style)){
-    for(const [i,x] of [-.39,-.24,-.08,.09,.25,.39].entries())strand('messy-front-'+i,x,3.06+(i%2)*.045,-.54,.34+(i%3)*.04,.09,(i-2.5)*-.18,i===1||i===4?highlightMat:hairMat);
+    for(const [i,x] of [-.39,-.24,-.08,.09,.25,.39].entries())strand('messy-front-'+i,x,3.16+(i%2)*.028,-.54,.23+(i%3)*.025,.072,(i-2.5)*-.18,i===1||i===4?highlightMat:hairMat);
     if(!hatSafe)for(const [i,x] of [-.30,-.10,.12,.31].entries())blob('messy-volume-'+i,x,3.28+(i%2)*.06,-.04,.72,.52,.68,i===2?highlightMat:hairMat,modules.top);
     for(const x of [-.50,.50])strand('wavy-side-'+x,x,2.77,-.20,.55,.13,x<0?.12:-.12,shadowMat,modules.side);
   }else if(!['crew','buzz'].includes(style)){
-    for(const [i,x] of [-.32,-.16,.02,.20,.35].entries())strand('classic-front-'+i,x,3.04+(i%2)*.025,-.55,.30,.085,(i-2)*-.105,hairMat);
-    for(const x of [-.49,.49])strand('classic-side-'+x,x,2.88,-.31,.34,.095,x<0?.03:-.03,shadowMat,modules.side);
+    blob('classic-fringe-left',-.21,3.13,-.565,.92,.33,.30,hairMat,modules.front);
+    blob('classic-fringe-right',.18,3.14,-.565,.86,.31,.30,hairMat,modules.front);
+    strand('classic-part',-.015,3.19,-.575,.19,.052,-.08,highlightMat,modules.detail);
+    for(const x of [-.50,.50])blob('classic-temple-'+x,x,3.00,-.34,.52,.82,.52,shadowMat,modules.side);
   }
 
   if(!hatSafe&&!['crew','buzz','curly','curls'].includes(style)){
@@ -249,7 +254,7 @@ function buildTorso(a,g,mTop,mAccent,mSkin){
   const neck=capsule('neck',.30,.135,{x:0,y:2.32,z:0},mSkin,grp);neck.scaling.z=.92;
   const hem=torus('garment-hem',.72,.035,{x:0,y:.88,z:.01},style==='robe'?mAccent:mDark,garment);hem.scaling.z=.78;
   if(isUniform){
-    for(const x of [-.31,.31])sphere('uniform-shoulder-'+x,.46,{x,y:1.95,z:-.01},mWhite,{x:.80,y:.54,z:.72},garment);
+    for(const x of [-.31,.31])sphere('uniform-shoulder-'+x,.46,{x,y:1.95,z:-.01},mWhite,{x:.72,y:.46,z:.68},garment);
     for(const x of [-.365,.365]){const panel=capsule('uniform-side-panel-'+x,.86,.037,{x,y:1.42,z:-.285},mAccent,garment);panel.rotation.z=x<0?-.035:.035}
     const colL=box('uniform-collar-l',{x:.25,y:.19,z:.045},{x:-.115,y:2.07,z:-.346},mWhite,garment);colL.rotation.z=.52;
     const colR=box('uniform-collar-r',{x:.25,y:.19,z:.045},{x:.115,y:2.07,z:-.346},mWhite,garment);colR.rotation.z=-.52;
@@ -301,11 +306,11 @@ function buildTorso(a,g,mTop,mAccent,mSkin){
   return {style,isUniform,grp};
 }
 function buildArm(side,mTop,mAccent,mSkin,style){
-  const sx=side==='L'?-1:1;const arm=makeNode('armGroup'+side);arm.position.set(sx*.47,1.96,0);parts[side==='L'?'leftArm':'rightArm']=arm;
+  const sx=side==='L'?-1:1;const arm=makeNode('armGroup'+side);arm.position.set(sx*.455,1.94,0);parts[side==='L'?'leftArm':'rightArm']=arm;
   const uniform=['shirt','uniform','school','classic',''].includes(style),longSleeve=['hoodie','jacket','blazer','varsity','sweater','robe','cape-top'].includes(style);
   const sleeveMat=uniform?mat('uniform-sleeve-'+side,'#F8FAFC',.90):mTop;
   const sleeveLen=longSleeve?.52:.40;
-  sphere('shoulder'+side,.35,{x:sx*.015,y:-.02,z:0},sleeveMat,{x:.92,y:1,z:.90},arm);
+  sphere('shoulder'+side,.32,{x:sx*.012,y:-.02,z:0},sleeveMat,{x:.88,y:.92,z:.86},arm);
   const upper=capsule('upperArm'+side,sleeveLen,.145,{x:sx*.065,y:-.25,z:0},sleeveMat,arm);upper.rotation.z=sx*-.11;
   sphere('elbow'+side,.245,{x:sx*.115,y:-.52,z:0},longSleeve?sleeveMat:mSkin,{x:.95,y:1,z:.92},arm);
   const fore=capsule('forearm'+side,.56,.115,{x:sx*.13,y:-.77,z:0},longSleeve?sleeveMat:mSkin,arm);fore.rotation.z=sx*-.025;
@@ -436,7 +441,7 @@ function buildAvatarAO(){
 }
 
 function buildAvatar(){
-  disposeModel();const base=avatar(),o=outfit(base),g0=window.v385Wardrobe?.resolved?.(base)||{},g={...g0};
+  disposeModel();const unified=window.AvatarEngine?.resolved?.(),base=unified?.base||avatar(),o=outfit(base),g0=unified?.garment||window.v385Wardrobe?.resolved?.(base)||{},g={...g0};
   if(previewItem&&previewItem.slot){g[previewItem.slot]=previewItem;if(previewItem.slot==='hair'){g.hairStyle=previewItem.hairStyle;g.hairColor=previewItem.hairColor||previewItem.color}}
   const a={...base,hair:g.hairStyle||base.hair};root=makeNode('avatarRoot',null);root.position.y=-.02;
   const mSkin=mat('skin',skinColor(a),.88),mHair=mat('hair',g.hairColor||'#1F2940',.58),mEye=mat('eye','#17151B',.20),mIris=mat('iris','#5A3C2C',.22),mWhite=mat('white','#FDFDFD',.34),mTop=mat('top',g.topColor||g.top?.color||o.top||'#3B7B4B',.78),mAccent=mat('accent',g.accent||g.top?.accent||o.accent||'#D6A721',.56),mBottom=mat('bottom',g.bottomColor||g.bottom?.color||o.bottom||'#204C48',.78),mShoe=mat('shoe',g.shoeColor||g.shoes?.color||'#202631',.56);
@@ -445,7 +450,7 @@ function buildAvatar(){
   // around the body when it tilts. The inner rig maps legacy coordinates to
   // the smaller Step 1/2 head without breaking hats, glasses or hairstyles.
   const headMotion=makeNode('head-motion');headMotion.position.set(0,2.94,-.0172);parts.head=headMotion;
-  const headRig=makeNode('head-rig',headMotion);headRig.position.set(0,-2.4252,.0172);headRig.scaling.set(.86,.86,.86);
+  const headRig=makeNode('head-rig',headMotion);headRig.position.set(0,-2.4252,.0172);headRig.scaling.set(.82,.82,.82);
   const headShape=a.gender==='female'?{x:.945,y:1.070,z:.935}:{x:.975,y:1.045,z:.945};
   sphere('head',1.36,{x:0,y:2.82,z:-.02},mSkin,headShape,headRig);
   buildFace(a,mSkin,mEye,mIris,mWhite,mAccent,headRig);buildHair(a,mHair,headRig,g.head);
@@ -474,7 +479,7 @@ function createScene(){
   const contactMat=transparentMat('contact-shadow','#182033',.14);contactMat.unlit=true;contactMat.disableLighting=true;const contact=BABYLON.MeshBuilder.CreateDisc('contact-shadow-disc',{radius:.78,tessellation:64},scene);contact.rotation.x=Math.PI/2;contact.scaling.set(.90,1,.52);contact.position.set(0,-.647,-.02);contact.material=contactMat;
   buildAvatar();try{root.getChildMeshes().forEach(m=>{if(!String(m.name||'').startsWith('ao-'))shadow?.addShadowCaster(m)})}catch(_){ }
   try{const pipeline=new BABYLON.DefaultRenderingPipeline('avatar-soft3d-pipeline',true,scene,[cam]);pipeline.samples=lowPower?1:2;pipeline.fxaaEnabled=true;pipeline.bloomEnabled=!lowPower;pipeline.bloomWeight=.055;pipeline.bloomThreshold=.88;pipeline.bloomKernel=48}catch(_){ }
-  scene.onBeforeRenderObservable.add(()=>{
+  if(!window.AvatarMotion?.managed)scene.onBeforeRenderObservable.add(()=>{
     if(!root)return;const now=performance.now(),t=now/1000,c=now<celebrateUntil;
     root.position.y=-.02+(c?Math.abs(Math.sin(t*7))*.14:Math.sin(t*1.8)*.018);
     root.rotation.y=c?Math.sin(t*8)*.10:Math.sin(t*.48)*.015;
@@ -484,20 +489,20 @@ function createScene(){
   });return scene;
 }
 function destroy(){if(rafMount)cancelAnimationFrame(rafMount);rafMount=0;try{scene?.dispose()}catch(_){}try{engine?.dispose()}catch(_){}scene=null;engine=null;root=null;canvas=null;parts={}}
-function controls(shell){shell.insertAdjacentHTML('beforeend',`<div class="v384-avatar3d-badge">3D • SOFT</div><div class="v392-quality-chip"></div><div class="v384-avatar3d-controls"><button type="button" data-act="left" title="Xoay trái">↶</button><button type="button" data-act="reset" title="Góc nhìn mặc định">◎</button><button type="button" data-act="celebrate" title="Ăn mừng">✦</button><button type="button" data-act="right" title="Xoay phải">↷</button></div>`);shell.querySelector('[data-act="left"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha-=.35};shell.querySelector('[data-act="right"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha+=.35};shell.querySelector('[data-act="reset"]').onclick=()=>{const c=scene?.activeCamera;if(c){c.alpha=-Math.PI/2.10;c.beta=Math.PI/2.30;c.radius=6.35}};shell.querySelector('[data-act="celebrate"]').onclick=()=>{celebrateUntil=performance.now()+1800}}
+function controls(shell){shell.insertAdjacentHTML('beforeend',`<div class="v384-avatar3d-badge">3D • ALIVE</div><div class="v392-quality-chip"></div><div class="v384-avatar3d-controls"><button type="button" data-act="left" title="Xoay trái">↶</button><button type="button" data-act="reset" title="Góc nhìn mặc định">◎</button><button type="button" data-act="celebrate" title="Ăn mừng">✦</button><button type="button" data-act="right" title="Xoay phải">↷</button></div>`);shell.querySelector('[data-act="left"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha-=.35};shell.querySelector('[data-act="right"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha+=.35};shell.querySelector('[data-act="reset"]').onclick=()=>{const c=scene?.activeCamera;if(c){c.alpha=-Math.PI/2.10;c.beta=Math.PI/2.30;c.radius=6.35}};shell.querySelector('[data-act="celebrate"]').onclick=()=>{if(window.AvatarMotion?.celebrate)return window.AvatarMotion.celebrate();celebrateUntil=performance.now()+1800}}
 async function mount(){
   const stage=document.querySelector('#page-avatar.active .avatar-preview-stage')||document.querySelector('#page-avatar .avatar-preview-stage');if(!stage)return;
   if(stage.querySelector('.v384-avatar3d-shell'))return;
   destroy();const shell=document.createElement('div');shell.className='v384-avatar3d-shell v392-avatar3d-shell';shell.innerHTML='<div class="v384-avatar3d-loading"><div><b>Đang dựng Avatar 3D…</b><span>Soft 3D • ánh sáng ấm • biểu cảm tự nhiên • xoay 360°</span></div></div><canvas class="v384-avatar3d-canvas" aria-label="Nhân vật 3D Math12 Hub "></canvas>';stage.appendChild(shell);controls(shell);
-  try{await loadBabylon();if(!document.body.contains(shell))return;canvas=shell.querySelector('canvas');engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,adaptToDeviceRatio:true});try{if(window.Math12Platform?.perf?.lowPower?.())engine.setHardwareScalingLevel(Math.max(1.35,window.devicePixelRatio||1));}catch(_){}createScene();try{window.dispatchEvent(new CustomEvent('math12hub:avatar3d-ready',{detail:{scene,root,engine,build:BUILD}}))}catch(_){}engine.runRenderLoop(()=>scene?.render());const resize=()=>engine?.resize();window.addEventListener('resize',resize);shell._v384Resize=resize;requestAnimationFrame(()=>engine?.resize());setTimeout(()=>shell.querySelector('.v384-avatar3d-loading')?.remove(),180)}catch(err){console.warn(' 3D fallback',err);shell.innerHTML='<div class="v384-webgl-fallback">3D chưa sẵn sàng • đang dùng avatar 2D an toàn</div>';setTimeout(()=>shell.remove(),2600)}
+  try{await loadBabylon();if(!document.body.contains(shell))return;canvas=shell.querySelector('canvas');engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,adaptToDeviceRatio:true});try{if(window.Math12Platform?.perf?.lowPower?.())engine.setHardwareScalingLevel(Math.max(1.35,window.devicePixelRatio||1));}catch(_){}createScene();try{window.dispatchEvent(new CustomEvent('math12hub:avatar3d-ready',{detail:{scene,root,parts,engine,build:BUILD}}))}catch(_){}engine.runRenderLoop(()=>scene?.render());const resize=()=>engine?.resize();window.addEventListener('resize',resize);shell._v384Resize=resize;requestAnimationFrame(()=>engine?.resize());setTimeout(()=>shell.querySelector('.v384-avatar3d-loading')?.remove(),180)}catch(err){console.warn(' 3D fallback',err);shell.innerHTML='<div class="v384-webgl-fallback">3D chưa sẵn sàng • đang dùng avatar 2D an toàn</div>';setTimeout(()=>shell.remove(),2600)}
 }
 function remountSoon(){clearTimeout(remountSoon.t);remountSoon.t=setTimeout(()=>{const old=document.querySelector('.v384-avatar3d-shell');if(old?._v384Resize)window.removeEventListener('resize',old._v384Resize);destroy();mount()},45)}
 function install(){
   if(typeof window.avatarV378RenderPage==='function'&&!window.avatarV378RenderPage.__v384){const base=window.avatarV378RenderPage;const wrap=function(){const r=base.apply(this,arguments);requestAnimationFrame(remountSoon);return r};wrap.__v384=true;window.avatarV378RenderPage=wrap}
   if(typeof window.goPage==='function'&&!window.goPage.__v384){const base=window.goPage;const wrap=function(page,internal=false){const r=base(page,internal);if(page==='avatar')requestAnimationFrame(remountSoon);else destroy();return r};wrap.__v384=true;window.goPage=wrap}
-  window.addEventListener('math12hub:avatar-changed',remountSoon);if(document.getElementById('page-avatar')?.classList.contains('active'))remountSoon();
+  window.addEventListener('math12hub:avatar-changed',remountSoon);window.addEventListener('math12hub:avatar-state-changed',remountSoon);if(document.getElementById('page-avatar')?.classList.contains('active'))remountSoon();
 }
-window.v384Avatar3D={build:BUILD,mount:remountSoon,rebuild:remountSoon,sync:remountSoon,celebrate(){celebrateUntil=performance.now()+1800},destroy,getScene:()=>scene,getRoot:()=>root,getEngine:()=>engine,preview(it){previewItem=it||null;remountSoon()},clearPreview(){previewItem=null;remountSoon()}};
+window.v384Avatar3D={build:BUILD,mount:remountSoon,rebuild:remountSoon,sync:remountSoon,celebrate(){if(window.AvatarMotion?.celebrate)return window.AvatarMotion.celebrate();celebrateUntil=performance.now()+1800},destroy,getScene:()=>scene,getRoot:()=>root,getParts:()=>parts,getEngine:()=>engine,preview(it){if(window.AvatarEngine)return window.AvatarEngine.preview(it);previewItem=it||null;remountSoon()},clearPreview(){if(window.AvatarEngine)return window.AvatarEngine.clearPreview();previewItem=null;remountSoon()}};
 window.v392Avatar3D=window.v384Avatar3D;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
