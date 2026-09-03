@@ -1,13 +1,13 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260903-v40.11-unified-question-bank';
+const CACHE_REV='20260903-v40.12-compact-smart-navigation';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
   './','./index.html','./manifest.webmanifest',
-  './assets/css/app-v40.10.bundle.css',
+  './assets/css/app-v40.10.bundle.css','./assets/css/navigation-v40.12.css',
   './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
   './assets/js/core.js','./assets/js/id6-taxonomy-v37.4.js','./assets/js/lesson-content-v37.7.js',
-  './assets/data/question-bank-canonical-v40.11.js','./assets/js/full-bank-v40.11.js','./assets/js/unified-bank-v40.11.js','./assets/js/authoring.js','./assets/js/exam.js','./assets/js/question-id-v40.js','./assets/js/bbt-renderer-v40.6.js','./assets/js/bbt-autodetect-v40.10.js','./assets/js/honor-board-v40.9.js','./assets/js/mobile-exam-v40.8.js','./assets/js/platform-v40.js',
+  './assets/data/question-bank-canonical-v40.11.js','./assets/js/full-bank-v40.11.js','./assets/js/unified-bank-v40.11.js','./assets/js/authoring.js','./assets/js/exam.js','./assets/js/question-id-v40.js','./assets/js/bbt-renderer-v40.6.js','./assets/js/bbt-autodetect-v40.10.js','./assets/js/honor-board-v40.9.js','./assets/js/mobile-exam-v40.8.js','./assets/js/compact-nav-v40.12.js','./assets/js/platform-v40.js',
   './assets/js/avatar3d-v38.4.js','./assets/js/avatar-engine-v40.1.js','./assets/js/avatar-motion-v40.2.js','./assets/js/avatar-studio-v40.3.js','./assets/js/avatar-live-v40.4.js','./assets/js/avatar-pro-v40.5.js','./assets/js/math-room-v39.js',
   './assets/img/avatar-premium-concept.webp','./assets/img/room-premium-concept.webp',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png'

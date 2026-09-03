@@ -6,17 +6,18 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
-<meta content="40.11" name="app-version"/>
-<meta content="40.11-unified-question-bank-github-deploy" name="app-build"/>
+<meta content="40.12" name="app-version"/>
+<meta content="40.12-compact-smart-navigation-github-deploy" name="app-build"/>
 <meta content="modular-static-github-pages" name="app-architecture"/>
 <meta content="production" name="release-channel"/>
 <meta content="#172033" name="theme-color"/>
-<link href="manifest.webmanifest?v=40.11" rel="manifest"/>
+<link href="manifest.webmanifest?v=40.12" rel="manifest"/>
 <link href="assets/icons/icon-192.png?v=40.0" rel="icon" sizes="192x192" type="image/png"/>
 <link crossorigin="" href="https://www.gstatic.com" rel="preconnect"/>
 <script defer="" src="assets/js/mathjax-config.js?v=40.0"></script>
 <script defer="" src="assets/vendor/mathjax.js?v=40.0"></script>
-<link href="assets/css/app-v40.10.bundle.css?v=40.11" rel="stylesheet"/>
+<link href="assets/css/app-v40.10.bundle.css?v=40.12" rel="stylesheet"/>
+<link href="assets/css/navigation-v40.12.css?v=40.12" rel="stylesheet"/>
 </head>
 <body>
 <div class="v33-public-shell hidden" id="v33PublicReportShell"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập </small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -29,37 +30,48 @@
 </div>
 <div class="nav" id="nav">
 <button class="nav-home active" data-page="dashboard" title="Tổng quan"><span class="ico">⌂</span><span class="nav-label">Tổng quan</span></button>
-<div class="student-nav-block">
+<div class="student-nav-block v4012-student-nav">
 <div class="nav-group open" data-nav-group="student-study">
-<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-study" type="button"><span class="nav-group-label">Học tập</span><span class="nav-chevron">⌄</span></button>
+<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-study" type="button"><span class="nav-group-title"><span class="nav-group-icon">📚</span><span class="nav-group-label">Học tập</span></span><span class="nav-chevron">⌄</span></button>
 <div class="nav-group-items">
 <button data-page="lessons" title="Học theo bài"><span class="ico">▤</span><span class="nav-label">Học theo bài</span></button>
 <button data-page="chapters" title="Ôn theo chương"><span class="ico">◫</span><span class="nav-label">Ôn theo chương</span></button>
 </div>
 </div>
-<div class="nav-group open" data-nav-group="student-exam">
-<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-exam" type="button"><span class="nav-group-label">Luyện &amp; thi</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group" data-nav-group="student-exam">
+<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="student-exam" type="button"><span class="nav-group-title"><span class="nav-group-icon">🎯</span><span class="nav-group-label">Luyện &amp; thi</span></span><span class="nav-chevron">⌄</span></button>
 <div class="nav-group-items">
 <button data-page="periodic" title="Kiểm tra định kỳ"><span class="ico">◷</span><span class="nav-label">Kiểm tra định kỳ</span></button>
 <button data-page="thpt" title="Ôn thi THPT"><span class="ico">★</span><span class="nav-label">Ôn thi THPT</span></button>
 </div>
 </div>
-<div class="nav-group open" data-nav-group="student-personal">
-<button aria-expanded="true" class="nav-group-toggle" data-nav-group-toggle="student-personal" type="button"><span class="nav-group-label">Cá nhân</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group" data-nav-group="student-progress">
+<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="student-progress" type="button"><span class="nav-group-title"><span class="nav-group-icon">📈</span><span class="nav-group-label">Tiến bộ của em</span></span><span class="nav-chevron">⌄</span></button>
 <div class="nav-group-items">
-<button data-page="learning-plan" title="Lộ trình của em"><span class="ico">✦</span><span class="nav-label">Lộ trình của em</span></button>
-<button data-page="avatar" title="Nhân vật của em"><span class="ico">♟</span><span class="nav-label">Nhân vật của em</span></button>
-<button data-page="progress" title="Tiến độ của em"><span class="ico">↗</span><span class="nav-label">Tiến độ của em</span></button>
+<button data-page="learning-plan" title="Lộ trình của em"><span class="ico">✦</span><span class="nav-label">Lộ trình</span></button>
+<button data-page="progress" title="Tiến độ của em"><span class="ico">↗</span><span class="nav-label">Tiến độ</span></button>
 <button data-page="analytics" title="Phân tích năng lực"><span class="ico">◎</span><span class="nav-label">Phân tích năng lực</span></button>
 <button data-page="reports" title="Báo cáo học tập"><span class="ico">▣</span><span class="nav-label">Báo cáo học tập</span></button>
 </div>
 </div>
-<div class="nav-group" data-nav-group="student-connect">
-<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="student-connect" type="button"><span class="nav-group-label">Kết nối</span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group" data-nav-group="student-world">
+<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="student-world" type="button"><span class="nav-group-title"><span class="nav-group-icon">🎮</span><span class="nav-group-label">Thế giới của em</span></span><span class="nav-chevron">⌄</span></button>
 <div class="nav-group-items">
-<button data-page="notifications" title="Thông báo"><span class="ico">🔔</span><span class="nav-label">Thông báo</span><span class="nav-notify-badge" id="notificationBadge">0</span></button>
+<button data-page="avatar" title="Nhân vật của em"><span class="ico">♟</span><span class="nav-label">Nhân vật</span></button>
+<button data-page="shop" title="Shop &amp; Tủ đồ"><span class="ico">🛍</span><span class="nav-label">Shop &amp; Tủ đồ</span></button>
+<button data-page="room" title="Phòng học 3D của em"><span class="ico">🏠</span><span class="nav-label">Phòng của em</span></button>
+<button data-page="collections" title="Bộ sưu tập thành tích"><span class="ico">🗂</span><span class="nav-label">Bộ sưu tập</span></button>
 </div>
 </div>
+<div class="nav-group" data-nav-group="student-achievement">
+<button aria-expanded="false" class="nav-group-toggle" data-nav-group-toggle="student-achievement" type="button"><span class="nav-group-title"><span class="nav-group-icon">🏆</span><span class="nav-group-label">Thành tích</span></span><span class="nav-chevron">⌄</span></button>
+<div class="nav-group-items">
+<button data-page="missions" title="Nhiệm vụ &amp; Thành tích"><span class="ico">🎯</span><span class="nav-label">Nhiệm vụ</span></button>
+<button data-page="journey" title="Mastery &amp; Tiến hóa"><span class="ico">✦</span><span class="nav-label">Hành trình</span></button>
+<button data-page="honor" title="Bảng vinh danh toàn hệ thống"><span class="ico">🏆</span><span class="nav-label">Bảng vinh danh</span></button>
+</div>
+</div>
+<button class="nav-standalone v4012-notifications" data-page="notifications" title="Thông báo"><span class="ico">🔔</span><span class="nav-label">Thông báo</span><span class="nav-notify-badge" id="notificationBadge">0</span></button>
 </div>
 <div class="teacher-nav-block">
 <div class="nav-group open" data-nav-group="teacher-tools">
@@ -677,12 +689,11 @@
 </main>
 </div>
 <nav aria-label="Điều hướng nhanh trên điện thoại" class="v353-mobile-nav" data-role="student" id="v353MobileNav">
-<div class="v353-mobile-role" data-role="student">
+<div class="v353-mobile-role v4012-mobile-role" data-role="student">
 <button data-mobile-page="dashboard" type="button"><span>⌂</span><span>Trang chủ</span></button>
 <button data-mobile-page="lessons" type="button"><span>▤</span><span>Học</span></button>
-<button data-mobile-page="thpt" type="button"><span>★</span><span>Luyện thi</span></button>
-<button data-mobile-page="reports" type="button"><span>▣</span><span>Báo cáo</span></button>
-<button data-mobile-more="" type="button"><span>☰</span><span>Thêm</span></button>
+<button data-mobile-page="thpt" type="button"><span>★</span><span>Luyện</span></button>
+<button data-mobile-more="" type="button"><span>♟</span><span>Cá nhân</span></button>
 </div>
 <div class="v353-mobile-role" data-role="teacher">
 <button data-mobile-page="dashboard" type="button"><span>⌂</span><span>Trang chủ</span></button>
@@ -706,7 +717,7 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=40.0"></script>
+<script src="assets/js/core.js?v=40.12"></script>
 <script src="assets/js/id6-taxonomy-v37.4.js?v=40.0"></script>
 <script src="assets/js/lesson-content-v37.7.js?v=40.0"></script>
 <script src="assets/js/taxonomy-sync-v38.2.1.js?v=40.0"></script>
@@ -729,10 +740,10 @@
 <script src="assets/js/analytics-pro-v31.js?v=40.0"></script>
 <script src="assets/js/scale-v34.js?v=40.0"></script>
 <script src="assets/js/hardening-v35.js?v=40.0"></script>
-<script src="assets/js/ui-v35.js?v=40.0"></script>
+<script src="assets/js/ui-v35.js?v=40.12"></script>
 <script src="assets/js/bootstrap.js?v=40.0"></script>
-<script src="assets/js/ux-v35.3.js?v=40.0"></script>
-<script src="assets/js/smart-nav-v35.4.js?v=40.0"></script>
+<script src="assets/js/ux-v35.3.js?v=40.12"></script>
+<script src="assets/js/smart-nav-v35.4.js?v=40.12"></script>
 <script src="assets/js/knowledge-map-v36.js?v=40.0"></script>
 <script src="assets/js/quality-engine-v36.1.js?v=40.0"></script>
 <script src="assets/js/smart-exam-v36.2.js?v=40.0"></script>
@@ -760,9 +771,9 @@
 <script src="assets/js/freeform-graph-v37.5.4.js?v=40.0"></script>
 <script src="assets/js/exam-pro-v37.6.js?v=40.0"></script>
 <script src="assets/js/game-economy-v37.9.js?v=avatar-ui-fix-step8-1"></script>
-<script src="assets/js/game-shop-v38.0.js?v=40.0"></script>
-<script src="assets/js/game-missions-v38.1.js?v=40.0"></script>
-<script src="assets/js/game-mastery-v38.2.js?v=40.0"></script>
+<script src="assets/js/game-shop-v38.0.js?v=40.12"></script>
+<script src="assets/js/game-missions-v38.1.js?v=40.12"></script>
+<script src="assets/js/game-mastery-v38.2.js?v=40.12"></script>
 <script src="assets/js/avatar3d-v38.4.js?v=hair-face-fix-step8-1"></script>
 <script src="assets/js/wardrobe-v38.5.js?v=40.0"></script>
 <script src="assets/js/mega-shop-v38.6.js?v=40.0"></script>
@@ -772,11 +783,12 @@
 <script src="assets/js/avatar-studio-v40.3.js?v=complete-studio-step8"></script>
 <script src="assets/js/avatar-live-v40.4.js?v=live-customization-step9"></script>
 <script src="assets/js/avatar-pro-v40.5.js?v=character-studio-step10"></script>
-<script src="assets/js/achievement-collections-v38.8.js?v=40.0"></script>
-<script src="assets/js/math-room-v39.js?v=soft3d"></script>
+<script src="assets/js/achievement-collections-v38.8.js?v=40.12"></script>
+<script src="assets/js/math-room-v39.js?v=40.12"></script>
 <script src="assets/js/self-study-v38.3.js?v=40.0"></script>
-<script src="assets/js/honor-board-v40.9.js?v=40.9"></script>
+<script src="assets/js/honor-board-v40.9.js?v=40.12"></script>
 <script src="assets/js/mobile-exam-v40.8.js?v=40.8"></script>
-<script src="assets/js/platform-v40.js?v=40.11"></script>
+<script src="assets/js/compact-nav-v40.12.js?v=40.12"></script>
+<script src="assets/js/platform-v40.js?v=40.12"></script>
 </body>
 </html>

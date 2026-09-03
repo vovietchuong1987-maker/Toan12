@@ -1,4 +1,4 @@
-const APP_VERSION='40.11'; // Unified Question Bank: teacher dashboard and learner practice share one logical source.
+const APP_VERSION='40.12'; // Compact Smart Navigation on top of the V40.11 unified question bank.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Sự đồng biến và nghịch biến của hàm số'},

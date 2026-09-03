@@ -1,22 +1,37 @@
-/* Math12 Hub  — role-aware compact navigation ( foundation retained) */
+/* Math12 Hub V40.12 — compact smart accordion navigation
+   Inherits role-aware sidebar behavior from V35; adds single-open student groups,
+   versioned preferences, active-page auto-open and desktop compact mode.
+*/
 (function(){
-  const PREF_COMPACT='math12hub:v35.3:sidebar-compact';
-  const PREF_GROUPS='math12hub:v35.3:nav-groups';
+  'use strict';
+  const PREF_COMPACT='math12hub:v40.12:sidebar-compact';
+  const PREF_GROUP='math12hub:v40.12:student-nav-open';
   const app=()=>document.getElementById('app');
   const nav=()=>document.getElementById('nav');
-  function readGroups(){try{return JSON.parse(localStorage.getItem(PREF_GROUPS)||'{}')||{}}catch(_){return {}}}
-  function writeGroups(map){try{localStorage.setItem(PREF_GROUPS,JSON.stringify(map))}catch(_){}}
+  const isStudentGroup=g=>!!g?.closest('.student-nav-block')&&String(g.dataset.navGroup||'').startsWith('student-');
   function setGroup(group,open,persist=true){
-    if(!group)return;group.classList.toggle('open',!!open);
-    const t=group.querySelector(':scope > .nav-group-toggle');if(t)t.setAttribute('aria-expanded',open?'true':'false');
-    if(persist){const m=readGroups(),k=group.dataset.navGroup;if(k){m[k]=!!open;writeGroups(m)}}
+    if(!group)return;
+    if(open&&isStudentGroup(group)){
+      document.querySelectorAll('.student-nav-block .nav-group.open').forEach(other=>{
+        if(other===group)return;other.classList.remove('open');other.querySelector(':scope > .nav-group-toggle')?.setAttribute('aria-expanded','false');
+      });
+    }
+    group.classList.toggle('open',!!open);
+    group.querySelector(':scope > .nav-group-toggle')?.setAttribute('aria-expanded',open?'true':'false');
+    if(persist&&isStudentGroup(group)){
+      try{localStorage.setItem(PREF_GROUP,open?(group.dataset.navGroup||''):'')}catch(_){}
+    }
   }
   function restoreGroups(){
-    const m=readGroups();document.querySelectorAll('#nav .nav-group').forEach(g=>{const k=g.dataset.navGroup;if(k&&Object.prototype.hasOwnProperty.call(m,k))setGroup(g,!!m[k],false)})
+    const student=[...document.querySelectorAll('.student-nav-block .nav-group')];
+    let wanted='';try{wanted=localStorage.getItem(PREF_GROUP)||''}catch(_){}
+    const target=student.find(g=>g.dataset.navGroup===wanted)||student.find(g=>g.classList.contains('open'))||student[0];
+    student.forEach(g=>setGroup(g,g===target,false));
   }
   function activeGroup(page){
-    if(!page)return;const visibleButtons=[...document.querySelectorAll(`#nav button[data-page="${CSS.escape(page)}"]`)].filter(b=>b.offsetParent!==null);
-    visibleButtons.forEach(b=>{const g=b.closest('.nav-group');if(g&&!g.classList.contains('open'))setGroup(g,true,false)})
+    if(!page)return;
+    const visible=[...document.querySelectorAll(`#nav button[data-page="${CSS.escape(page)}"]`)].filter(b=>b.offsetParent!==null);
+    visible.forEach(b=>{const g=b.closest('.nav-group');if(g)setGroup(g,true,isStudentGroup(g))});
   }
   function roleName(){try{const r=typeof currentSecureRole==='function'?currentSecureRole():'student';return r==='admin'?'Quản trị':r==='teacher'?'Giáo viên':'Học sinh'}catch(_){return 'Học sinh'}}
   function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=roleName()}
@@ -30,8 +45,13 @@
   function toggleCompact(){try{localStorage.setItem(PREF_COMPACT,app()?.classList.contains('sidebar-compact')?'0':'1')}catch(_){}applyCompact(true)}
   function mirrorBadge(n){const b=document.getElementById('teacherNotificationBadge');if(!b)return;b.textContent=n>99?'99+':String(n||0);b.classList.toggle('show',Number(n)>0)}
   function bind(){
+    document.documentElement.dataset.compactNav='40.12';
     document.getElementById('sidebarCompactBtn')?.addEventListener('click',toggleCompact);
-    nav()?.addEventListener('click',e=>{const t=e.target.closest('[data-nav-group-toggle]');if(!t)return;e.preventDefault();e.stopPropagation();const g=t.closest('.nav-group');setGroup(g,!g.classList.contains('open'))});
+    nav()?.addEventListener('click',e=>{
+      const t=e.target.closest('[data-nav-group-toggle]');if(!t)return;
+      e.preventDefault();e.stopPropagation();
+      const g=t.closest('.nav-group');setGroup(g,!g.classList.contains('open'));
+    });
     restoreGroups();applyCompact();updateFooter();
     addEventListener('resize',()=>applyCompact(),{passive:true});
   }
