@@ -1,4 +1,4 @@
-/* Math12 Hub V36.0 — Smart Navigation inherited from V35.4
+/* Math12 Hub  — Smart Navigation inherited from 
    Global search • recent items • pins • remembered filters • keyboard navigation.
    Client-side only: uses data already loaded in the current session and adds no Firestore reads by itself.
 */
@@ -26,7 +26,7 @@
     'question-bank':{title:'Ngân hàng câu hỏi',subtitle:'Kho câu hỏi của giáo viên',icon:'▦',keywords:'ngân hàng câu hỏi kho đề'},
     'exam-builder':{title:'Tạo đề kiểm tra',subtitle:'Sinh đề từ ma trận câu hỏi',icon:'▧',keywords:'tạo đề ma trận kiểm tra'},
     'ai-teacher':{title:'AI Teaching Intelligence',subtitle:'Phân tích nội dung, lập kế hoạch và tạo nháp',icon:'✦',keywords:'ai giáo viên gemini teaching intelligence kế hoạch dạy học mastery'},
-    admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản và Production Center',icon:'🛡',keywords:'admin quản trị hệ thống'}
+    admin:{title:'Quản trị hệ thống',subtitle:'Tài khoản và Trung tâm vận hành',icon:'🛡',keywords:'admin quản trị hệ thống'}
   };
   const FILTER_IDS=['lessonSearch','bankSearch','bankChapter','bankLesson','bankKnowledge','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankQualityV361','bankSort','bankPageSize'];
   let paletteOpen=false,currentResults=[],activeIndex=0,restoreBusy=false;
@@ -41,10 +41,10 @@
   function currentPage(){return document.querySelector('.section.active')?.id?.replace(/^page-/,'')||'dashboard'}
   function keyOf(item){return `${item.type}:${item.id}`}
 
-  function itemPage(page){const m=PAGE_META[page]||{title:page,subtitle:'',icon:'•',keywords:''};return {type:'page',id:page,page,title:m.title,subtitle:m.subtitle,icon:m.icon,keywords:m.keywords,pinnable:page!=='dashboard'}}
+  function itemPage(page){const m=PAGE_META[page]||{title:page,subtitle:'',icon:'',keywords:''};return {type:'page',id:page,page,title:m.title,subtitle:m.subtitle,icon:m.icon,keywords:m.keywords,pinnable:page!=='dashboard'}}
   function itemLesson(id){let l=null;try{l=typeof getLesson==='function'?getLesson(id):null}catch(_){};if(!l)return null;const m=typeof getLessonMeta==='function'?getLessonMeta(id):null;return {type:'lesson',id,page:'lesson-detail',title:l.common||id,subtitle:`${id} • Chương ${l.chapter?.id||''}`,icon:'▤',keywords:[id,l.common,l.chapter?.title,...(m?.goals||[]),...(m?.knowledge||[]).flatMap(k=>[k.code,k.title])].join(' '),pinnable:true}}
   function itemChapter(c){return {type:'chapter',id:String(c.id),page:'lessons',title:`Chương ${c.id}. ${c.title}`,subtitle:`${c.lessons?.length||0} bài • ${c.desc||''}`,icon:'◫',keywords:[c.title,c.desc,...(c.lessons||[]).map(l=>l.common)].join(' '),pinnable:true}}
-  function itemQuestion(q){return {type:'question',id:String(q.id),page:'question-bank',title:`${q.id} • ${String(q.question||'').replace(/<[^>]+>/g,' ').slice(0,110)}`,subtitle:`${displayLessonLabel(q.lessonId||'')}${q.knowledgeCode?' • '+displayKnowledgeCode(q.knowledgeCode):''}${q.formId?' • '+q.formId:''}`,icon:'▦',keywords:[q.id,q.question,q.explanation,q.knowledgeCode,q.lessonId,q.formId,q.formTitle,q.form,q.sourceName,(q.tags||[]).join(' ')].join(' '),pinnable:true}}
+  function itemQuestion(q){return {type:'question',id:String(q.id),page:'question-bank',title:`${q.id} • ${String(q.question||'').replace(/<[^>]+>/g,' ').slice(0,110)}`,subtitle:`${displayLessonLabel(q.lessonId||'')}${q.knowledgeCode?''+displayKnowledgeCode(q.knowledgeCode):''}${q.formId?''+q.formId:''}`,icon:'▦',keywords:[q.id,q.question,q.explanation,q.knowledgeCode,q.lessonId,q.formId,q.formTitle,q.form,q.sourceName,(q.tags||[]).join(' ')].join(' '),pinnable:true}}
   function itemExam(e){return {type:'exam',id:String(e.id),page:'exam-builder',title:e.title||'Đề kiểm tra',subtitle:`${e.questions?.length||0} câu • ${e.durationMinutes||45} phút`,icon:'▧',keywords:[e.title,e.id].join(' '),pinnable:true}}
   function itemClass(c){return {type:'class',id:String(c.id||c.classId||''),page:'teacher',title:c.name||c.className||'Lớp học',subtitle:c.joinCode?`Mã lớp ${c.joinCode}`:'Lớp học online',icon:'☁',keywords:[c.name,c.className,c.joinCode,c.teacherName].join(' '),pinnable:true}}
   function itemKnowledge(k){let l=null;try{l=typeof getLesson==='function'?getLesson(k.lessonId):null}catch(_){};return {type:'knowledge',id:String(k.code),page:'lesson-detail',lessonId:k.lessonId,title:`${displayKnowledgeCode(k.code)} • ${k.title}`,subtitle:l?`${displayLessonLabel(k.lessonId)}`:displayLessonLabel(k.lessonId),icon:'◇',keywords:[k.code,k.title,k.lessonId,k.summary].join(' '),pinnable:true}}
@@ -83,7 +83,7 @@
       else if(item.type==='question'){goPage('question-bank');setTimeout(()=>typeof previewBankQuestion==='function'&&previewBankQuestion(item.id),180)}
       else if(item.type==='exam'){goPage('exam-builder');setTimeout(()=>typeof previewSavedCustomExam==='function'&&previewSavedCustomExam(item.id),180)}
       addRecent(item);
-    }catch(err){console.warn('V36.0 navigation',err)}
+    }catch(err){console.warn(' navigation',err)}
   }
 
   function score(item,q,tokens){
@@ -117,17 +117,17 @@
   }
   function ensureSmartDock(){
     const dash=document.getElementById('page-dashboard');if(!dash||document.getElementById('v354SmartDock'))return;
-    const dock=document.createElement('div');dock.id='v354SmartDock';dock.className='card mt v354-smart-dock';dock.innerHTML=`<div class="v354-dock-head"><div><span class="v354-kicker">V36.0 • SMART NAVIGATION</span><h3>Truy cập nhanh</h3><p>Ghim mục thường dùng và quay lại công việc gần đây mà không phải tìm lại trong menu.</p></div><button class="btn btn-soft" type="button" data-v354-open-search>⌕ Tìm nhanh <kbd>Ctrl K</kbd></button></div><div class="v354-dock-grid"><div><div class="v354-dock-title"><b>★ Đã ghim</b><small>Tối đa ${MAX_PINS} mục</small></div><div id="v354PinnedList" class="v354-chip-list"></div></div><div><div class="v354-dock-title"><b>↶ Vừa truy cập</b><button type="button" id="v354ClearRecent">Xóa lịch sử</button></div><div id="v354RecentList" class="v354-chip-list"></div></div></div>`;
+    const dock=document.createElement('div');dock.id='v354SmartDock';dock.className='card mt v354-smart-dock';dock.innerHTML=`<div class="v354-dock-head"><div><span class="v354-kicker">SMART NAVIGATION</span><h3>Truy cập nhanh</h3><p>Ghim mục thường dùng và quay lại công việc gần đây mà không phải tìm lại trong menu.</p></div><button class="btn btn-soft" type="button" data-v354-open-search>⌕ Tìm nhanh <kbd>Ctrl K</kbd></button></div><div class="v354-dock-grid"><div><div class="v354-dock-title"><b>★ Đã ghim</b><small>Tối đa ${MAX_PINS} mục</small></div><div id="v354PinnedList" class="v354-chip-list"></div></div><div><div class="v354-dock-title"><b>↶ Vừa truy cập</b><button type="button" id="v354ClearRecent">Xóa lịch sử</button></div><div id="v354RecentList" class="v354-chip-list"></div></div></div>`;
     const anchor=dash.querySelector('.v353-admin-strip')||dash.querySelector('.v353-role-dashboard')||dash.querySelector('.teacher-only.hero')||dash.querySelector('.student-only.hero');if(anchor)anchor.insertAdjacentElement('afterend',dock);else dash.prepend(dock);
     dock.querySelector('[data-v354-open-search]').addEventListener('click',()=>openPalette());dock.querySelector('#v354ClearRecent').addEventListener('click',()=>{writeJSON(KEYS.recent,[]);renderSmartDock();notify('Đã xóa danh sách vừa truy cập.')});dock.addEventListener('click',e=>{const b=e.target.closest('[data-v354-dock]');if(!b)return;const source=b.dataset.v354Source==='pin'?pins():recents(),item=source[Number(b.dataset.v354Dock)];if(item)execute(item)});
   }
-  function dockItem(item,i,source){return `<button type="button" class="v354-dock-item" data-v354-dock="${i}" data-v354-source="${source}" title="${escText(item.subtitle||item.title)}"><span>${escText(item.icon||'•')}</span><b>${escText(item.title)}</b></button>`}
+  function dockItem(item,i,source){return `<button type="button" class="v354-dock-item" data-v354-dock="${i}" data-v354-source="${source}" title="${escText(item.subtitle||item.title)}"><span>${escText(item.icon||'')}</span><b>${escText(item.title)}</b></button>`}
   function renderSmartDock(){ensureSmartDock();const p=document.getElementById('v354PinnedList'),r=document.getElementById('v354RecentList');if(p){const arr=pins();p.innerHTML=arr.length?arr.map((x,i)=>dockItem(x,i,'pin')).join(''):'<div class="v354-dock-empty">Chưa ghim mục nào. Mở một trang rồi bấm <b>☆ Ghim</b>.</div>'}if(r){const arr=recents();r.innerHTML=arr.length?arr.map((x,i)=>dockItem(x,i,'recent')).join(''):'<div class="v354-dock-empty">Các bài/trang vừa mở sẽ xuất hiện ở đây.</div>'}}
 
   function renderResults(query=''){
     currentResults=searchItems(query);activeIndex=Math.min(activeIndex,Math.max(0,currentResults.length-1));const box=document.getElementById('v354SearchResults'),hint=document.getElementById('v354SearchHint');if(!box)return;if(hint)hint.textContent=query?`${currentResults.length} kết quả phù hợp`:'Gợi ý từ mục đã ghim, gần đây và điều hướng';
     if(!currentResults.length){box.innerHTML='<div class="v354-no-result"><b>Không tìm thấy nội dung phù hợp</b><span>Thử tên bài, mã như F1-01, mã kiến thức hoặc một từ khóa ngắn hơn.</span></div>';return}
-    box.innerHTML=currentResults.map((x,i)=>`<div class="v354-result ${i===activeIndex?'active':''}" data-v354-result="${i}" role="option" aria-selected="${i===activeIndex?'true':'false'}"><span class="v354-result-icon">${escText(x.icon||'•')}</span><span class="v354-result-copy"><b>${escText(x.title)}</b><small>${escText(x.subtitle||'')}</small></span><span class="v354-result-type">${escText(({page:'Trang',lesson:'Bài học',chapter:'Chương',knowledge:'Kiến thức',form:'Dạng toán',question:'Câu hỏi',exam:'Đề',class:'Lớp'})[x.type]||x.type)}</span>${x.pinnable?`<button type="button" class="v354-result-pin ${isPinned(x)?'pinned':''}" data-v354-pin="${i}" aria-label="${isPinned(x)?'Bỏ ghim':'Ghim'} ${escText(x.title)}">${isPinned(x)?'★':'☆'}</button>`:''}</div>`).join('');
+    box.innerHTML=currentResults.map((x,i)=>`<div class="v354-result ${i===activeIndex?'active':''}" data-v354-result="${i}" role="option" aria-selected="${i===activeIndex?'true':'false'}"><span class="v354-result-icon">${escText(x.icon||'')}</span><span class="v354-result-copy"><b>${escText(x.title)}</b><small>${escText(x.subtitle||'')}</small></span><span class="v354-result-type">${escText(({page:'Trang',lesson:'Bài học',chapter:'Chương',knowledge:'Kiến thức',form:'Dạng toán',question:'Câu hỏi',exam:'Đề',class:'Lớp'})[x.type]||x.type)}</span>${x.pinnable?`<button type="button" class="v354-result-pin ${isPinned(x)?'pinned':''}" data-v354-pin="${i}" aria-label="${isPinned(x)?'Bỏ ghim':'Ghim'} ${escText(x.title)}">${isPinned(x)?'★':'☆'}</button>`:''}</div>`).join('');
     box.querySelector('.v354-result.active')?.scrollIntoView({block:'nearest'});
   }
   function openPalette(seed=''){
@@ -147,7 +147,7 @@
     const ch=document.getElementById('bankChapter');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(true);setIfOption(ch,f.bankChapter||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankLesson'),f.bankLesson||'');if(typeof refreshBankFilterOptions==='function')refreshBankFilterOptions(false);setIfOption(document.getElementById('bankKnowledge'),f.bankKnowledge||'');if(typeof v360RefreshFormFilter==='function')v360RefreshFormFilter();
     ['bankSearch','bankFormV36','bankLevel','bankType','bankReviewStatus','bankDifficulty','bankSource','bankTag','bankDuplicateFilter','bankQualityV361','bankSort','bankPageSize'].forEach(id=>{if(Object.prototype.hasOwnProperty.call(f,id))setIfOption(document.getElementById(id),f[id])});
     if(typeof renderQuestionBank==='function')renderQuestionBank(false);
-  }catch(err){console.warn('V36.0 restore filters',err)}finally{restoreBusy=false}}
+  }catch(err){console.warn(' restore filters',err)}finally{restoreBusy=false}}
   function restoreChapter(){const f=readFilters(),c=Number(f.activeChapter);if(c&&typeof chapters!=='undefined'&&chapters.some(x=>Number(x.id)===c)){try{activeChapter=c}catch(_){}}}
 
   function installHooks(){

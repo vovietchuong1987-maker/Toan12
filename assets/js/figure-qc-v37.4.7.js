@@ -1,5 +1,5 @@
-/* Math12 Hub V37.4.7 — Figure QC + Preview-before-Approved
-   Additive layer on V37.4.6. Keeps legacy Approved questions intact, but any new
+/* Math12 Hub  — Figure QC + Preview-before-Approved
+   Additive layer on . Keeps legacy Approved questions intact, but any new
    approval (or changed figure on an Approved question) must pass QC and be visually verified. */
 (function(){
 'use strict';
@@ -29,8 +29,8 @@ function qcQuestion(q={},opts={}){
     if(typeof window.validateQuestionLatexItem==='function'){
       const r=window.validateQuestionLatexItem({...q,figureMode:mode});
       const ferr=(r?.errors||[]).filter(Boolean),fwarn=(r?.warnings||[]).filter(Boolean);
-      push('LaTeX validation',!ferr.length,ferr.length?ferr.join(' • '):'Không có lỗi LaTeX');
-      if(fwarn.length){warnings.push(...fwarn);checks.push({name:'Cảnh báo LaTeX',ok:true,detail:fwarn.join(' • '),severity:'warn'})}
+      push('LaTeX validation',!ferr.length,ferr.length?ferr.join(''):'Không có lỗi LaTeX');
+      if(fwarn.length){warnings.push(...fwarn);checks.push({name:'Cảnh báo LaTeX',ok:true,detail:fwarn.join(''),severity:'warn'})}
     }
   }catch(e){warnings.push('Không chạy được bộ kiểm tra LaTeX: '+(e?.message||e))}
   let renderEngine=q.figureRenderEngine||'',kind=window.V3745FigureEngine?.detectKind?.(q.figureLatex||'')||mode;
@@ -46,13 +46,13 @@ function qcQuestion(q={},opts={}){
   } else if(mode==='tkztab'){
     let d=null;try{d=window.parseTkzTabFigure?.(q.figureLatex||'')}catch(_){}
     const rows=d?.rows?.length||0;push('Parse tkz-tab',!!d?.ok,d?.ok?`BBT ${rows} dòng`:'Không đọc được tkz-tab');
-    push('Cấu trúc BBT',rows===2||rows===3,rows===2||rows===3?`${rows} dòng được V37.4.5+ hỗ trợ`:`Số dòng chưa hỗ trợ: ${rows}`);
+    push('Cấu trúc BBT',rows===2||rows===3,rows===2||rows===3?`${rows} dòng được + hỗ trợ`:`Số dòng chưa hỗ trợ: ${rows}`);
     renderEngine=rows===2?'native-tkztab-2row':'native-tkztab';kind='table';
   } else {
     let html='';try{html=window.questionFigureHTML?.(q,true)||''}catch(_){}
     push('Renderer cấu hình',!!html,html?'Có đầu ra renderer':'Renderer không tạo được đầu ra');renderEngine=mode+'-native';
   }
-  const layoutReady=!!window.V3746FigureLayout;push('Responsive layout',layoutReady,layoutReady?'Auto-crop/Responsive V37.4.6 sẵn sàng':'Thiếu Figure Layout V37.4.6','warn');if(!layoutReady)warnings.push('Thiếu lớp responsive V37.4.6.');
+  const layoutReady=!!window.V3746FigureLayout;push('Responsive layout',layoutReady,layoutReady?'Auto-crop/Responsive  sẵn sàng':'Thiếu Figure Layout ','warn');if(!layoutReady)warnings.push('Thiếu lớp responsive .');
   const pass=!errors.length;
   return {version:V,hash,mode,kind,checks,warnings:[...new Set(warnings)],errors:[...new Set(errors)],pass,renderEngine,needsVisualVerification:true};
 }
@@ -66,8 +66,8 @@ function renderEditorPanel(runVisual=false){
   const verified=!r.needsVisualVerification||editorSession.verifiedHash===hash||!!(old?.figureQC?.verified&&old.figureQC?.sourceHash===hash);
   let visual='';if(runVisual&&hasFigure(d)){try{visual=window.questionFigureHTML?.(d,true)||''}catch(e){visual=`<div class="v3747-qc-error">${escHtml(e?.message||e)}</div>`}}
   const stateClass=!r.pass?'bad':verified?'verified':editorSession.legacyUnchanged?'legacy':'pending';
-  const stateText=!r.pass?'QC chưa đạt':verified?'Đã xác minh hình':'Approved cũ • chưa có dấu QC V37.4.7';
-  panel.innerHTML=`<div class="v3747-qc-head"><div><b>Figure QC • V37.4.7</b><small>Preview trước Approved • hash ${escHtml(hash.slice(-10))}</small></div><span class="v3747-qc-state ${stateClass}">${stateText}</span></div><ul class="v3747-qc-list">${resultList(r)}</ul>${r.warnings.length?`<div class="v3747-qc-warn"><b>Cảnh báo:</b> ${r.warnings.map(escHtml).join(' • ')}</div>`:''}<div class="v3747-qc-actions"><button type="button" class="btn btn-soft" onclick="v3747RunEditorFigureQC()">Kiểm tra & xem hình</button>${r.needsVisualVerification?`<button type="button" class="btn btn-blue" ${!r.pass?'disabled':''} onclick="v3747VerifyEditorFigure()">✓ Hình đúng</button>`:''}</div>${runVisual&&hasFigure(d)?`<div class="v3747-qc-visual"><div class="v3747-qc-visual-title">Hình sẽ hiển thị cho học sinh</div>${visual||'<div class="v3747-qc-error">Không tạo được preview hình.</div>'}</div>`:''}<div class="v3747-qc-note">Khi mã hình thay đổi, xác minh cũ tự mất hiệu lực. Câu mới/chuyển sang <b>Approved</b> có hình bắt buộc phải bấm “✓ Hình đúng”.</div>`;
+  const stateText=!r.pass?'QC chưa đạt':verified?'Đã xác minh hình':'Approved cũ • chưa có dấu QC ';
+  panel.innerHTML=`<div class="v3747-qc-head"><div><b>Figure QC</b><small>Preview trước Approved • hash ${escHtml(hash.slice(-10))}</small></div><span class="v3747-qc-state ${stateClass}">${stateText}</span></div><ul class="v3747-qc-list">${resultList(r)}</ul>${r.warnings.length?`<div class="v3747-qc-warn"><b>Cảnh báo:</b> ${r.warnings.map(escHtml).join('')}</div>`:''}<div class="v3747-qc-actions"><button type="button" class="btn btn-soft" onclick="v3747RunEditorFigureQC()">Kiểm tra & xem hình</button>${r.needsVisualVerification?`<button type="button" class="btn btn-blue" ${!r.pass?'disabled':''} onclick="v3747VerifyEditorFigure()">✓ Hình đúng</button>`:''}</div>${runVisual&&hasFigure(d)?`<div class="v3747-qc-visual"><div class="v3747-qc-visual-title">Hình sẽ hiển thị cho học sinh</div>${visual||'<div class="v3747-qc-error">Không tạo được preview hình.</div>'}</div>`:''}<div class="v3747-qc-note">Khi mã hình thay đổi, xác minh cũ tự mất hiệu lực. Câu mới/chuyển sang <b>Approved</b> có hình bắt buộc phải bấm “✓ Hình đúng”.</div>`;
   if(runVisual){try{window.typesetMath?.(panel);setTimeout(()=>window.V3746FigureLayout?.scan?.(panel),60)}catch(_){}}
   return {r,hash,verified};
 }
@@ -122,13 +122,13 @@ function bankStats(){
   bank.forEach(q=>{if(q.reviewStatus==='approved')approved++;if(!hasFigure(q))return;figures++;const r=qcQuestion(q);if(!r.pass)failed++;const ok=!!(q.figureQC?.verified&&q.figureQC.sourceHash===sourceHash(q));if(ok)verified++;else if(q.reviewStatus==='approved'&&!q.figureQC?.verified){legacy++;approvedUnverified++}else needs++});return {total:bank.length,figures,verified,legacy,needs,failed,approved,approvedUnverified}
 }
 function audit(){
-  if(typeof window.requireTeacher==='function'&&!window.requireTeacher('Figure QC V37.4.7'))return;const s=bankStats(),rows=(state?.questionBank||[]).filter(hasFigure).map(q=>({q,r:qcQuestion(q),verified:!!(q.figureQC?.verified&&q.figureQC.sourceHash===sourceHash(q))}));const bad=rows.filter(x=>!x.r.pass).slice(0,20),pending=rows.filter(x=>x.r.pass&&!x.verified).slice(0,20);
+  if(typeof window.requireTeacher==='function'&&!window.requireTeacher('Figure QC '))return;const s=bankStats(),rows=(state?.questionBank||[]).filter(hasFigure).map(q=>({q,r:qcQuestion(q),verified:!!(q.figureQC?.verified&&q.figureQC.sourceHash===sourceHash(q))}));const bad=rows.filter(x=>!x.r.pass).slice(0,20),pending=rows.filter(x=>x.r.pass&&!x.verified).slice(0,20);
   const table=list=>list.length?`<div class="v3747-audit-list">${list.map(x=>`<button onclick="closeModal();openQuestionEditor('${escHtml(x.q.id)}')"><b>${escHtml(x.q.id)}</b><span>${escHtml(x.q.figureMode||'')} • ${x.r.pass?'chưa xác minh':'QC lỗi'}</span></button>`).join('')}</div>`:'<div class="math-help">Không có câu trong nhóm này.</div>';
-  const body=`<div class="v3747-audit-grid"><div><b>${s.total}</b><small>Tổng câu</small></div><div><b>${s.figures}</b><small>Có hình</small></div><div><b>${s.verified}</b><small>Đã xác minh</small></div><div><b>${s.legacy}</b><small>Approved cũ</small></div><div><b>${s.needs}</b><small>Cần xem hình</small></div><div><b>${s.failed}</b><small>QC lỗi</small></div><div><b>${s.approved}</b><small>Approved</small></div><div><b>${s.approvedUnverified}</b><small>Approved chưa QC mới</small></div></div><h4>QC lỗi</h4>${table(bad)}<h4>Cần xác minh trực quan / Approved cũ</h4>${table(pending)}<div class="math-help mt"><b>Nguyên tắc V37.4.7:</b> không hạ trạng thái các câu Approved cũ. Nhưng nếu hình bị thay đổi hoặc câu mới được chuyển sang Approved, hệ thống bắt buộc chạy QC và xác nhận preview.</div>`;
-  window.openModal?.('Figure QC • V37.4.7','Preview trước Approved • kiểm tra toàn ngân hàng',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`);
+  const body=`<div class="v3747-audit-grid"><div><b>${s.total}</b><small>Tổng câu</small></div><div><b>${s.figures}</b><small>Có hình</small></div><div><b>${s.verified}</b><small>Đã xác minh</small></div><div><b>${s.legacy}</b><small>Approved cũ</small></div><div><b>${s.needs}</b><small>Cần xem hình</small></div><div><b>${s.failed}</b><small>QC lỗi</small></div><div><b>${s.approved}</b><small>Approved</small></div><div><b>${s.approvedUnverified}</b><small>Approved chưa QC mới</small></div></div><h4>QC lỗi</h4>${table(bad)}<h4>Cần xác minh trực quan / Approved cũ</h4>${table(pending)}<div class="math-help mt"><b>Nguyên tắc :</b> không hạ trạng thái các câu Approved cũ. Nhưng nếu hình bị thay đổi hoặc câu mới được chuyển sang Approved, hệ thống bắt buộc chạy QC và xác nhận preview.</div>`;
+  window.openModal?.('Figure QC','Preview trước Approved • kiểm tra toàn ngân hàng',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`);
 }
 function regression(){const sample={figureMode:'tikz',figureLatex:'\\begin{tikzpicture}[scale=.88,>=stealth]\\draw[->](-3.2,0)--(3.2,0) node[below]{$x$};\\draw[->](0,-2.8)--(0,2.8) node[right]{$y$};\\draw[dashed](-1,-2.8)--(-1,2.8);\\draw[dashed](-3,-1)--(3,-1);\\draw[thick,samples=100,domain=-3:-1.12] plot(\\x,{-\\x/(\\x+1)});\\draw[thick,samples=100,domain=-.88:3] plot(\\x,{-\\x/(\\x+1)});\\end{tikzpicture}'};const r=qcQuestion(sample);return {ok:r.pass&&r.needsVisualVerification&&!!r.hash,detail:`${r.renderEngine} • ${r.errors.length} lỗi • ${r.warnings.length} cảnh báo`}}
-function patchProductionChecks(){if(typeof window.v35RunRegressionChecks!=='function')return;const base=window.v35RunRegressionChecks;window.v35RunRegressionChecks=function(opts={}){const res=base(opts);try{const rr=regression(),exists=res?.checks?.some(x=>x.name==='Figure QC V37.4.7');if(res?.checks&&!exists){res.checks.push({name:'Figure QC V37.4.7',ok:rr.ok,detail:rr.ok?'Preview-before-Approved gate • source hash invalidation • legacy-safe':'Figure QC regression chưa đạt',level:rr.ok?'pass':'fail'});res.pass=res.checks.filter(x=>x.level==='pass').length;res.warn=res.checks.filter(x=>x.level==='warn').length;res.fail=res.checks.filter(x=>x.level==='fail').length;if(opts.render!==false)window.v35RenderProductionCenter?.()}}catch(_){}return res}}
+function patchProductionChecks(){if(typeof window.v35RunRegressionChecks!=='function')return;const base=window.v35RunRegressionChecks;window.v35RunRegressionChecks=function(opts={}){const res=base(opts);try{const rr=regression(),exists=res?.checks?.some(x=>x.name==='Figure QC ');if(res?.checks&&!exists){res.checks.push({name:'Figure QC ',ok:rr.ok,detail:rr.ok?'Preview-before-Approved gate • source hash invalidation • legacy-safe':'Figure QC regression chưa đạt',level:rr.ok?'pass':'fail'});res.pass=res.checks.filter(x=>x.level==='pass').length;res.warn=res.checks.filter(x=>x.level==='warn').length;res.fail=res.checks.filter(x=>x.level==='fail').length;if(opts.render!==false)window.v35RenderProductionCenter?.()}}catch(_){}return res}}
 patchApprovalModel();patchEditor();patchProductionChecks();
 window.v3747RunEditorFigureQC=()=>renderEditorPanel(true);
 window.v3747VerifyEditorFigure=verifyEditor;

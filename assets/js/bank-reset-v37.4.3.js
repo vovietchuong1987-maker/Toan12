@@ -1,5 +1,5 @@
 /* =========================================================
-   V37.4.3 — CLEAN QUESTION BANK RESET
+    — CLEAN QUESTION BANK RESET
    - Permanent seed/sample bank disabled in this build.
    - Guided destructive reset for active question bank + question trash only.
    - Requires an exported safety JSON before reset.
@@ -54,21 +54,21 @@
   function counts(){const r=recycle();return {questions:bank().length,seeds:seedCount(),versions:versionCount(),trash:r.questions.length,examTrash:r.customExams.length,customExams:Array.isArray(state.customExams)?state.customExams.length:0}}
   function summaryHtml(){const c=counts(),cloud=cloudMode();return `<div class="v3743-reset-summary">
     <div><b>${c.questions}</b><small>Câu đang hoạt động</small></div><div><b>${c.seeds}</b><small>Câu mẫu/demo</small></div><div><b>${c.versions}</b><small>Phiên bản cũ nhúng</small></div><div><b>${c.trash}</b><small>Câu trong Thùng rác</small></div>
-  </div><div class="firebase-banner ${cloud?'':'warn'} mt"><b>${cloud?'☁ Firebase đã đăng nhập':'⚠ Chưa có Firebase giáo viên'}</b><br>${cloud?'Khi xác nhận, V37.4.3 sẽ làm sạch local + cloud rồi kiểm tra lại collection questionBank.':'Nếu tiếp tục, chỉ dữ liệu trên máy này được làm sạch. Dữ liệu cloud cũ có thể quay lại khi đăng nhập sau này.'}</div>`}
+  </div><div class="firebase-banner ${cloud?'':'warn'} mt"><b>${cloud?'☁ Firebase đã đăng nhập':'⚠ Chưa có Firebase giáo viên'}</b><br>${cloud?'Khi xác nhận,  sẽ làm sạch local + cloud rồi kiểm tra lại collection questionBank.':'Nếu tiếp tục, chỉ dữ liệu trên máy này được làm sạch. Dữ liệu cloud cũ có thể quay lại khi đăng nhập sau này.'}</div>`}
   function renderCenter(){
     const host=document.getElementById('v3743ResetBody');if(!host)return;const ready=backupConfirmed(),c=counts();
     host.innerHTML=`${summaryHtml()}
       <div class="v3743-reset-step ${ready?'done':''}"><div class="v3743-step-no">1</div><div><b>Sao lưu bắt buộc trước khi xóa</b><p>Tải một JSON chứa toàn bộ câu đang hoạt động + câu trong Thùng rác. File này đọc được bởi Khôi phục V2 đối với phần questionBank.</p><button class="btn ${ready?'btn-soft':'btn-blue'}" onclick="v3743DownloadSafetyBackup()">${ready?'✓ Tải lại bản sao lưu':'⬇ Tải bản sao lưu bắt buộc'}</button>${ready?'<span class="badge ok">Đã xác nhận trong phiên này</span>':''}</div></div>
-      <div class="v3743-reset-step"><div class="v3743-step-no">2</div><div><b>Phạm vi sẽ xóa</b><p><strong>${c.questions}</strong> câu trong ngân hàng, toàn bộ <code>_versions</code> đi kèm các câu đó, và <strong>${c.trash}</strong> câu trong Thùng rác. Ngân hàng mẫu/seed bị vô hiệu hóa vĩnh viễn từ V37.4.3.</p><div class="math-help"><b>Không xóa:</b> ${c.customExams} đề đã lưu, lớp học, học sinh, bài giao, bài nộp, lịch sử học tập/Mastery, cấu trúc 6 chương – 17 bài – 91 dạng ID6.</div></div></div>
+      <div class="v3743-reset-step"><div class="v3743-step-no">2</div><div><b>Phạm vi sẽ xóa</b><p><strong>${c.questions}</strong> câu trong ngân hàng, toàn bộ <code>_versions</code> đi kèm các câu đó, và <strong>${c.trash}</strong> câu trong Thùng rác. Ngân hàng mẫu/seed bị vô hiệu hóa vĩnh viễn từ .</p><div class="math-help"><b>Không xóa:</b> ${c.customExams} đề đã lưu, lớp học, học sinh, bài giao, bài nộp, lịch sử học tập/Mastery, cấu trúc 6 chương – 17 bài – 91 dạng ID6.</div></div></div>
       <div class="v3743-reset-step"><div class="v3743-step-no">3</div><div><b>Xác nhận xóa sạch</b><p>Đánh dấu xác nhận và nhập chính xác <code>${TOKEN}</code>.</p><label class="v3743-check"><input id="v3743Understand" type="checkbox" onchange="v3743RefreshCommitState()"> Tôi hiểu đây là thao tác xóa ngân hàng câu hỏi hiện tại.</label><input id="v3743Token" autocomplete="off" placeholder="Nhập ${TOKEN}" oninput="v3743RefreshCommitState()"><button id="v3743Commit" class="btn btn-danger" onclick="v3743CommitCleanReset()" disabled>🧹 Xóa sạch & tạo ngân hàng mới</button></div></div>`;
   }
   function refreshCommitState(){const btn=document.getElementById('v3743Commit'),ok=backupConfirmed()&&!!document.getElementById('v3743Understand')?.checked&&String(document.getElementById('v3743Token')?.value||'').trim().toUpperCase()===TOKEN;if(btn)btn.disabled=!ok}
   function openCenter(){
     if(!globalThis.requireTeacher?.('Làm sạch ngân hàng câu hỏi'))return;
     const body='<div id="v3743ResetBody"></div>',foot='<button class="btn btn-soft" onclick="closeModal()">Đóng</button>';
-    globalThis.openModal?.('Làm sạch Ngân hàng câu hỏi • V37.4.3','Reset an toàn • giữ nguyên ID6, lớp học và dữ liệu học sinh',body,foot);setTimeout(renderCenter,0)
+    globalThis.openModal?.('Làm sạch Ngân hàng câu hỏi','Reset an toàn • giữ nguyên ID6, lớp học và dữ liệu học sinh',body,foot);setTimeout(renderCenter,0)
   }
-  async function checkpoint(){try{if(typeof globalThis.v21CreateRecoverySnapshot==='function')return await v21CreateRecoverySnapshot('before-clean-question-bank-v37.4.3',false);if(typeof globalThis.v26SafetyCheckpoint==='function')return await v26SafetyCheckpoint('bank-clean-v3743')}catch(err){console.warn('V37.4.3 checkpoint',err)}return null}
+  async function checkpoint(){try{if(typeof globalThis.v21CreateRecoverySnapshot==='function')return await v21CreateRecoverySnapshot('before-clean-question-bank-v37.4.3',false);if(typeof globalThis.v26SafetyCheckpoint==='function')return await v26SafetyCheckpoint('bank-clean-v3743')}catch(err){console.warn(' checkpoint',err)}return null}
   async function verifyCloud(){
     if(!cloudMode())return {mode:'local-only',ok:true};
     try{
@@ -77,10 +77,10 @@
   }
   async function commitCleanReset(){
     if(!globalThis.requireTeacher?.('Xóa sạch ngân hàng câu hỏi'))return;
-    if(!backupConfirmed())return alert('V37.4.3 yêu cầu tải bản sao lưu trước khi xóa.');
+    if(!backupConfirmed())return alert(' yêu cầu tải bản sao lưu trước khi xóa.');
     if(!document.getElementById('v3743Understand')?.checked||String(document.getElementById('v3743Token')?.value||'').trim().toUpperCase()!==TOKEN)return alert(`Chưa đủ xác nhận. Hãy nhập ${TOKEN}.`);
     const before=counts(),usingCloud=cloudMode();
-    if(!usingCloud&&!confirm('Tài khoản Firebase giáo viên chưa đăng nhập. V37.4.3 chỉ có thể làm sạch trên máy này; câu cũ trên cloud có thể quay lại khi đăng nhập.\n\nVẫn tiếp tục làm sạch cục bộ?'))return;
+    if(!usingCloud&&!confirm('Tài khoản Firebase giáo viên chưa đăng nhập.  chỉ có thể làm sạch trên máy này; câu cũ trên cloud có thể quay lại khi đăng nhập.\n\nVẫn tiếp tục làm sạch cục bộ?'))return;
     const snap=await checkpoint();if(!snap&&!confirm('Không tạo được Recovery Snapshot trong Data Safety, nhưng bản sao lưu JSON bắt buộc đã được tải. Tiếp tục xóa?'))return;
     recycle();
     applyLocalResetState(state); // active questions + question trash only; custom exam trash preserved
@@ -92,7 +92,7 @@
     try{if(typeof v29DuplicateCache!=='undefined')v29DuplicateCache.signature=''}catch(_){}
     save({sync:false,reason:'v3743-clean-question-bank-reset'});
     // Overwrite teacher rescue/latest-teacher with the new empty baseline so an old local rescue cannot silently repopulate the bank.
-    try{if(typeof v21StashTeacherContent==='function')await v21StashTeacherContent('v3743-clean-reset');if(typeof v21MirrorStateNow==='function')await v21MirrorStateNow()}catch(err){console.warn('V37.4.3 refresh teacher vault baseline',err)}
+    try{if(typeof v21StashTeacherContent==='function')await v21StashTeacherContent('v3743-clean-reset');if(typeof v21MirrorStateNow==='function')await v21MirrorStateNow()}catch(err){console.warn(' refresh teacher vault baseline',err)}
     let cloud={mode:'local-only',ok:true};
     if(usingCloud){
       try{firebaseLastTeacherHash='';const ok=await firebasePushState(false,true);cloud=ok?await verifyCloud():{mode:'cloud',ok:false,error:'Đồng bộ Firebase không thành công.'}}catch(err){cloud={mode:'cloud',ok:false,error:err?.message||String(err)}}
@@ -108,7 +108,7 @@
   function patchMaintenanceButton(){
     const scope=document.querySelector('#page-question-bank .v371-tools-panel');if(!scope)return;
     const buttons=[...scope.querySelectorAll('button')],sample=buttons.find(b=>/Ngân hàng mẫu/i.test(b.textContent||''));if(sample){sample.textContent='🧹 Làm sạch ngân hàng';sample.setAttribute('onclick','v3743OpenCleanBankCenter()');sample.classList.add('v3743-clean-menu-btn')}
-    const trash=buttons.find(b=>/Thùng rác/i.test(b.textContent||''));if(trash)trash.title='V37.4.3 chỉ xóa câu hỏi trong Thùng rác khi dùng quy trình Làm sạch ngân hàng.'
+    const trash=buttons.find(b=>/Thùng rác/i.test(b.textContent||''));if(trash)trash.title=' chỉ xóa câu hỏi trong Thùng rác khi dùng quy trình Làm sạch ngân hàng.'
   }
   function patchEmptyState(){
     const table=document.getElementById('questionBankTable');if(!table||bank().length)return;const td=table.querySelector('td');if(td)td.innerHTML='<div class="bank-empty v3743-empty"><b>Ngân hàng mới đang trống.</b><span>Hãy Import LaTeX/.tex hoặc thêm câu mới theo Chương → Bài → Dạng → Mức độ → ID6.</span><div><button class="btn btn-blue" onclick="openBulkLatexImport()">⇧ Import LaTeX / .tex</button><button class="btn btn-soft" onclick="openQuestionEditor()">＋ Thêm câu hỏi</button></div></div>'

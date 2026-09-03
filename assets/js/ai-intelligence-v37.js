@@ -1,6 +1,6 @@
 /* =========================================================
-   Math12 Hub V37 — AI Teaching Intelligence
-   - Turns V36 Knowledge Map + QC + Smart Exam + Mastery snapshots
+   Math12 Hub  — AI Teaching Intelligence
+   - Turns  Knowledge Map + QC + Smart Exam + Mastery snapshots
      into teacher-facing, privacy-preserving instructional intelligence.
    - Local analysis works without an AI key.
    - Gemini receives aggregate/anonymized statistics only.
@@ -25,7 +25,7 @@
   const attr=v=>typeof attrEsc==='function'?attrEsc(String(v??'')):escHtml(v);
 
   function loadPlans(){try{const x=JSON.parse(localStorage.getItem(PLAN_KEY)||'[]');return Array.isArray(x)?x.slice(0,MAX_PLANS):[]}catch(_){return []}}
-  function savePlans(rows){try{localStorage.setItem(PLAN_KEY,JSON.stringify((rows||[]).slice(0,MAX_PLANS)))}catch(err){console.warn('V37 plan storage',err)}}
+  function savePlans(rows){try{localStorage.setItem(PLAN_KEY,JSON.stringify((rows||[]).slice(0,MAX_PLANS)))}catch(err){console.warn(' plan storage',err)}}
 
   function masteryRows(c){
     const mm=metaByCode(),agg=new Map();
@@ -113,7 +113,7 @@
   function renderAnalysis(a=currentAnalysis){renderMetrics(a);renderPriority(a);renderCohorts(a);renderLocalBrief(a);renderTeacherMini(currentClass)}
 
   async function refreshClass(force=false){
-    if(typeof requireTeacher==='function'&&!requireTeacher('AI Teaching Intelligence V37'))return null;
+    if(typeof requireTeacher==='function'&&!requireTeacher('AI Teaching Intelligence '))return null;
     const status=document.getElementById('v37ClassStatus');if(status)status.textContent='Đang tải dữ liệu lớp…';
     try{
       if(typeof firebaseOwnedClasses!=='undefined'&&!firebaseOwnedClasses?.length&&typeof firebaseLoadMemberships==='function'&&typeof firebaseUser!=='undefined'&&firebaseUser)await firebaseLoadMemberships();
@@ -135,7 +135,7 @@
 
   function prepareQuestions(code){
     const m=metaByCode().get(code)||{},source=document.getElementById('v32AiSourceText'),lesson=document.getElementById('v32AiTargetLesson'),type=document.getElementById('v32AiTypePolicy'),count=document.getElementById('v32AiCount');
-    if(!source){alert('Trợ lý AI V32 chưa tải xong. Hãy thử lại sau vài giây.');return}
+    if(!source){alert('Trợ lý AI  chưa tải xong. Hãy thử lại sau vài giây.');return}
     source.value=`Hãy tạo một bộ câu hỏi nháp để giáo viên củng cố chuẩn ${code} — ${m.title||'kiến thức đã chọn'} (${m.lessonId||''}).\nYêu cầu: bám Chương trình GDPT 2018; ưu tiên 2 câu NB, 2 câu TH và 1 câu VD nếu phù hợp; nghiệm/số liệu đẹp; không tạo hai đáp án đúng; lời giải rõ; nếu là Đúng/Sai thì 4 ý có liên hệ logic. Chỉ tạo bản nháp để giáo viên duyệt.`;
     if(lesson&&m.lessonId)lesson.value=m.lessonId;if(type)type.value='mixed';if(count)count.value='5';source.focus();source.scrollIntoView({behavior:'smooth',block:'center'});if(typeof examToast==='function')examToast(`Đã chuẩn bị yêu cầu AI cho ${code}. Hãy xem lại rồi bấm “Tạo bản nháp AI”.`)
   }
@@ -205,7 +205,7 @@
     const btn=document.getElementById('v37GenerateBtn'),status=document.getElementById('v37PlanStatus');busy=true;if(btn)btn.disabled=true;if(status)status.textContent='Đang tạo bản nháp kế hoạch từ dữ liệu tổng hợp ẩn danh…';
     try{
       const digest=anonymousDigest(currentAnalysis),prompt=`Hãy lập một kế hoạch can thiệp/ngắn hạn cho lớp từ dữ liệu tổng hợp sau. Không có dữ liệu định danh học sinh. Chỉ dùng knowledgeCode có trong priorityKnowledge.\n\n${JSON.stringify(digest,null,2)}`;
-      const r=await v32GeminiGenerate([{text:prompt}],planSchema(),{timeoutMs:90000,systemInstruction:teachingSystem()});const plan=normalizePlan(r.json,currentAnalysis);currentPlan=planRecord(plan,currentAnalysis,r.model);const rows=loadPlans();rows.unshift(currentPlan);savePlans(rows);renderPlan(currentPlan);if(status)status.textContent=`✓ Bản nháp từ ${r.model} • chỉ dùng thống kê ẩn danh.`;if(typeof examToast==='function')examToast('V37 đã tạo bản nháp kế hoạch. Giáo viên cần xem và quyết định trước khi áp dụng.')
+      const r=await v32GeminiGenerate([{text:prompt}],planSchema(),{timeoutMs:90000,systemInstruction:teachingSystem()});const plan=normalizePlan(r.json,currentAnalysis);currentPlan=planRecord(plan,currentAnalysis,r.model);const rows=loadPlans();rows.unshift(currentPlan);savePlans(rows);renderPlan(currentPlan);if(status)status.textContent=`✓ Bản nháp từ ${r.model} • chỉ dùng thống kê ẩn danh.`;if(typeof examToast==='function')examToast(' đã tạo bản nháp kế hoạch. Giáo viên cần xem và quyết định trước khi áp dụng.')
     }catch(err){if(status)status.textContent=`✗ ${err?.message||err}`;if(typeof v35CaptureIssue==='function')v35CaptureIssue('v37-ai-plan',err)}finally{busy=false;if(btn)btn.disabled=false}
   }
 
@@ -213,24 +213,24 @@
     const box=document.getElementById('v37PlanOutput');if(!box)return;if(!rec?.plan){box.innerHTML='<div class="online-empty">Chưa có kế hoạch AI. Phân tích lớp chạy cục bộ ngay cả khi chưa cấu hình Gemini.</div>';return}const p=rec.plan;
     box.innerHTML=`<div class="v37-plan-head"><div><span>AI DRAFT • ${escHtml(rec.model||'Gemini')}</span><h4>${escHtml(p.summary||'Kế hoạch dạy học')}</h4><small>${new Date(rec.createdAt).toLocaleString('vi-VN')} • giáo viên duyệt trước khi áp dụng</small></div><div class="online-actions"><button class="btn btn-soft" onclick="v37CopyPlan()">Sao chép</button><button class="btn btn-soft" onclick="v37ExportPlan()">JSON</button></div></div>
       <div class="v37-plan-grid"><div><h5>Ưu tiên kiến thức</h5>${(p.priorities||[]).map(x=>`<div class="v37-plan-item"><b>${escHtml(x.code)} • ${escHtml(x.objective)}</b><small>${escHtml(x.reason)} • ${escHtml(x.recommendedLevel)} • ~${Number(x.minutes)||0} phút</small><button class="link-btn" onclick="v37PrepareAssignment('${attr(x.code)}','support')">Chuẩn bị bài củng cố →</button></div>`).join('')||'<div class="online-empty">AI chưa đưa ưu tiên hợp lệ.</div>'}</div>
-      <div><h5>Phân hóa nhóm</h5>${(p.groups||[]).map(x=>`<div class="v37-plan-item"><b>${escHtml(x.mode)} • ${escHtml(x.goal)}</b><small>${escHtml(x.activity)}${x.questionCount?` • ${x.questionCount} câu`:''}</small></div>`).join('')||'<div class="online-empty">Chưa có đề xuất nhóm.</div>'}</div></div>
+      <div><h5>Phân hóa nhóm</h5>${(p.groups||[]).map(x=>`<div class="v37-plan-item"><b>${escHtml(x.mode)} • ${escHtml(x.goal)}</b><small>${escHtml(x.activity)}${x.questionCount?`${x.questionCount} câu`:''}</small></div>`).join('')||'<div class="online-empty">Chưa có đề xuất nhóm.</div>'}</div></div>
       <div class="v37-lesson-plan"><h5>Tiến trình gợi ý</h5>${(p.lessonPlan||[]).map((x,i)=>`<div class="v37-phase"><span>${i+1}</span><div><b>${escHtml(x.phase)} • ${Number(x.minutes)||0}'</b><small><strong>GV:</strong> ${escHtml(x.teacherAction)}<br><strong>HS:</strong> ${escHtml(x.studentAction)}<br><strong>Minh chứng:</strong> ${escHtml(x.evidence)}</small></div></div>`).join('')}</div>
-      <div class="v37-plan-footer"><div><b>Bài về nhà</b><span>${escHtml(p.homework?.focus||'—')} • ${Number(p.homework?.questionCount)||0} câu</span><small>${escHtml(p.homework?.differentiation||'')}</small></div><div><b>Giáo viên cần kiểm tra</b><span>${escHtml((p.teacherChecks||[]).join(' • ')||'Xem lại toàn bộ kế hoạch trước khi dùng.')}</span></div></div>${p.cautions?.length?`<div class="firebase-banner warn mt"><b>Lưu ý AI:</b> ${escHtml(p.cautions.join(' • '))}</div>`:''}`
+      <div class="v37-plan-footer"><div><b>Bài về nhà</b><span>${escHtml(p.homework?.focus||'—')} • ${Number(p.homework?.questionCount)||0} câu</span><small>${escHtml(p.homework?.differentiation||'')}</small></div><div><b>Giáo viên cần kiểm tra</b><span>${escHtml((p.teacherChecks||[]).join('')||'Xem lại toàn bộ kế hoạch trước khi dùng.')}</span></div></div>${p.cautions?.length?`<div class="firebase-banner warn mt"><b>Lưu ý AI:</b> ${escHtml(p.cautions.join(''))}</div>`:''}`
   }
 
   function exportPlan(){if(!currentPlan)return alert('Chưa có kế hoạch để xuất.');if(typeof triggerJsonDownload==='function')return triggerJsonDownload(currentPlan,`math12hub-v37-teaching-plan-${new Date().toISOString().slice(0,10)}.json`);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(currentPlan,null,2)],{type:'application/json'}));a.download='math12hub-v37-teaching-plan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-  function planText(rec=currentPlan){if(!rec?.plan)return '';const p=rec.plan;return [`KẾ HOẠCH DẠY HỌC V37`,p.summary||'',``,...((p.priorities||[]).map(x=>`- ${x.code}: ${x.objective} (${x.recommendedLevel}, ${x.minutes} phút)`)),``,`TIẾN TRÌNH`,...((p.lessonPlan||[]).map((x,i)=>`${i+1}. ${x.phase} (${x.minutes} phút)\nGV: ${x.teacherAction}\nHS: ${x.studentAction}\nMinh chứng: ${x.evidence}`)),``,`BÀI VỀ NHÀ: ${p.homework?.focus||''} • ${p.homework?.questionCount||0} câu`,`KIỂM TRA: ${(p.teacherChecks||[]).join(' • ')}`].join('\n')}
-  async function copyPlan(){if(!currentPlan)return alert('Chưa có kế hoạch để sao chép.');try{await navigator.clipboard.writeText(planText());if(typeof examToast==='function')examToast('Đã sao chép kế hoạch V37.')}catch(_){alert(planText())}}
+  function planText(rec=currentPlan){if(!rec?.plan)return '';const p=rec.plan;return [`KẾ HOẠCH DẠY HỌC `,p.summary||'',``,...((p.priorities||[]).map(x=>`- ${x.code}: ${x.objective} (${x.recommendedLevel}, ${x.minutes} phút)`)),``,`TIẾN TRÌNH`,...((p.lessonPlan||[]).map((x,i)=>`${i+1}. ${x.phase} (${x.minutes} phút)\nGV: ${x.teacherAction}\nHS: ${x.studentAction}\nMinh chứng: ${x.evidence}`)),``,`BÀI VỀ NHÀ: ${p.homework?.focus||''} • ${p.homework?.questionCount||0} câu`,`KIỂM TRA: ${(p.teacherChecks||[]).join('')}`].join('\n')}
+  async function copyPlan(){if(!currentPlan)return alert('Chưa có kế hoạch để sao chép.');try{await navigator.clipboard.writeText(planText());if(typeof examToast==='function')examToast('Đã sao chép kế hoạch .')}catch(_){alert(planText())}}
 
-  function openHistory(){const rows=loadPlans();openModal('Lịch sử kế hoạch AI • V37',`${rows.length} bản nháp lưu cục bộ trên thiết bị`,rows.length?`<div class="v37-history">${rows.map((r,i)=>`<button type="button" onclick="v37OpenHistoryPlan(${i})"><div><b>${escHtml(r.className||'Lớp học')}</b><small>${new Date(r.createdAt).toLocaleString('vi-VN')} • ${escHtml(r.model||'Gemini')}</small></div><span>${escHtml(r.plan?.priorities?.[0]?.code||'—')}</span></button>`).join('')}</div>`:'<div class="online-empty">Chưa có kế hoạch AI đã lưu.</div>',`<button class="btn btn-danger" onclick="v37ClearHistory()">Xóa lịch sử</button><button class="btn btn-soft" onclick="closeModal()">Đóng</button>`)}
+  function openHistory(){const rows=loadPlans();openModal('Lịch sử kế hoạch AI',`${rows.length} bản nháp lưu cục bộ trên thiết bị`,rows.length?`<div class="v37-history">${rows.map((r,i)=>`<button type="button" onclick="v37OpenHistoryPlan(${i})"><div><b>${escHtml(r.className||'Lớp học')}</b><small>${new Date(r.createdAt).toLocaleString('vi-VN')} • ${escHtml(r.model||'Gemini')}</small></div><span>${escHtml(r.plan?.priorities?.[0]?.code||'—')}</span></button>`).join('')}</div>`:'<div class="online-empty">Chưa có kế hoạch AI đã lưu.</div>',`<button class="btn btn-danger" onclick="v37ClearHistory()">Xóa lịch sử</button><button class="btn btn-soft" onclick="closeModal()">Đóng</button>`)}
   function openHistoryPlan(i){const r=loadPlans()[Number(i)];if(!r)return;currentPlan=r;closeModal();renderPlan(r);document.getElementById('v37PlanOutput')?.scrollIntoView({behavior:'smooth',block:'start'})}
-  function clearHistory(){if(!confirm('Xóa toàn bộ lịch sử kế hoạch AI V37 trên thiết bị này?'))return;savePlans([]);currentPlan=null;closeModal();renderPlan();if(typeof examToast==='function')examToast('Đã xóa lịch sử kế hoạch AI V37.')}
+  function clearHistory(){if(!confirm('Xóa toàn bộ lịch sử kế hoạch AI  trên thiết bị này?'))return;savePlans([]);currentPlan=null;closeModal();renderPlan();if(typeof examToast==='function')examToast('Đã xóa lịch sử kế hoạch AI .')}
 
   function renderTeacherMini(c){
-    const box=document.getElementById('v37TeacherMini');if(!box)return;if(!c){box.innerHTML='<div class="teacher-live-empty">Mở hoặc làm mới Dashboard lớp để V37 tạo teaching brief.</div>';return}const a=buildAnalysis(c),top=a.priorities.slice(0,3);box.innerHTML=`<div class="v37-mini-head"><div><b>AI Teaching Intelligence V37</b><small>${a.masteryStudents}/${a.memberCount} HS có Mastery snapshot • ${a.cohorts.find(x=>x.mode==='support')?.count||0} HS cần hỗ trợ</small></div><button class="btn btn-soft" onclick="v37OpenForClass('${attr(c.classId)}')">Mở AI →</button></div><div class="v37-mini-codes">${top.length?top.map(x=>`<button onclick="v37OpenForClass('${attr(c.classId)}','${attr(x.code)}')"><b>${escHtml(x.code)}</b><span>${pct(x.score)}</span><small>${escHtml(x.title)}</small></button>`).join(''):'<span>Chưa đủ dữ liệu ưu tiên.</span>'}</div>`
+    const box=document.getElementById('v37TeacherMini');if(!box)return;if(!c){box.innerHTML='<div class="teacher-live-empty">Mở hoặc làm mới Dashboard lớp để  tạo teaching brief.</div>';return}const a=buildAnalysis(c),top=a.priorities.slice(0,3);box.innerHTML=`<div class="v37-mini-head"><div><b>AI Teaching Intelligence </b><small>${a.masteryStudents}/${a.memberCount} HS có Mastery snapshot • ${a.cohorts.find(x=>x.mode==='support')?.count||0} HS cần hỗ trợ</small></div><button class="btn btn-soft" onclick="v37OpenForClass('${attr(c.classId)}')">Mở AI →</button></div><div class="v37-mini-codes">${top.length?top.map(x=>`<button onclick="v37OpenForClass('${attr(c.classId)}','${attr(x.code)}')"><b>${escHtml(x.code)}</b><span>${pct(x.score)}</span><small>${escHtml(x.title)}</small></button>`).join(''):'<span>Chưa đủ dữ liệu ưu tiên.</span>'}</div>`
   }
 
-  function injectTeacherCard(){if(document.getElementById('v37TeacherMini'))return;const anchor=document.querySelector('#page-teacher .v363-teacher-card')||document.querySelector('#page-teacher .v31-competency-card');if(!anchor)return;const card=document.createElement('div');card.className='card mt v37-teacher-mini-card';card.id='v37TeacherMini';card.innerHTML='<div class="teacher-live-empty">Mở Dashboard lớp để V37 tạo teaching brief.</div>';anchor.insertAdjacentElement('afterend',card)}
+  function injectTeacherCard(){if(document.getElementById('v37TeacherMini'))return;const anchor=document.querySelector('#page-teacher .v363-teacher-card')||document.querySelector('#page-teacher .v31-competency-card');if(!anchor)return;const card=document.createElement('div');card.className='card mt v37-teacher-mini-card';card.id='v37TeacherMini';card.innerHTML='<div class="teacher-live-empty">Mở Dashboard lớp để  tạo teaching brief.</div>';anchor.insertAdjacentElement('afterend',card)}
   function openForClass(classId='',code=''){if(typeof firebaseSelectedClassId!=='undefined'&&classId)firebaseSelectedClassId=classId;goPage('ai-teacher');setTimeout(async()=>{renderClassOptions();const sel=document.getElementById('v37ClassSelect');if(sel&&classId)sel.value=classId;await refreshClass(false);if(code)document.querySelector(`#v37PriorityList .v37-priority-row b`)?.scrollIntoView({behavior:'smooth',block:'center'})},550)}
 
   function renderPage(){renderClassOptions();if(currentAnalysis)renderAnalysis(currentAnalysis);renderPlan(currentPlan);const privacy=document.getElementById('v37PrivacyStatus');if(privacy){const rr=privacyRegression();privacy.textContent=rr.ok?'✓ Privacy Guard đạt • payload AI không chứa tên/email/UID':'⚠ Privacy Guard cần kiểm tra'}}

@@ -18,3 +18,19 @@
 .v392-avatar3d-shell .v384-avatar3d-controls button:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(49,91,199,.15)}
 @media(min-width:1060px){.avatar-preview-stage{height:410px}.avatar-preview-card .v392-avatar3d-shell{min-height:400px}}
 @media(max-width:760px){.v392-quality-chip{right:8px;top:8px;font-size:7px}.v392-avatar3d-shell .v384-avatar3d-badge{max-width:138px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+
+/* Soft 3D Premium polish — approved visual direction */
+.avatar-preview-stage{min-height:430px;background:#f4f3f4;border-radius:24px;overflow:hidden}
+.v392-avatar3d-shell{background:
+  linear-gradient(180deg,rgba(247,246,248,.20),rgba(236,235,239,.30)),
+  url('../img/avatar-premium-concept.webp') center/cover no-repeat,
+  radial-gradient(circle at 50% 18%,#fffaf5 0,#f0eff2 62%,#dedee4 100%);
+  border:1px solid rgba(57,68,92,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 18px 48px rgba(40,47,65,.14)}
+.v392-avatar3d-shell:before{background:radial-gradient(circle at 18% 12%,rgba(255,207,133,.20),transparent 30%),linear-gradient(180deg,transparent 70%,rgba(39,46,61,.035));background-size:100% 100%}
+.v392-avatar3d-shell .v384-avatar3d-canvas{filter:saturate(1.025) contrast(1.015)}
+.v384-avatar3d-loading{background:linear-gradient(180deg,rgba(250,249,250,.56),rgba(243,242,245,.80));backdrop-filter:blur(2px);color:#596174}
+.v384-avatar3d-loading b{font-size:14px;color:#345b47}.v384-avatar3d-badge{background:rgba(38,49,54,.72);letter-spacing:.06em}.v392-quality-chip{background:linear-gradient(135deg,#4d7c59,#d2a934);box-shadow:0 6px 18px rgba(55,99,68,.20)}
+.v392-avatar3d-shell .v384-avatar3d-controls{background:rgba(255,255,255,.82);border:1px solid rgba(69,78,94,.10);box-shadow:0 12px 30px rgba(37,43,56,.15)}
+.v392-avatar3d-shell .v384-avatar3d-controls button{color:#365f47;background:rgba(255,255,255,.92)}
+.v392-avatar3d-shell .v384-avatar3d-controls button:hover{background:#f4f7f2;box-shadow:0 4px 12px rgba(51,91,66,.15)}
+@media(min-width:1060px){.avatar-preview-stage{height:455px}.avatar-preview-card .v392-avatar3d-shell{min-height:445px}}

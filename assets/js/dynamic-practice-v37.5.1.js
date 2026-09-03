@@ -1,4 +1,4 @@
-/* Math12 Hub V37.5.1 — Dynamic Practice Engine
+/* Math12 Hub  — Dynamic Practice Engine
    Học theo bài + Ôn tập chương lấy câu trực tiếp từ ngân hàng.
    Bộ hiện tại được giữ ổn định để có thể tiếp tục bài dở; giáo viên/học sinh
    có thể chủ động tạo bộ mới. Không thay đổi nội dung/đáp án/ID6 của câu. */
@@ -114,7 +114,7 @@ function addLessonControls(){
     if(!b.parentElement?.querySelector('.v3751-new-set')){const n=document.createElement('button');n.type='button';n.className='btn btn-soft v3751-new-set';n.textContent='↻ Tạo bộ câu mới';n.onclick=()=>window.openLessonQuiz(id,true);b.insertAdjacentElement('afterend',n)}
   });
   const card=[...host.querySelectorAll('.study-card')].find(x=>/Luyện tập & kiểm tra/.test(x.textContent||''));
-  if(card&&!card.querySelector('.v3751-practice-note')){const p=document.createElement('div');p.className='v3751-practice-note';p.innerHTML=`<b>Dynamic Practice V38.3:</b> ngân hàng có <strong>${info.pool}</strong> câu phù hợp với bài này. Bộ hiện tại ${info.current?`gồm <strong>${info.current}</strong> câu`:'sẽ được tạo khi bắt đầu'}; tạo bộ mới sẽ ưu tiên tránh lặp lại câu của bộ trước.`;card.querySelector('p')?.insertAdjacentElement('afterend',p)}
+  if(card&&!card.querySelector('.v3751-practice-note')){const p=document.createElement('div');p.className='v3751-practice-note';p.innerHTML=`<b>Dynamic Practice :</b> ngân hàng có <strong>${info.pool}</strong> câu phù hợp với bài này. Bộ hiện tại ${info.current?`gồm <strong>${info.current}</strong> câu`:'sẽ được tạo khi bắt đầu'}; tạo bộ mới sẽ ưu tiên tránh lặp lại câu của bộ trước.`;card.querySelector('p')?.insertAdjacentElement('afterend',p)}
 }
 function enhanceChapterCards(){
   const host=document.getElementById('allChapters');if(!host)return;

@@ -1,4 +1,4 @@
-/* Math12 Hub V36.0 — role-aware compact navigation (V35.2 foundation retained) */
+/* Math12 Hub  — role-aware compact navigation ( foundation retained) */
 (function(){
   const PREF_COMPACT='math12hub:v35.3:sidebar-compact';
   const PREF_GROUPS='math12hub:v35.3:nav-groups';
@@ -19,7 +19,7 @@
     visibleButtons.forEach(b=>{const g=b.closest('.nav-group');if(g&&!g.classList.contains('open'))setGroup(g,true,false)})
   }
   function roleName(){try{const r=typeof currentSecureRole==='function'?currentSecureRole():'student';return r==='admin'?'Quản trị':r==='teacher'?'Giáo viên':'Học sinh'}catch(_){return 'Học sinh'}}
-  function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=`V39.2 • ${roleName()} • Avatar 3D Visual`}
+  function updateFooter(){const tiny=document.querySelector('.sidebar-foot .tiny');if(tiny)tiny.textContent=roleName()}
   function applyCompact(fromUser=false){
     if(innerWidth<=760){app()?.classList.remove('sidebar-compact');return}
     let on=false;try{on=localStorage.getItem(PREF_COMPACT)==='1'}catch(_){}

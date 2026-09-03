@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V39.5 — Content Pack + Approved Publishing Bridge
+   Math12 Hub  — Content Pack + Approved Publishing Bridge
    Any future chapter file can call Math12Content.registerPack(id, rows, meta).
    Student/guest practice only sees Approved/Reviewed questions.
    ========================================================= */

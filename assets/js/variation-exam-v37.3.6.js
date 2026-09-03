@@ -1,4 +1,4 @@
-/* Math12 Hub V37.3.6 — Variation Table & Exam Layout Polish
+/* Math12 Hub  — Variation Table & Exam Layout Polish
    - Anchor-based tkz-tab variation arrows
    - Compact exam question/figure/options layout
    - Hides authoring/source diagnostics from student exam mode

@@ -1,4 +1,4 @@
-/* Math12 Hub V37.3.1 — compact tools menu hotfix
+/* Math12 Hub  — compact tools menu hotfix
    Closes the Question Bank "Công cụ" menu after choosing an action,
    when clicking outside, pressing Escape, or when the main modal opens. */
 (function(){

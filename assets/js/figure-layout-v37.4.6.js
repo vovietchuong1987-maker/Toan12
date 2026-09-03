@@ -1,6 +1,6 @@
 /* ==========================================================
-   Math12 Hub V37.4.6 — Figure Layout & Zoom Layer
-   Depends on V37.4.5 Hybrid Figure Engine and preserves it.
+   Math12 Hub  — Figure Layout & Zoom Layer
+   Depends on  Hybrid Figure Engine and preserves it.
    - second-pass tight crop after SVG is attached to the DOM
    - aspect-aware display presets (graph / standard / wide / tall / table)
    - responsive sizing through ResizeObserver
@@ -40,7 +40,7 @@ function tighten(svg,fig){
     const pad=clamp(ratio*padRate,4,18),x=bb.x-pad,y=bb.y-pad,w=bb.width+2*pad,h=bb.height+2*pad;
     if(!(w>0&&h>0))return false;
     const oldArea=old.width*old.height,newArea=w*h;
-    // Only rewrite when there is meaningful whitespace or when V37.4.5 already marked this as stored SVG.
+    // Only rewrite when there is meaningful whitespace or when  already marked this as stored SVG.
     if(newArea<oldArea*.985||svg.classList.contains('v3745-stored-svg'))svg.setAttribute('viewBox',`${x.toFixed(3)} ${y.toFixed(3)} ${w.toFixed(3)} ${h.toFixed(3)}`);
     svg.dataset.v3746Crop='1';return true;
   }catch(_){return false}
@@ -93,14 +93,14 @@ function regression(){
   return {ok,version:V,build:BUILD,cases:mapped,zoomMin:.6,zoomMax:3};
 }
 function audit(){
-  if(typeof requireTeacher==='function'&&!requireTeacher('Kiểm tra bố cục hình V37.4.6'))return;
+  if(typeof requireTeacher==='function'&&!requireTeacher('Kiểm tra bố cục hình '))return;
   scan(document);const figs=[...document.querySelectorAll('.v3745-figure')],counts={graph:0,standard:0,wide:0,tall:0,table:0};figs.forEach(f=>{const p=f.dataset.v3746Preset||'standard';counts[p]=(counts[p]||0)+1});const rr=regression();
-  const body=`<div class="v3746-audit-grid"><div><b>${figs.length}</b><small>Hình đang hiển thị</small></div><div><b>${counts.graph}</b><small>Đồ thị Oxy</small></div><div><b>${counts.wide}</b><small>Hình ngang rộng</small></div><div><b>${counts.tall}</b><small>Hình dọc</small></div><div><b>${counts.standard}</b><small>Khung chuẩn</small></div><div><b>${counts.table}</b><small>Bảng / BBT</small></div><div><b>0.6×–3×</b><small>Khoảng zoom</small></div><div><b>${rr.ok?'PASS':'CHECK'}</b><small>Regression layout</small></div></div><div class="math-help mt"><b>V37.4.6:</b> crop lần hai sau khi SVG gắn vào DOM, chọn kích thước theo tỉ lệ hình, tự co theo khung câu hỏi và cho phép phóng to SVG vector mà không thay đổi dữ liệu nguồn.</div>`;
-  window.openModal?.('Figure Layout • V37.4.6','Auto-crop • Responsive sizing • Vector zoom',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`);
+  const body=`<div class="v3746-audit-grid"><div><b>${figs.length}</b><small>Hình đang hiển thị</small></div><div><b>${counts.graph}</b><small>Đồ thị Oxy</small></div><div><b>${counts.wide}</b><small>Hình ngang rộng</small></div><div><b>${counts.tall}</b><small>Hình dọc</small></div><div><b>${counts.standard}</b><small>Khung chuẩn</small></div><div><b>${counts.table}</b><small>Bảng / BBT</small></div><div><b>0.6×–3×</b><small>Khoảng zoom</small></div><div><b>${rr.ok?'PASS':'CHECK'}</b><small>Regression layout</small></div></div><div class="math-help mt"><b>:</b> crop lần hai sau khi SVG gắn vào DOM, chọn kích thước theo tỉ lệ hình, tự co theo khung câu hỏi và cho phép phóng to SVG vector mà không thay đổi dữ liệu nguồn.</div>`;
+  window.openModal?.('Figure Layout','Auto-crop • Responsive sizing • Vector zoom',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`);
 }
 function installProductionCheck(){
   if(typeof window.v35RunRegressionChecks!=='function')return;const base=window.v35RunRegressionChecks;
-  window.v35RunRegressionChecks=function(opts={}){const res=base(opts);try{const rr=regression(),exists=res?.checks?.some(x=>x.name==='Figure Layout V37.4.6');if(res?.checks&&!exists){res.checks.push({name:'Figure Layout V37.4.6',ok:rr.ok,detail:rr.ok?'Auto-crop • aspect presets • responsive • vector zoom':'Figure layout regression chưa đạt',level:rr.ok?'pass':'fail'});res.pass=res.checks.filter(x=>x.level==='pass').length;res.warn=res.checks.filter(x=>x.level==='warn').length;res.fail=res.checks.filter(x=>x.level==='fail').length;if(opts.render!==false)window.v35RenderProductionCenter?.()}}catch(_){}return res};
+  window.v35RunRegressionChecks=function(opts={}){const res=base(opts);try{const rr=regression(),exists=res?.checks?.some(x=>x.name==='Figure Layout ');if(res?.checks&&!exists){res.checks.push({name:'Figure Layout ',ok:rr.ok,detail:rr.ok?'Auto-crop • aspect presets • responsive • vector zoom':'Figure layout regression chưa đạt',level:rr.ok?'pass':'fail'});res.pass=res.checks.filter(x=>x.level==='pass').length;res.warn=res.checks.filter(x=>x.level==='warn').length;res.fail=res.checks.filter(x=>x.level==='fail').length;if(opts.render!==false)window.v35RenderProductionCenter?.()}}catch(_){}return res};
 }
 function init(){ensureLightbox();installObservers();installProductionCheck();}
 window.v3746OpenFigureAudit=audit;

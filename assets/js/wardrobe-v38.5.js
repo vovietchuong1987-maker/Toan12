@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V38.5 — Wardrobe Engine
+   Math12 Hub  — Wardrobe Engine
    Independent cosmetic slots that can later be fed by Mega Shop.
    ========================================================= */
 (function(){
@@ -73,7 +73,7 @@ function equippedLabel(s){const id=profile().equipped[s.id],it=item(id);return i
 function renderPanel(){
   const root=document.getElementById('avatarV378Page');if(!root)return;let box=document.getElementById('v385Wardrobe');if(!box){box=document.createElement('section');box.className='card v385-wardrobe';box.id='v385Wardrobe';root.appendChild(box)}
   const items=catalog.filter(x=>x.slot===activeSlot),p=profile();
-  box.innerHTML=`<div class="v385-wardrobe-head"><div><div class="avatar-preview-kicker">V40 • 3D WARDROBE</div><h3>Tủ đồ nhiều lớp</h3><p>Mỗi slot nay có form 3D riêng: tóc, áo, giày, mũ, kính, ba lô và dụng cụ thay đổi hình dáng thật trên Avatar.</p></div><span class="avatar-save-state saved">8 slot sẵn sàng</span></div><div class="v385-slot-pills">${slots.map(s=>`<button type="button" class="${activeSlot===s.id?'active':''}" onclick="v385Wardrobe.setSlot('${s.id}')">${s.icon} ${s.label}</button>`).join('')}</div><div class="v385-items">${items.map(it=>{const has=unlocked(it),eq=p.equipped[it.slot]===it.id||(!p.equipped[it.slot]&&it.clear);return `<button type="button" class="v385-item ${eq?'equipped':''} ${has?'':'locked'}" ${has?'': 'disabled'} onclick="v385Wardrobe.equip('${it.id}')"><div class="v385-item-icon">${it.icon||'✦'}</div><b>${it.label}</b><small>${has?(it.free?'Starter • miễn phí':'Đã sở hữu'):'Mở tại Mega Shop'}</small><em>${eq?'Đang dùng':has?'Có sẵn':'Khóa'}</em></button>`}).join('')}</div><div class="v385-equipped">${slots.map(s=>`<span>${s.icon} ${s.label}: ${equippedLabel(s)}</span>`).join('')}</div>`;
+  box.innerHTML=`<div class="v385-wardrobe-head"><div><div class="avatar-preview-kicker">3D WARDROBE</div><h3>Tủ đồ nhiều lớp</h3><p>Mỗi slot nay có form 3D riêng: tóc, áo, giày, mũ, kính, ba lô và dụng cụ thay đổi hình dáng thật trên Avatar.</p></div><span class="avatar-save-state saved">8 slot sẵn sàng</span></div><div class="v385-slot-pills">${slots.map(s=>`<button type="button" class="${activeSlot===s.id?'active':''}" onclick="v385Wardrobe.setSlot('${s.id}')">${s.icon} ${s.label}</button>`).join('')}</div><div class="v385-items">${items.map(it=>{const has=unlocked(it),eq=p.equipped[it.slot]===it.id||(!p.equipped[it.slot]&&it.clear);return `<button type="button" class="v385-item ${eq?'equipped':''} ${has?'':'locked'}" ${has?'': 'disabled'} onclick="v385Wardrobe.equip('${it.id}')"><div class="v385-item-icon">${it.icon||'✦'}</div><b>${it.label}</b><small>${has?(it.free?'Starter • miễn phí':'Đã sở hữu'):'Mở tại Mega Shop'}</small><em>${eq?'Đang dùng':has?'Có sẵn':'Khóa'}</em></button>`}).join('')}</div><div class="v385-equipped">${slots.map(s=>`<span>${s.icon} ${s.label}: ${equippedLabel(s)}</span>`).join('')}</div>`;
 }
 function setSlot(s){if(slots.some(x=>x.id===s)){activeSlot=s;renderPanel()}}
 function install(){

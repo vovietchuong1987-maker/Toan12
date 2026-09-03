@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V38.2.1 — Chapter 1 Taxonomy Sync
+   Math12 Hub  — Chapter 1 Taxonomy Sync
    Goal: one canonical Chapter-1 structure everywhere:
    Bài 1 Đơn điệu → Bài 2 Cực trị → Bài 3 GTLN/GTNN
    → Bài 4 Tiệm cận → Bài 5 Khảo sát đồ thị.
@@ -74,7 +74,7 @@ function labelForCode(code=''){
  if(!l)return {code,title:k?.title||code,lessonId:lid,lessonTitle:typeof getLesson==='function'?(getLesson(lid)?.common||lid):lid,stem:''};
  return {code,title:k?.title||code,lessonId:lid,lessonTitle:l.title,stem:l.stem,lessonNo:l.n};
 }
-function humanCode(code='',short=false){const x=labelForCode(code);return short?`${x.stem||x.lessonId} • ${x.title}`:`Bài ${x.lessonNo||''} • ${x.lessonTitle}${x.title&&x.title!==x.lessonTitle?` • ${x.title}`:''}`}
+function humanCode(code='',short=false){const x=labelForCode(code);return short?`${x.stem||x.lessonId} • ${x.title}`:`Bài ${x.lessonNo||''} • ${x.lessonTitle}${x.title&&x.title!==x.lessonTitle?`${x.title}`:''}`}
 function formPath(q={}){const p=patternOf(q),f=formMeta(p),lid=lessonFromPattern(p),l=LESSONS[lid];return {pattern:p,formTitle:f?.title||q.formTitle||q.form||'',lessonId:lid,lessonTitle:l?.title||'',lessonNo:l?.n||0}}
 function patchForms(){
  for(const [lid,meta] of Object.entries(LESSONS)){

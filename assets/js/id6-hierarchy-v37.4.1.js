@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V37.4.1 — Official ID6 hierarchy UX
+   Math12 Hub  — Official ID6 hierarchy UX
    Visible taxonomy follows ID6 exactly:
    Grade 12 → Domain → Chapter → Level → Lesson → Form.
    Internal lessonId / knowledgeCode remain compatibility metadata only.
@@ -168,7 +168,7 @@
   }
   function openCatalog(){
     if(typeof requireTeacher==='function'&&!requireTeacher('Danh mục ID6'))return;
-    openModal('Danh mục ID6 Toán 12 • V37.4.2','Chương → Bài → Dạng; các chương còn lại tự thu gọn',catalogBody(),'<button class="btn btn-blue" onclick="closeModal()">Đóng</button>');
+    openModal('Danh mục ID6 Toán 12','Chương → Bài → Dạng; các chương còn lại tự thu gọn',catalogBody(),'<button class="btn btn-blue" onclick="closeModal()">Đóng</button>');
     setTimeout(()=>{const all=[...document.querySelectorAll('.v3741-catalog-chapter')];all.forEach(d=>d.addEventListener('toggle',()=>{if(d.open)all.forEach(o=>{if(o!==d)o.open=false})}))},0);
   }
 
@@ -204,7 +204,7 @@
   function install(){
     injectBankHierarchy();installBankFilterWrapper();injectHierarchyBrowser();patchStaticText();
     if(typeof window.openQuestionEditor==='function'&&!window.openQuestionEditor.__id6Hierarchy){const base=window.openQuestionEditor;const w=function(id=''){const out=base(id);setTimeout(()=>injectEditorHierarchy(id),20);return out};w.__id6Hierarchy=true;window.openQuestionEditor=w}
-    if(typeof window.saveQuestionEditor==='function'&&!window.saveQuestionEditor.__id6Hierarchy){const base=window.saveQuestionEditor;const w=function(editId=''){const fm=document.getElementById('qeId6FormOfficial');if(fm&&!fm.value){alert('V37.4.2: Hãy chọn Chương → Bài → Dạng toán ID6 trước khi lưu câu hỏi.');return}if(fm?.value)syncHiddenEditor(fm.value,true);const internal=(document.getElementById('qeId')?.value||'').trim().replace(/[^A-Za-z0-9._-]/g,'-'),out=base(editId),id=internal||editId;let idx=id?(state.questionBank||[]).findIndex(q=>q.id===id):-1;if(idx<0&&!editId)idx=0;if(idx>=0){state.questionBank[idx]=addOfficialMetadata(state.questionBank[idx]);save?.({reason:'v37.4.1-id6-hierarchy'});renderQuestionBank?.(true)}return out};w.__id6Hierarchy=true;window.saveQuestionEditor=w}
+    if(typeof window.saveQuestionEditor==='function'&&!window.saveQuestionEditor.__id6Hierarchy){const base=window.saveQuestionEditor;const w=function(editId=''){const fm=document.getElementById('qeId6FormOfficial');if(fm&&!fm.value){alert(': Hãy chọn Chương → Bài → Dạng toán ID6 trước khi lưu câu hỏi.');return}if(fm?.value)syncHiddenEditor(fm.value,true);const internal=(document.getElementById('qeId')?.value||'').trim().replace(/[^A-Za-z0-9._-]/g,'-'),out=base(editId),id=internal||editId;let idx=id?(state.questionBank||[]).findIndex(q=>q.id===id):-1;if(idx<0&&!editId)idx=0;if(idx>=0){state.questionBank[idx]=addOfficialMetadata(state.questionBank[idx]);save?.({reason:'v37.4.1-id6-hierarchy'});renderQuestionBank?.(true)}return out};w.__id6Hierarchy=true;window.saveQuestionEditor=w}
     if(typeof window.renderQuestionBank==='function'&&!window.renderQuestionBank.__id6Hierarchy){const base=window.renderQuestionBank;const w=function(force=false){injectBankHierarchy();const out=base(force);injectHierarchyBrowser();patchStaticText();return out};w.__id6Hierarchy=true;window.renderQuestionBank=w}
     window.v374OpenId6Catalog=openCatalog;
   }

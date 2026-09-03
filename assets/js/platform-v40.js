@@ -1,7 +1,7 @@
 /* =========================================================
-   Math12 Hub V40 — Production Runtime
+   Math12 Hub  — Production Runtime
    One runtime event bus + diagnostics + stable page/avatar/shop contracts.
-   Legacy engines remain as compatibility providers while V39+ owns UI.
+   Legacy engines remain as compatibility providers while + owns UI.
    ========================================================= */
 (function(){
 'use strict';
@@ -23,7 +23,7 @@ window.addEventListener('online',()=>emit('network',{online:true}));window.addEv
 if(typeof window.goPage==='function'&&!window.goPage.__v393){const old=window.goPage;const wrapped=function(page,internal=false){const out=old.call(this,page,internal);emit('page',{page,role:role()});return out};wrapped.__v393=true;window.goPage=wrapped}
 // Normalize avatar/shop change notifications without changing their storage schemas.
 ['math12hub:avatar-change','math12hub:wardrobe-change','math12hub:shop-change'].forEach(name=>window.addEventListener(name,e=>emit('cosmetic-change',{source:name,detail:e.detail||{}})));
-// V38 Shop is retained only as a compatibility catalog/reward provider; V39 Mega Shop owns visible shop UI.
+//  Shop is retained only as a compatibility catalog/reward provider;  Mega Shop owns visible shop UI.
 function assertShopOwner(){try{if(document.getElementById('page-shop')?.classList.contains('active'))window.v386MegaShop?.render?.()}catch(e){record('shop-owner',e)}}
 document.addEventListener('DOMContentLoaded',()=>{document.documentElement.dataset.math12Platform=BUILD;document.documentElement.dataset.releaseChannel='production';setTimeout(assertShopOwner,0)});
 on('page',d=>{if(d.page==='admin')setTimeout(renderProductionHealth,0);if(d.page==='question-bank')setTimeout(renderContentReadiness,0);if(d.page==='shop')setTimeout(assertShopOwner,0);if(d.page==='avatar')setTimeout(()=>window.v384Avatar3D?.mount?.(),0);if(d.page==='room')setTimeout(()=>window.v390MathRoom?.render?.(),0)});
@@ -43,7 +43,7 @@ function renderContentReadiness(){
   if(role()==='student')return;const host=document.querySelector('#page-question-bank .question-bank-head');if(!host)return;
   let box=document.getElementById('v395ContentReadiness');if(!box){box=document.createElement('div');box.id='v395ContentReadiness';box.className='card v395-content-readiness';host.insertAdjacentElement('afterend',box)}
   const r=contentReadiness();if(!r)return;const ch=Object.values(r.chapters||{});
-  box.innerHTML=`<div class="v395-content-head"><div><small>NỘI DUNG HỌC TẬP</small><h3>Độ sẵn sàng ngân hàng công khai</h3><p>Học sinh chỉ nhận câu Approved/Reviewed. Có thể thêm Chương 2–6 bằng content pack mà không sửa engine.</p></div><div><b>${r.approved}/${r.total}</b><span>câu đã phát hành</span></div></div><div class="v395-content-grid">${ch.map(c=>`<div class="v395-ch ${c.approved?'has':'empty'}"><b>Ch.${c.chapter}</b><strong>${c.approved}</strong><small>MCQ ${c.mcq} • Đ/S ${c.tf4} • Ngắn ${c.short}</small>${c.draft?`<em>${c.draft} Draft</em>`:''}</div>`).join('')}</div><div class="v395-content-foot">Content packs: <b>${r.packs.length}</b> • Câu bị chặn khỏi học sinh: <b>${r.excluded}</b></div>`;
+  box.innerHTML=`<div class="v395-content-head"><div><small>NỘI DUNG HỌC TẬP</small><h3>Tình trạng ngân hàng học tập</h3><p>Học sinh chỉ nhận các câu đã được duyệt. Nội dung mới có thể bổ sung theo từng chương.</p></div><div><b>${r.approved}/${r.total}</b><span>câu đã phát hành</span></div></div><div class="v395-content-grid">${ch.map(c=>`<div class="v395-ch ${c.approved?'has':'empty'}"><b>Ch.${c.chapter}</b><strong>${c.approved}</strong><small>MCQ ${c.mcq} • Đ/S ${c.tf4} • Ngắn ${c.short}</small>${c.draft?`<em>${c.draft} Draft</em>`:''}</div>`).join('')}</div><div class="v395-content-foot">Gói nội dung: <b>${r.packs.length}</b>Câu bị chặn khỏi học sinh: <b>${r.excluded}</b></div>`;
 }
 window.addEventListener('math12hub:content-pack',()=>setTimeout(renderContentReadiness,0));
 
@@ -66,17 +66,17 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(qaBadge,350),{once:t
 
 function productionAudit(){
  const q=qaRun(),r=contentReadiness()||{},checks=[];const add=(name,ok,level='critical',detail='')=>checks.push({name,ok:!!ok,level,detail});
- add('Student QA',q.ok,'critical',`${q.passed}/${q.total}`);
- add('Approved publishing gate',Number(r.excluded||0)>=0&&Number(r.approved||0)>0,'critical',`${r.approved||0} published / ${r.excluded||0} blocked`);
- add('Mega Shop runtime',!!window.v386MegaShop,'critical','Giao diện cửa hàng chính');
- add('Avatar live runtime',!!window.v384Avatar3D,'critical','adaptive 3D + fallback');
- add('Room access',!!window.ROLE_ACCESS?.student?.has?.('room'),'critical','student role');
- add('Service Worker support','serviceWorker' in navigator,'warning','PWA capable');
+ add('Kiểm tra luồng học sinh',q.ok,'critical',`${q.passed}/${q.total}`);
+ add('Kiểm soát câu đã duyệt',Number(r.excluded||0)>=0&&Number(r.approved||0)>0,'critical',`${r.approved||0} published / ${r.excluded||0} blocked`);
+ add('Cửa hàng',!!window.v386MegaShop,'critical','Giao diện cửa hàng chính');
+ add('Nhân vật',!!window.v384Avatar3D,'critical','adaptive 3D + fallback');
+ add('Quyền vào phòng',!!window.ROLE_ACCESS?.student?.has?.('room'),'critical','student role');
+ add('Chế độ ứng dụng','serviceWorker' in navigator,'warning','PWA capable');
  const appKey=String(window.MATH12_APP_CHECK_SITE_KEY||'').trim();add('Firebase App Check',!!appKey&&typeof firebaseAppCheckStatus!=='undefined'&&firebaseAppCheckStatus==='active','warning',appKey?(typeof firebaseAppCheckStatus==='undefined'?'waiting':firebaseAppCheckStatus):'site key not configured');
- add('Runtime errors',issues.filter(i=>i.kind==='error'||i.kind==='promise').length===0,'warning',`${issues.length} captured issue(s)`);
+ add('Lỗi hệ thống',issues.filter(i=>i.kind==='error'||i.kind==='promise').length===0,'warning',`${issues.length} captured issue(s)`);
  const critical=checks.filter(c=>c.level==='critical'&&!c.ok),warnings=checks.filter(c=>c.level==='warning'&&!c.ok);return {version:VERSION,ready:critical.length===0,critical,warnings,checks,at:now()}
 }
-function renderProductionHealth(){if(role()!=='admin')return;const host=document.querySelector('#page-admin');if(!host)return;let box=document.getElementById('v400ProductionHealth');if(!box){box=document.createElement('div');box.id='v400ProductionHealth';box.className='card v400-production-health';host.prepend(box)}const a=productionAudit();box.innerHTML=`<div class="v400-health-head"><div><small>TRẠNG THÁI HỆ THỐNG</small><h3>${a.ready?'✓ Lõi production sẵn sàng':'⚠ Cần xử lý trước khi mở rộng'}</h3><p>${a.warnings.length?`${a.warnings.length} cảnh báo cấu hình không chặn vận hành.`:'Không có cảnh báo cấu hình.'}</p></div><span class="${a.ready?'ok':'bad'}">${a.ready?'READY':'CHECK'}</span></div><div class="v400-health-grid">${a.checks.map(c=>`<div class="${c.ok?'pass':c.level==='warning'?'warn':'fail'}"><b>${c.ok?'✓':'!'} ${c.name}</b><small>${c.detail||''}</small></div>`).join('')}</div>${a.warnings.some(w=>w.name==='Firebase App Check')?'<div class="v400-health-note"><b>App Check chưa bật:</b> Hệ thống vẫn chạy, nhưng trước khi mở công khai quy mô lớn nên nhập reCAPTCHA site key và quan sát metrics trước khi bật enforcement.</div>':''}`}
+function renderProductionHealth(){if(role()!=='admin')return;const host=document.querySelector('#page-admin');if(!host)return;let box=document.getElementById('v400ProductionHealth');if(!box){box=document.createElement('div');box.id='v400ProductionHealth';box.className='card v400-production-health';host.prepend(box)}const a=productionAudit();box.innerHTML=`<div class="v400-health-head"><div><small>TRẠNG THÁI HỆ THỐNG</small><h3>${a.ready?'✓ Hệ thống sẵn sàng':'⚠ Cần kiểm tra trước khi mở rộng'}</h3><p>${a.warnings.length?`${a.warnings.length} cảnh báo cấu hình không chặn vận hành.`:'Không có cảnh báo cấu hình.'}</p></div><span class="${a.ready?'ok':'bad'}">${a.ready?'READY':'CHECK'}</span></div><div class="v400-health-grid">${a.checks.map(c=>`<div class="${c.ok?'pass':c.level==='warning'?'warn':'fail'}"><b>${c.ok?'✓':'!'} ${c.name}</b><small>${c.detail||''}</small></div>`).join('')}</div>${a.warnings.some(w=>w.name==='Firebase App Check')?'<div class="v400-health-note"><b>App Check chưa bật:</b> Hệ thống vẫn chạy, nhưng trước khi mở công khai quy mô lớn nên nhập reCAPTCHA site key và quan sát metrics trước khi bật enforcement.</div>':''}`}
 
 const api={version:VERSION,build:BUILD,bus,on,emit,snapshot,record,role,bankStats,issues,perf,contentReadiness,renderContentReadiness,qa:{run:qaRun,badge:qaBadge},productionAudit,renderProductionHealth};
 window.Math12Platform=api;window.Math12AppStore={get state(){return stateRef()},snapshot,role,emit,on};

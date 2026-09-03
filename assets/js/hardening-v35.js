@@ -1,12 +1,12 @@
 /* =========================================================
-   Math12 Hub V37.3.6 — Production Hardening inherited from V35
-   Keeps the V34 data/query architecture intact while improving:
+   Math12 Hub  — Production Hardening inherited from 
+   Keeps the  data/query architecture intact while improving:
    - on-demand loading for heavy/role-specific features
    - PWA/offline shell readiness
    - runtime diagnostics and regression checks
    - accessibility/focus/motion support
    - production readiness visibility for administrators
-   No Firestore collection/schema migration is introduced by V35.
+   No Firestore collection/schema migration is introduced by .
    ========================================================= */
 const V35_HARDENING_SCHEMA=35;
 const V35_BUILD='37.4.7-figure-qc-preview-approved-gate';
@@ -43,8 +43,8 @@ function v35LoadScript(src,{crossOrigin=false}={}){
 async function v35EnsureFeature(name,{quiet=false}={}){
   if(v35FeatureReady(name))return true;
   if(v35FeaturePromises.has(name))return v35FeaturePromises.get(name);
-  let f=V35_FEATURES[name];if(!f)throw new Error(`Tính năng nền V35/V36 không tồn tại: ${name}`);
-  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,`V37.4.7 đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
+  let f=V35_FEATURES[name];if(!f)throw new Error(`Tính năng nền / không tồn tại: ${name}`);
+  let p=(async()=>{try{if(!quiet)v35SetFeatureLoading(true,` đang tải ${f.label}…`);await v35LoadScript(f.src,{crossOrigin:f.crossOrigin});if(!v35FeatureReady(name))throw new Error(`${f.label} đã tải nhưng chưa khởi tạo được.`);v35RenderProductionCenter();return true}finally{if(!quiet)v35SetFeatureLoading(false)}})();
   v35FeaturePromises.set(name,p);try{return await p}catch(err){v35FeaturePromises.delete(name);throw err}
 }
 async function v35EnsureXlsx(){return v35EnsureFeature('xlsx')}
@@ -110,51 +110,51 @@ function v35RunRegressionChecks({render=true,toast=false}={}){
   }catch(err){checks.push(v35Check('Phân quyền giao diện',false,v35SanitizeErrorText(err?.message)))}
   checks.push(v35Check('Data Safety',typeof v21HydrateFromVault==='function'&&typeof save==='function','Local + IndexedDB vault'));
   checks.push(v35Check('Firebase core',typeof initFirebaseV21==='function'&&typeof firebaseLearningSnapshot==='function','Auth + Firestore'));
-  checks.push(v35Check('Scale engine V34',typeof v34Diagnostics==='function'&&typeof v34RenderScaleCenter==='function','Phân trang + cache'));
+  checks.push(v35Check('Scale engine ',typeof v34Diagnostics==='function'&&typeof v34RenderScaleCenter==='function','Phân trang + cache'));
   checks.push(v35Check('PWA shell','serviceWorker' in navigator&&!!document.querySelector('link[rel="manifest"]'),'Service Worker + manifest', 'warn'));
   let appCheckKey=String(window.MATH12_APP_CHECK_SITE_KEY||'').trim();
   checks.push(v35Check('Firebase App Check',appCheckKey&&typeof firebaseAppCheckStatus!=='undefined'&&firebaseAppCheckStatus==='active',appCheckKey?(typeof firebaseAppCheckStatus==='undefined'?'Chờ Firebase khởi tạo':firebaseAppCheckStatus):'Chưa nhập reCAPTCHA site key','warn'));
   checks.push(v35Check('Smart Loading',!v35InitialFeatureState.xlsx&&!v35InitialFeatureState.ai&&!v35InitialFeatureState.reports,'Excel/AI/Báo cáo được hoãn tải ở trang đầu','warn'));
   checks.push(v35Check('Smart Navigation',!!window.v354SmartNavigation&&!!document.getElementById('v354SearchTrigger'),'Tìm nhanh + ghim + gần đây + nhớ bộ lọc','warn'));
-  checks.push(v35Check('Knowledge Map V36.0',!!window.v360KnowledgeMap&&window.v360KnowledgeMap.build==='36.0-knowledge-map'&&window.v360KnowledgeMap.map().counts.knowledge===57&&window.v360KnowledgeMap.map().counts.lessons===19,'6 chương • 19 bài • 57 chuẩn • metadata câu hỏi','fail'));
-  try{const id6=window.ID6V374,forms=id6?.allForms?.()||[],ok=id6?.buildId6?.('2D1?1-1','NB')==='2D1N1-1'&&id6?.buildId6?.('2D1?1-1','TH')==='2D1H1-1'&&id6?.buildId6?.('2D1?1-1','VD')==='2D1V1-1'&&id6?.buildId6?.('2D1?1-1','VDC')==='2D1C1-1'&&forms.length===91;checks.push(v35Check('Official ID6 Taxonomy V37.4',ok,ok?'91 dạng • N/H/V/C • giữ khóa nội bộ riêng':'ID6 regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Official ID6 Taxonomy V37.4',false,v35SanitizeErrorText(err?.message),'fail'))}
-  try{const pu=window.ID6V3742,m=pu?.meta?.({id6Pattern:'2D1?2-2',level:'TH'}),ok=pu?.BUILD==='37.4.2-pure-id6-taxonomy-ui'&&m?.id6==='2D1H2-2'&&m?.chapter===1&&m?.lesson===2&&m?.form===2;checks.push(v35Check('Pure ID6 UI V37.4.2',ok,ok?'Chương → Bài → Dạng → Mức độ → ID6':'Pure ID6 regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Pure ID6 UI V37.4.2',false,v35SanitizeErrorText(err?.message),'fail'))}
-  try{const cr=window.v3743CleanReset?._test?.regression?.(),ok=cr?.ok===true&&cr?.seedBankDisabled===true;checks.push(v35Check('Clean Question Bank Reset V37.4.3',ok,ok?'Seed/demo = 0 • backup bắt buộc • giữ lớp/đề/lịch sử học tập':'Reset regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Clean Question Bank Reset V37.4.3',false,v35SanitizeErrorText(err?.message),'fail'))}
+  checks.push(v35Check('Knowledge Map ',!!window.v360KnowledgeMap&&window.v360KnowledgeMap.build==='36.0-knowledge-map'&&window.v360KnowledgeMap.map().counts.knowledge===57&&window.v360KnowledgeMap.map().counts.lessons===19,'6 chương • 19 bài • 57 chuẩn • metadata câu hỏi','fail'));
+  try{const id6=window.ID6V374,forms=id6?.allForms?.()||[],ok=id6?.buildId6?.('2D1?1-1','NB')==='2D1N1-1'&&id6?.buildId6?.('2D1?1-1','TH')==='2D1H1-1'&&id6?.buildId6?.('2D1?1-1','VD')==='2D1V1-1'&&id6?.buildId6?.('2D1?1-1','VDC')==='2D1C1-1'&&forms.length===91;checks.push(v35Check('Official ID6 Taxonomy ',ok,ok?'91 dạng • N/H/V/C • giữ khóa nội bộ riêng':'ID6 regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Official ID6 Taxonomy ',false,v35SanitizeErrorText(err?.message),'fail'))}
+  try{const pu=window.ID6V3742,m=pu?.meta?.({id6Pattern:'2D1?2-2',level:'TH'}),ok=pu?.BUILD==='37.4.2-pure-id6-taxonomy-ui'&&m?.id6==='2D1H2-2'&&m?.chapter===1&&m?.lesson===2&&m?.form===2;checks.push(v35Check('Pure ID6 UI ',ok,ok?'Chương → Bài → Dạng → Mức độ → ID6':'Pure ID6 regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Pure ID6 UI ',false,v35SanitizeErrorText(err?.message),'fail'))}
+  try{const cr=window.v3743CleanReset?._test?.regression?.(),ok=cr?.ok===true&&cr?.seedBankDisabled===true;checks.push(v35Check('Clean Question Bank Reset ',ok,ok?'Seed/demo = 0 • backup bắt buộc • giữ lớp/đề/lịch sử học tập':'Reset regression chưa đạt','fail'))}catch(err){checks.push(v35Check('Clean Question Bank Reset ',false,v35SanitizeErrorText(err?.message),'fail'))}
 
   try{
     const qe=window.v361QualityEngine,sample={id:'REG-QC',questionBankSchema:36,knowledgeMapVersion:36,metadataStatusV36:'complete',curriculumId:'MATH12-GDPT2018-2026',blueprintKey:'F1-01.K1|F1-01.D1|NB|mcq',chapterId:1,lessonId:'F1-01',knowledgeCode:'F1-01.K1',formId:'F1-01.D1',form:'Regression',level:'NB',type:'mcq',question:'Chọn phương án đúng cho biểu thức $x^2$.',options:['$x=1$','$x=1$','$x=2$','$x=3$'],answer:0,explanation:'Dữ liệu kiểm tra regression.',sourceName:'Regression',reviewStatus:'reviewed'},qr=qe?.auditQuestion?.(sample);
-    checks.push(v35Check('Question Quality Engine V36.1',qe?.build==='36.1-quality-engine'&&qr?.details?.some(x=>x.code==='MCQ_DUP_OPTION'),'Cấu trúc + LaTeX + đáp án + TF4 + near-duplicate','fail'))
-  }catch(err){checks.push(v35Check('Question Quality Engine V36.1',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('Question Quality Engine ',qe?.build==='36.1-quality-engine'&&qr?.details?.some(x=>x.code==='MCQ_DUP_OPTION'),'Cấu trúc + LaTeX + đáp án + TF4 + near-duplicate','fail'))
+  }catch(err){checks.push(v35Check('Question Quality Engine ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const se=window.v362SmartExam,rr=se?.regression?.();
-    checks.push(v35Check('Smart Exam Matrix V36.2',se?.build==='36.2-smart-exam'&&rr?.ok===true,rr?.ok?`Mã ${rr.codes.join('–')} • giữ nhóm câu phụ thuộc`:'Smart exam regression chưa đạt','fail'))
-  }catch(err){checks.push(v35Check('Smart Exam Matrix V36.2',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('Smart Exam Matrix ',se?.build==='36.2-smart-exam'&&rr?.ok===true,rr?.ok?`Mã ${rr.codes.join('–')} • giữ nhóm câu phụ thuộc`:'Smart exam regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('Smart Exam Matrix ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const me=window.v363MasteryEngine,rr=me?.regression?.();
-    checks.push(v35Check('Mastery & Adaptive V36.3',me?.build==='36.3-mastery-adaptive'&&rr?.ok===true,rr?.ok?`Mastery ${Math.round(rr.score*100)}% • confidence ${Math.round(rr.confidence*100)}%`:'Mastery regression chưa đạt','fail'))
-  }catch(err){checks.push(v35Check('Mastery & Adaptive V36.3',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('Mastery & Adaptive ',me?.build==='36.3-mastery-adaptive'&&rr?.ok===true,rr?.ok?`Mastery ${Math.round(rr.score*100)}% • confidence ${Math.round(rr.confidence*100)}%`:'Mastery regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('Mastery & Adaptive ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const ti=window.v37TeachingIntelligence,rr=ti?.privacyRegression?.();
-    checks.push(v35Check('AI Teaching Intelligence V37',ti?.build==='37-ai-teaching-intelligence'&&rr?.ok===true,rr?.ok?`Privacy Guard đạt • payload ${rr.bytes} bytes • ưu tiên ${rr.priority}`:'V37 privacy regression chưa đạt','fail'))
-  }catch(err){checks.push(v35Check('AI Teaching Intelligence V37',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('AI Teaching Intelligence ',ti?.build==='37-ai-teaching-intelligence'&&rr?.ok===true,rr?.ok?`Privacy Guard đạt • payload ${rr.bytes} bytes • ưu tiên ${rr.priority}`:' privacy regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('AI Teaching Intelligence ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const bk=window.v371BackupV2,rt=bk?._test,zip=rt?.makeZip?.([{name:'manifest.json',data:new TextEncoder().encode('{\"ok\":true}')}]),files=zip?rt.readZip(zip):null;
-    checks.push(v35Check('Question Bank Backup V37.1',bk?.build==='37.1-question-bank-backup-v2'&&files?.has('manifest.json')&&window.V371_BACKUP_STATUS?.legacyJson===true,'ZIP chunk + checksum + khôi phục theo chương + JSON cũ','fail'))
-  }catch(err){checks.push(v35Check('Question Bank Backup V37.1',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('Question Bank Backup ',bk?.build==='37.1-question-bank-backup-v2'&&files?.has('manifest.json')&&window.V371_BACKUP_STATUS?.legacyJson===true,'ZIP chunk + checksum + khôi phục theo chương + JSON cũ','fail'))
+  }catch(err){checks.push(v35Check('Question Bank Backup ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const rr=window.v372TikzRegression?.();
-    checks.push(v35Check('TikZ Figure Support V37.2',!!window.V372Tikz&&rr?.ok===true,rr?.ok?`SVG ${rr.engine} • ${rr.bytes} bytes`:'TikZ regression chưa đạt','fail'))
-  }catch(err){checks.push(v35Check('TikZ Figure Support V37.2',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('TikZ Figure Support ',!!window.V372Tikz&&rr?.ok===true,rr?.ok?`SVG ${rr.engine} • ${rr.bytes} bytes`:'TikZ regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('TikZ Figure Support ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const ge=window.V373Graph,rr=window.v373GraphRegression?.();
-    checks.push(v35Check('Smart Graph Layout V37.3.3',ge?.build==='37.3.3-smart-graph-layout'&&rr?.ok===true,rr?.ok?`3/3 họ hàm • preset ${rr.presetOk?'đạt':'chưa đạt'} • layout ${rr.layoutOk?'đạt':'chưa đạt'} • overlap ${rr.labelOverlaps}`:'Graph regression chưa đạt','fail'))
-  }catch(err){checks.push(v35Check('Smart Graph Layout V37.3.3',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('Smart Graph Layout ',ge?.build==='37.3.3-smart-graph-layout'&&rr?.ok===true,rr?.ok?`3/3 họ hàm • preset ${rr.presetOk?'đạt':'chưa đạt'} • layout ${rr.layoutOk?'đạt':'chưa đạt'} • overlap ${rr.labelOverlaps}`:'Graph regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('Smart Graph Layout ',false,v35SanitizeErrorText(err?.message),'fail'))}
   try{
     const rr=window.v3736VariationRegression?.();
-    checks.push(v35Check('Variation Arrow Rendering V37.3.6',rr?.ok===true,rr?.ok?`Bảng biến thiên ${rr.segments} đoạn • ${rr.heads} đầu mũi tên • đầu ${rr.headPx}px cố định khi zoom`:'V37.3.6 regression chưa đạt','fail'))
-  }catch(err){checks.push(v35Check('Variation Arrow Rendering V37.3.6',false,v35SanitizeErrorText(err?.message),'fail'))}
+    checks.push(v35Check('Variation Arrow Rendering ',rr?.ok===true,rr?.ok?`Bảng biến thiên ${rr.segments} đoạn • ${rr.heads} đầu mũi tên • đầu ${rr.headPx}px cố định khi zoom`:' regression chưa đạt','fail'))
+  }catch(err){checks.push(v35Check('Variation Arrow Rendering ',false,v35SanitizeErrorText(err?.message),'fail'))}
   let fail=checks.filter(x=>x.level==='fail').length,warn=checks.filter(x=>x.level==='warn').length,pass=checks.filter(x=>x.level==='pass').length;
-  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`V37.4: còn ${fail} lỗi kiểm tra`:`V37.4: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
+  v35RegressionLast={at:v35Now(),pass,warn,fail,checks};if(render)v35RenderProductionCenter();if(toast)examToast?.(fail?`: còn ${fail} lỗi kiểm tra`:`: ${pass} kiểm tra đạt${warn?`, ${warn} cảnh báo`:''}`);return v35RegressionLast
 }
 
 function v35StatusChip(level,text){return `<span class="v35-status ${level}">${esc(text)}</span>`}

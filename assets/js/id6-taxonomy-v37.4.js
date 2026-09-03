@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V37.4 — Official ID6 Taxonomy
+   Math12 Hub  — Official ID6 Taxonomy
    Source: “DANH MỤC ID 6 THAM SỐ, MÔN TOÁN 10-11-12” (2024).
    Important: ID6 is a classification code, not a unique database key.
    Existing q.id remains the unique internal record id.
@@ -12,7 +12,7 @@
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
   const F=(id6Pattern,title,officialLessonTitle)=>({id:id6Pattern,id6Pattern,title,officialLessonTitle,officialId6:true});
 
-    // V37.7: Chương 1 được căn thẳng với 5 bài chính thức.
+    // : Chương 1 được căn thẳng với 5 bài chính thức.
   // Mỗi lessonId F1-01...F1-05 tương ứng đúng bài 1...5 trong ID6.
   const BY_APP_LESSON={
     'F1-01':[
@@ -146,7 +146,7 @@
     ]
   };
 
-  // Strong aliases from the former V36 form names → official ID6 patterns.
+  // Strong aliases from the former  form names → official ID6 patterns.
   const ALIASES={
     'xet khoang dong bien nghich bien':'2D1?1-1',
     'tim gtln gtnn tren doan':'2D1?3-1','tim gtln gtnn tu bang bien thien':'2D1?3-2','bai toan toi uu thuc tien':'2D1?3-6',
@@ -206,7 +206,7 @@
     const pattern=inferPattern(q);if(!pattern)return {...q,id6Status:q.id6Status||'review'};
     const f=formByPattern(pattern),id6=buildId6(pattern,q.level);
     const base={...q,formId:pattern,id6Pattern:pattern,id6,id6Title:f?.title||q.id6Title||q.form||'',form:f?.title||q.form||'',id6Status:id6?'complete':'review',id6Schema:1,id6Build:BUILD};
-    // V38.2.1: after the sync layer is loaded, every import/editor save also receives
+    // : after the sync layer is loaded, every import/editor save also receives
     // the canonical Chapter-1 lessonId + knowledgeCode derived from official ID6.
     return window.v3821Taxonomy?.canonicalizeQuestion?window.v3821Taxonomy.canonicalizeQuestion(base):base;
   }
@@ -217,12 +217,12 @@
   }
   function normalizeBank(bank){return (Array.isArray(bank)?bank:[]).map(q=>normalizeQuestion(q))}
 
-  // Inject official question-form taxonomies. V37.7 aligns Chapter 1 lesson IDs one-to-one with official ID6 lessons; total 19 app lessons and 57 mastery units remain unchanged.
+  // Inject official question-form taxonomies.  aligns Chapter 1 lesson IDs one-to-one with official ID6 lessons; total 19 app lessons and 57 mastery units remain unchanged.
   try{
     Object.entries(BY_APP_LESSON).forEach(([lessonId,forms])=>{
       if(typeof lessonCurriculum!=='undefined'&&lessonCurriculum[lessonId])lessonCurriculum[lessonId].forms=forms.map(x=>({...x}));
     });
-  }catch(err){console.warn('ID6 V37.4 taxonomy injection failed',err)}
+  }catch(err){console.warn('ID6  taxonomy injection failed',err)}
 
   window.ID6V374={BUILD,LEVEL_LETTER,LEVEL_LABEL,BY_APP_LESSON,ALIASES,allForms,levelLetter,buildId6,isPattern,isId6,formByPattern,inferPattern,normalizeQuestion,normalizeBank,analyze,norm};
 })();

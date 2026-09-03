@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V38.7 — Pets & Effects
+   Math12 Hub  — Pets & Effects
    Procedural 3D pets, aura, scene background and emote reactions.
    ========================================================= */
 (function(){

@@ -1,10 +1,10 @@
 /* =========================================================
-   Math12 Hub V37.8 — Avatar Foundation
+   Math12 Hub  — Avatar Foundation
    - Student-only starter avatar profile.
    - First authenticated student login asks for Male/Female starter path.
    - Starter customization: skin, face, hair and basic outfit.
    - Local-first persistence + optional Firestore user-profile sync.
-   - No EXP / gold / shop economy yet (reserved for V37.9+).
+   - No EXP / gold / shop economy yet (reserved for +).
    ========================================================= */
 const AVATAR_V378_SCHEMA=1;
 const AVATAR_V378_RANK='Tân binh Toán học';
@@ -16,7 +16,9 @@ const AVATAR_V378_SKINS={
 };
 const AVATAR_V378_FACES={
   smile:{label:'Vui vẻ'},
-  calm:{label:'Điềm tĩnh'}
+  calm:{label:'Điềm tĩnh'},
+  confident:{label:'Tự tin'},
+  focus:{label:'Tập trung'}
 };
 const AVATAR_V378_HAIR={
   male:[
@@ -89,7 +91,7 @@ function avatarV378HairSvg(a){
 function avatarV378Svg(raw,size='large'){
   const a=avatarV378Sanitize(raw)||avatarV378Starter('male'),skin=AVATAR_V378_SKINS[a.skin],out=avatarV378Outfit(a.outfit);
   const cls=size==='mini'?'avatar-svg avatar-svg-mini':'avatar-svg';
-  const smile=a.face==='smile'?`<path d="M108 112 Q120 121 132 112" fill="none" stroke="#7C443B" stroke-width="3.2" stroke-linecap="round"/>`:`<path d="M110 115 L130 115" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`;
+  const smile=a.face==='smile'?`<path d="M108 112 Q120 121 132 112" fill="none" stroke="#7C443B" stroke-width="3.2" stroke-linecap="round"/>`:a.face==='confident'?`<path d="M108 114 Q120 121 133 111" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`:a.face==='focus'?`<path d="M110 116 Q120 113 130 116" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`:`<path d="M110 114 Q120 117 130 114" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`;
   const lower=a.gender==='female'?`<path d="M84 250 L156 250 L172 321 L68 321Z" fill="${out.bottom}"/><path d="M89 321 L111 321 L106 354 L82 354Z" fill="#E7EDF6"/><path d="M129 321 L151 321 L158 354 L134 354Z" fill="#E7EDF6"/>`:`<path d="M82 250 L158 250 L151 329 L126 329 L120 275 L114 329 L89 329Z" fill="${out.bottom}"/><path d="M89 329 L112 329 L108 354 L83 354Z" fill="#E7EDF6"/><path d="M127 329 L151 329 L158 354 L133 354Z" fill="#E7EDF6"/>`;
   return `<svg class="${cls}" viewBox="0 0 240 370" role="img" aria-label="Avatar ${a.gender==='female'?'nữ':'nam'} ${esc(AVATAR_V378_RANK)}" xmlns="http://www.w3.org/2000/svg">
     <defs><linearGradient id="avbg-${a.gender}-${a.skin}-${a.outfit}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F6F9FF"/><stop offset="1" stop-color="#DDE8FF"/></linearGradient></defs>
@@ -128,7 +130,7 @@ function avatarV378Set(field,value){
   else if(field==='hair'&&AVATAR_V378_HAIR[a.gender].some(x=>x.id===value))a.hair=value;
   else if(field==='outfit'&&AVATAR_V378_OUTFITS.some(x=>x.id===value))a.outfit=value;
   avatarV378Draft={...a,ownerUid:avatarV378OwnerUid(),updatedAt:new Date().toISOString()};
-  // V39.2.1: keep the starter editor and the layered wardrobe in sync.
+  // : keep the starter editor and the layered wardrobe in sync.
   // Without this, the wardrobe's starter slots can override the newly selected hair/outfit.
   try{window.v385Wardrobe?.syncBase?.(field,avatarV378Draft)}catch(_){}
   avatarV378RenderPage();
@@ -157,7 +159,7 @@ function avatarV378RenderPage(){
         <button class="avatar-gender-card ${a.gender==='female'?'selected':''}" onclick="avatarV378Set('gender','female')" type="button">${avatarV378Svg({...a,gender:'female',hair:'bob'},'mini')}<b>Nữ</b><small>Tân thủ nữ</small></button>
       </div></div>
       <div class="avatar-builder-section"><label>2. Tông da</label><div class="avatar-choice-grid avatar-skin-grid">${Object.entries(AVATAR_V378_SKINS).map(([id,x])=>avatarV378OptionButton('skin',id,x.label,a.skin,`<i style="background:${x.fill}"></i>`)).join('')}</div></div>
-      <div class="avatar-builder-section"><label>3. Gương mặt</label><div class="avatar-choice-grid">${Object.entries(AVATAR_V378_FACES).map(([id,x])=>avatarV378OptionButton('face',id,x.label,a.face,id==='smile'?'☺':'—')).join('')}</div></div>
+      <div class="avatar-builder-section"><label>3. Gương mặt</label><div class="avatar-choice-grid">${Object.entries(AVATAR_V378_FACES).map(([id,x])=>avatarV378OptionButton('face',id,x.label,a.face,id==='smile'?'☺':id==='confident'?'◕‿◕':id==='focus'?'⌁':'—')).join('')}</div></div>
       <div class="avatar-builder-section"><label>4. Kiểu tóc</label><div class="avatar-choice-grid">${hair.map(x=>avatarV378OptionButton('hair',x.id,x.label,a.hair,'✦')).join('')}</div></div>
       <div class="avatar-builder-section"><label>5. Trang phục tân thủ</label><div class="avatar-outfit-grid">${AVATAR_V378_OUTFITS.map(x=>`<button class="avatar-outfit-card ${a.outfit===x.id?'selected':''}" type="button" onclick="avatarV378Set('outfit','${x.id}')"><span class="avatar-outfit-swatch"><i style="background:${x.top}"></i><i style="background:${x.accent}"></i><i style="background:${x.bottom}"></i></span><b>${esc(x.label)}</b><small>Starter • 0 vàng</small></button>`).join('')}</div></div>
       <div class="avatar-builder-actions"><button class="btn btn-soft" type="button" onclick="avatarV378ResetDraft()">Đặt lại</button><button class="btn btn-blue" type="button" onclick="avatarV378Save()">${stored?.initialized?'Lưu thay đổi':'Hoàn tất nhân vật'}</button></div>
@@ -175,13 +177,13 @@ async function avatarV378Save(){
   state.avatarV378=a;avatarV378Draft=null;save({sync:false,reason:'avatar-v37.8'});
   if(firebaseUser&&firebaseDb&&!firebaseAccountLocked){
     try{await firebaseDb.collection('users').doc(firebaseUser.uid).set({avatarV378:a,updatedAt:firebaseServerTimestamp()},{merge:true});firebaseProfile={...(firebaseProfile||{}),avatarV378:a};firebaseAuditLog?.('profile.avatar.update',{gender:a.gender,hair:a.hair,outfit:a.outfit}).catch?.(()=>{});examToast?.('✓ Đã lưu nhân vật tân thủ');}
-    catch(err){console.warn('Avatar V37.8 cloud save',err);examToast?.('Đã lưu trên máy; chưa đồng bộ được avatar.')}
+    catch(err){console.warn('Avatar  cloud save',err);examToast?.('Đã lưu trên máy; chưa đồng bộ được avatar.')}
   }else examToast?.('Đã lưu avatar trên thiết bị. Đăng nhập để đồng bộ.');
   avatarV378RefreshUI();avatarV378RenderPage();
 }
 function avatarV378DashboardHtml(){
   const a=avatarV378Stored();
-  return `<div class="card avatar-dashboard-card"><div class="avatar-dashboard-visual">${a?avatarV378Svg(a,'mini'):avatarV378GenericSvg('mini')}</div><div class="avatar-dashboard-copy"><div class="avatar-preview-kicker">NHÂN VẬT CỦA EM • V37.8</div><h3>${esc(avatarV378DisplayName())}</h3><p>${a?.initialized?`Lv.1 • ${esc(AVATAR_V378_RANK)} • Bộ đồ tân thủ đã lưu.`:'Chưa tạo nhân vật. Bắt đầu với bộ đồ tân thủ miễn phí.'}</p><div class="avatar-dashboard-tags"><span>Lv.1</span><span>${esc(AVATAR_V378_RANK)}</span><span>${a?.initialized?'✓ Đã tạo':'Chưa thiết lập'}</span></div></div><button class="btn ${a?.initialized?'btn-soft':'btn-blue'}" onclick="goPage('avatar')">${a?.initialized?'Tùy chỉnh':'Tạo nhân vật'}</button></div>`;
+  return `<div class="card avatar-dashboard-card"><div class="avatar-dashboard-visual">${a?avatarV378Svg(a,'mini'):avatarV378GenericSvg('mini')}</div><div class="avatar-dashboard-copy"><div class="avatar-preview-kicker">NHÂN VẬT CỦA EM</div><h3>${esc(avatarV378DisplayName())}</h3><p>${a?.initialized?`Lv.1 • ${esc(AVATAR_V378_RANK)} • Bộ đồ tân thủ đã lưu.`:'Chưa tạo nhân vật. Bắt đầu với bộ đồ tân thủ miễn phí.'}</p><div class="avatar-dashboard-tags"><span>Lv.1</span><span>${esc(AVATAR_V378_RANK)}</span><span>${a?.initialized?'✓ Đã tạo':'Chưa thiết lập'}</span></div></div><button class="btn ${a?.initialized?'btn-soft':'btn-blue'}" onclick="goPage('avatar')">${a?.initialized?'Tùy chỉnh':'Tạo nhân vật'}</button></div>`;
 }
 function avatarV378RefreshUI(){
   const dash=document.getElementById('avatarV378Dashboard');if(dash)dash.innerHTML=avatarV378DashboardHtml();
@@ -196,7 +198,7 @@ function avatarV378StartOnboarding(){
 function avatarV378OpenOnboarding(){
   avatarV378OnboardingGender='';
   const male=avatarV378Starter('male'),female=avatarV378Starter('female');
-  openModal('Chào mừng tân binh!','V37.8 • Avatar Foundation',`<div class="avatar-onboard-intro"><div class="avatar-onboard-badge">Lv.1</div><div><h4>Tạo nhân vật học tập đầu tiên</h4><p>Chọn Nam hoặc Nữ để nhận bộ đồ tân thủ cơ bản. Sau đó em có thể chọn tóc, tông da và đồng phục miễn phí.</p></div></div><div class="avatar-onboard-grid"><button type="button" class="avatar-onboard-gender" data-gender="male" onclick="avatarV378PickOnboardingGender('male')">${avatarV378Svg(male,'mini')}<b>Nam</b><small>Bắt đầu với nhân vật nam</small></button><button type="button" class="avatar-onboard-gender" data-gender="female" onclick="avatarV378PickOnboardingGender('female')">${avatarV378Svg(female,'mini')}<b>Nữ</b><small>Bắt đầu với nhân vật nữ</small></button></div><div class="avatar-onboard-note">V37.8 chỉ có vật phẩm tân thủ miễn phí. EXP, vàng và Shop chưa ảnh hưởng đến điểm số hay kết quả học tập.</div>`,`<button class="btn btn-soft" onclick="closeModal()">Để sau</button><button class="btn btn-blue" id="avatarV378OnboardNext" disabled onclick="avatarV378StartOnboarding()">Tạo nhân vật →</button>`);
+  openModal('Chào mừng tân binh!','Avatar Foundation',`<div class="avatar-onboard-intro"><div class="avatar-onboard-badge">Lv.1</div><div><h4>Tạo nhân vật học tập đầu tiên</h4><p>Chọn Nam hoặc Nữ để nhận bộ đồ tân thủ cơ bản. Sau đó em có thể chọn tóc, tông da và đồng phục miễn phí.</p></div></div><div class="avatar-onboard-grid"><button type="button" class="avatar-onboard-gender" data-gender="male" onclick="avatarV378PickOnboardingGender('male')">${avatarV378Svg(male,'mini')}<b>Nam</b><small>Bắt đầu với nhân vật nam</small></button><button type="button" class="avatar-onboard-gender" data-gender="female" onclick="avatarV378PickOnboardingGender('female')">${avatarV378Svg(female,'mini')}<b>Nữ</b><small>Bắt đầu với nhân vật nữ</small></button></div><div class="avatar-onboard-note"> chỉ có vật phẩm tân thủ miễn phí. EXP, vàng và Shop chưa ảnh hưởng đến điểm số hay kết quả học tập.</div>`,`<button class="btn btn-soft" onclick="closeModal()">Để sau</button><button class="btn btn-blue" id="avatarV378OnboardNext" disabled onclick="avatarV378StartOnboarding()">Tạo nhân vật →</button>`);
 }
 function avatarV378MaybePrompt(){
   if(!firebaseUser||currentSecureRole()!=='student'||firebaseAccountLocked)return;

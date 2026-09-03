@@ -1,12 +1,15 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260902-soft3d-room-avatar';
+const CACHE_REV='20260903-avatar-premium-material-light-step5';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
   './','./index.html','./manifest.webmanifest',
-  './assets/css/app.bundle.css','./assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
-  './assets/js/app-core.bundle.js','./assets/data/all-practice-bank-v38.3.js','./assets/js/app-features.bundle.js',
-  './assets/js/ai-teacher-v32.js','./assets/js/reports-v33.js',
+  './assets/css/app.css','./assets/css/id6-v37.4.css',
+  './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
+  './assets/js/core.js','./assets/js/id6-taxonomy-v37.4.js','./assets/js/lesson-content-v37.7.js',
+  './assets/data/all-practice-bank-v38.3.js','./assets/js/full-bank-v38.3.js',
+  './assets/js/authoring.js','./assets/js/exam.js','./assets/js/question-id-v40.js','./assets/js/platform-v40.js',
+  './assets/css/avatar3d-v38.4.css','./assets/css/math-room-v39.css','./assets/js/avatar3d-v38.4.js','./assets/js/math-room-v39.js',
   './assets/img/avatar-premium-concept.webp','./assets/img/room-premium-concept.webp',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png'
 ];

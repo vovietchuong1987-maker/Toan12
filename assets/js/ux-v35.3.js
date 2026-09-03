@@ -1,4 +1,4 @@
-/* Math12 Hub V35.3 — UX Polish
+/* Math12 Hub  — UX Polish
    Role dashboards • mobile bottom navigation • breadcrumb • autosave state
    • skeleton loading • smart empty states • unified success toasts • table hints.
 */

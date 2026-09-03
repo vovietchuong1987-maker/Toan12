@@ -1,11 +1,11 @@
 /* =========================================================
-   Math12 Hub V37.1 — QUESTION BANK BACKUP V2
+   Math12 Hub  — QUESTION BANK BACKUP V2
    - Chapter-aware backups without changing Firestore collections
    - Valid ZIP (STORE) package with manifest + 500/1000-question chunks
    - SHA-256 + CRC32 integrity checks
    - Restore scope: whole backup or one chapter
    - Restore modes: add missing / update by id / replace selected scope
-   - Backward compatible with V37 JSON backups and legacy arrays
+   - Backward compatible with  JSON backups and legacy arrays
    ========================================================= */
 (function(){
   'use strict';
@@ -60,7 +60,7 @@
     for(let i=0;i<count;i++){
       if(dv.getUint32(p,true)!==0x02014b50)throw new Error('ZIP central directory không hợp lệ.');
       const method=dv.getUint16(p+10,true),crc=dv.getUint32(p+16,true),comp=dv.getUint32(p+20,true),raw=dv.getUint32(p+24,true),nameLen=dv.getUint16(p+28,true),extraLen=dv.getUint16(p+30,true),commentLen=dv.getUint16(p+32,true),localOffset=dv.getUint32(p+42,true),name=dec.decode(b.slice(p+46,p+46+nameLen));
-      if(method!==0)throw new Error(`ZIP có file nén không được V37.1 hỗ trợ: ${name}. Hãy dùng ZIP do Math12 Hub V37.1 xuất.`);
+      if(method!==0)throw new Error(`ZIP có file nén không được  hỗ trợ: ${name}. Hãy dùng ZIP do Math12 Hub  xuất.`);
       if(dv.getUint32(localOffset,true)!==0x04034b50)throw new Error(`Local header lỗi: ${name}`);
       const ln=dv.getUint16(localOffset+26,true),le=dv.getUint16(localOffset+28,true),start=localOffset+30+ln+le,data=b.slice(start,start+comp);
       if(raw!==data.length||crc32(data)!==crc)throw new Error(`CRC32 không khớp: ${name}`);
@@ -97,7 +97,7 @@
       chaptersMeta.push({id:key,number:cm.number,title:cm.title,questionCount:list.length,chunkCount:parts.length,chunks:chunkMeta});
     }
     const total=chaptersMeta.reduce((s,c)=>s+c.questionCount,0),createdAt=new Date().toISOString();
-    const manifest={format:FORMAT,backupSchema:SCHEMA,appVersion:String(typeof APP_VERSION!=='undefined'?APP_VERSION:'37.1'),build:BUILD,createdAt,curriculumId:globalThis.v360KnowledgeMap?.curriculumId||'MATH12-GDPT2018-2026',knowledgeMapVersion:36,questionBankSchema:36,chunkSize,questionCount:total,chapterCount:chaptersMeta.length,chapters:chaptersMeta,integrity:{algorithm:'SHA-256 + CRC32',fileCount:entries.length,globalSha256:await sha256(allFileHashes.join('\n'))}};
+    const manifest={format:FORMAT,backupSchema:SCHEMA,appVersion:String(typeof APP_VERSION!=='undefined'?APP_VERSION:'37.1'),build:BUILD,createdAt,curriculumId:globalThis.v360KnowledgeMap?.curriculumId||'MATH12-GDPT2018-2026',knowledgeMapVersion:36,questionBankSchema:36,questionIdMeta:window.QuestionIdV40?.metadata?.()||null,chunkSize,questionCount:total,chapterCount:chaptersMeta.length,chapters:chaptersMeta,integrity:{algorithm:'SHA-256 + CRC32',fileCount:entries.length,globalSha256:await sha256(allFileHashes.join('\n'))}};
     entries.unshift({name:'manifest.json',data:bytes(safeJson(manifest))});return {entries,manifest};
   }
   async function exportFullZip(){
@@ -108,15 +108,15 @@
     if(!requireTeacher?.('Sao lưu chương'))return;const list=(groupBank(currentBank()).get(key)||[]);if(!list.length)return alert('Chương này chưa có câu hỏi.');const size=validChunkSize(document.getElementById('v371ChunkSize')?.value);try{const {entries,manifest}=await packageEntries(list,size,key),zip=makeZip(entries);downloadBlob(new Blob([zip],{type:'application/zip'}),`math12-question-bank-${key}-v37.1-${nowStamp()}.zip`);examToast?.(`Đã sao lưu ${manifest.questionCount} câu của ${key}.`)}catch(err){alert('Không thể sao lưu chương: '+(err?.message||err))}
   }
   async function exportChapterJson(key){
-    if(!requireTeacher?.('Sao lưu chương'))return;const list=(groupBank(currentBank()).get(key)||[]);if(!list.length)return alert('Chương này chưa có câu hỏi.');const meta=chapterMeta(key),payload={format:FORMAT,backupSchema:SCHEMA,kind:'chapter-json',appVersion:String(APP_VERSION),createdAt:new Date().toISOString(),chapter:{id:key,title:meta.title},questionCount:list.length,questionBank:clone(list)},raw=safeJson(payload);payload.integrity={sha256:await sha256(raw),crc32:hex32(crc32(raw))};triggerJsonDownload?.(payload,`math12-question-bank-${key}-v37.1-${nowStamp()}.json`)
+    if(!requireTeacher?.('Sao lưu chương'))return;const list=(groupBank(currentBank()).get(key)||[]);if(!list.length)return alert('Chương này chưa có câu hỏi.');const meta=chapterMeta(key),payload={format:FORMAT,backupSchema:SCHEMA,kind:'chapter-json',appVersion:String(APP_VERSION),createdAt:new Date().toISOString(),chapter:{id:key,title:meta.title},questionCount:list.length,questionIdMeta:window.QuestionIdV40?.metadata?.()||null,questionBank:clone(list)},raw=safeJson(payload);payload.integrity={sha256:await sha256(raw),crc32:hex32(crc32(raw))};triggerJsonDownload?.(payload,`math12-question-bank-${key}-v37.1-${nowStamp()}.json`)
   }
-  function exportLegacyJson(){if(!requireTeacher?.('Sao lưu JSON tương thích'))return;const payload={format:'math12hub-question-bank-backup',version:APP_VERSION,createdAt:new Date().toISOString(),questionCount:currentBank().length,questionBank:clone(currentBank())};triggerJsonDownload?.(payload,`math12-question-bank-legacy-v37.1-${nowStamp()}.json`)}
+  function exportLegacyJson(){if(!requireTeacher?.('Sao lưu JSON tương thích'))return;const payload={format:'math12hub-question-bank-backup',version:APP_VERSION,createdAt:new Date().toISOString(),questionCount:currentBank().length,questionIdMeta:window.QuestionIdV40?.metadata?.()||null,questionBank:clone(currentBank())};triggerJsonDownload?.(payload,`math12-question-bank-legacy-v37.1-${nowStamp()}.json`)}
 
   function renderBackupCenter(){
     if(!requireTeacher?.('Sao lưu ngân hàng'))return;const bank=currentBank(),groups=groupBank(bank),rows=sortedKeys(groups).map(k=>{const m=chapterMeta(k),n=groups.get(k).length;return `<div class="teacher-history-row"><div><b>${esc(k)} • ${esc(m.title)}</b><small>${n.toLocaleString('vi-VN')} câu • ${Math.ceil(n/DEFAULT_CHUNK)} chunk nếu dùng 500 câu/chunk</small></div><div class="online-actions"><button class="btn btn-soft" onclick="v371ExportChapterJson('${attrEsc(k)}')">JSON</button><button class="btn btn-blue" onclick="v371ExportChapterZip('${attrEsc(k)}')">ZIP chunk</button></div></div>`}).join('')||'<div class="online-empty">Ngân hàng chưa có câu hỏi.</div>';
     const approx=bytes(safeJson(bank)).length;
-    const body=`<div class="grid grid-3"><div class="card"><small>Tổng câu</small><h2>${bank.length.toLocaleString('vi-VN')}</h2></div><div class="card"><small>Chương có dữ liệu</small><h2>${groups.size}</h2></div><div class="card"><small>JSON thô ước tính</small><h2>${fmtSize(approx)}</h2></div></div><div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3>Backup V2 • ZIP phân mảnh</h3><p>Firestore vẫn là một ngân hàng thống nhất. Chỉ file sao lưu được tách Chương → chunk để khôi phục an toàn.</p></div></div><div class="field" style="max-width:280px"><label>Kích thước chunk</label><select id="v371ChunkSize">${CHUNK_CHOICES.map(x=>`<option value="${x}" ${x===DEFAULT_CHUNK?'selected':''}>${x} câu / file</option>`).join('')}</select></div><div class="online-actions"><button class="btn btn-blue" onclick="v371ExportFullZip()">⬇ ZIP toàn bộ</button><button class="btn btn-soft" onclick="v371ExportLegacyJson()">JSON tương thích V37</button><button class="btn btn-soft" onclick="v371ChooseRestore()">↥ Khôi phục V2 / JSON cũ</button></div><div class="math-help mt"><b>ZIP V37.1</b> chứa <code>manifest.json</code> và các file <code>questions/F1/F1-001.json</code>… Mỗi chunk có SHA-256 + CRC32; ZIP được tạo ngay trên máy, không gửi câu hỏi lên máy chủ khác.</div></div><div class="card mt"><h3 style="margin-top:0">Sao lưu nhanh theo chương</h3>${rows}</div>`;
-    openModal('Question Bank Backup V2','V37.1 • Chapter-aware • Chunked • Checksum',body,'<button class="btn btn-soft" onclick="closeModal()">Đóng</button>');
+    const body=`<div class="grid grid-3"><div class="card"><small>Tổng câu</small><h2>${bank.length.toLocaleString('vi-VN')}</h2></div><div class="card"><small>Chương có dữ liệu</small><h2>${groups.size}</h2></div><div class="card"><small>JSON thô ước tính</small><h2>${fmtSize(approx)}</h2></div></div><div class="card mt"><div class="section-head" style="margin:0 0 10px"><div><h3>Backup V2 • ZIP phân mảnh</h3><p>Firestore vẫn là một ngân hàng thống nhất. Chỉ file sao lưu được tách Chương → chunk để khôi phục an toàn.</p></div></div><div class="field" style="max-width:280px"><label>Kích thước chunk</label><select id="v371ChunkSize">${CHUNK_CHOICES.map(x=>`<option value="${x}" ${x===DEFAULT_CHUNK?'selected':''}>${x} câu / file</option>`).join('')}</select></div><div class="online-actions"><button class="btn btn-blue" onclick="v371ExportFullZip()">⬇ ZIP toàn bộ</button><button class="btn btn-soft" onclick="v371ExportLegacyJson()">JSON tương thích </button><button class="btn btn-soft" onclick="v371ChooseRestore()">↥ Khôi phục V2 / JSON cũ</button></div><div class="math-help mt"><b>ZIP </b> chứa <code>manifest.json</code> và các file <code>questions/F1/F1-001.json</code>… Mỗi chunk có SHA-256 + CRC32; ZIP được tạo ngay trên máy, không gửi câu hỏi lên máy chủ khác.</div></div><div class="card mt"><h3 style="margin-top:0">Sao lưu nhanh theo chương</h3>${rows}</div>`;
+    openModal('Question Bank Backup V2','Chapter-aware • Chunked • Checksum',body,'<button class="btn btn-soft" onclick="closeModal()">Đóng</button>');
   }
 
   async function loadZipBackup(file){
@@ -124,11 +124,11 @@
     const problems=[],actualHashes=[];let verified=0;for(const c of manifest.chapters||[])for(const ch of c.chunks||[]){const e=entries.get(ch.path);if(!e){problems.push(`Thiếu ${ch.path}`);continue}if(ch.crc32&&String(ch.crc32).toLowerCase()!==String(e.crc32).toLowerCase()){problems.push(`CRC32 sai: ${ch.path}`);continue}const h=await sha256(e.data);if(ch.sha256&&h!==ch.sha256){problems.push(`SHA-256 sai: ${ch.path}`);continue}actualHashes.push(`${ch.path}:${h}`);verified++}
     if(!problems.length&&manifest.integrity?.globalSha256){const gh=await sha256(actualHashes.join('\n'));if(gh!==manifest.integrity.globalSha256)problems.push('Global checksum không khớp manifest.')}
     if(problems.length)throw new Error(`Backup không toàn vẹn (${problems.length} lỗi): ${problems.slice(0,3).join('; ')}`);
-    return {kind:'v2-zip',fileName:file.name,manifest,entries,verified,createdAt:manifest.createdAt,version:manifest.appVersion};
+    return {kind:'v2-zip',fileName:file.name,manifest,entries,verified,createdAt:manifest.createdAt,version:manifest.appVersion,questionIdMeta:manifest?.questionIdMeta||null};
   }
   function parseJsonBackup(data,fileName){
     let bank=null,format='';if(Array.isArray(data)){bank=data;format='legacy-array'}else if(Array.isArray(data?.questionBank)){bank=data.questionBank;format=data.format||'json-package'}else if(data?.format===CHUNK_FORMAT&&Array.isArray(data.questions)){bank=data.questions;format='v2-chunk'}else throw new Error('File JSON không chứa questionBank/questions hợp lệ.');
-    return {kind:'json',fileName,format,bank,createdAt:data?.createdAt||null,version:data?.appVersion||data?.version||null,manifest:data?.format===FORMAT?data:null};
+    return {kind:'json',fileName,format,bank,createdAt:data?.createdAt||null,version:data?.appVersion||data?.version||null,manifest:data?.format===FORMAT?data:null,questionIdMeta:data?.questionIdMeta||null};
   }
   async function chooseRestore(){
     if(!requireTeacher?.('Khôi phục ngân hàng'))return;const input=document.createElement('input');input.type='file';input.accept='.json,.zip,application/json,application/zip';input.hidden=true;document.body.appendChild(input);
@@ -141,8 +141,8 @@
   function openRestorePreview(){
     const p=pendingRestore;if(!p)return;const rc=restoreCounts(p),ss=scopes(p),scopeOptions=`<option value="ALL">Toàn bộ phạm vi trong file (${rc.total} câu)</option>`+ss.map(x=>`<option value="${attrEsc(x.id)}">${esc(x.id)} • ${esc(x.title)} (${x.count} câu)</option>`).join('');
     const integrity=p.kind==='v2-zip'?`<span class="badge ok">✓ ${p.verified} chunk checksum đạt</span>`:'<span class="badge">JSON tương thích</span>';
-    const body=`<div class="notice"><b>${esc(p.fileName)}</b>${p.createdAt?` • ${new Date(p.createdAt).toLocaleString('vi-VN')}`:''}${p.version?` • V${esc(p.version)}`:''}<br>${integrity}</div><div class="backup-summary"><div><b>${rc.total.toLocaleString('vi-VN')}</b><small>Câu trong file</small></div><div><b>${rc.chapters}</b><small>Phạm vi chương</small></div><div><b>${currentBank().length.toLocaleString('vi-VN')}</b><small>Câu hiện tại</small></div></div><div class="field-grid mt"><div class="field"><label>Phạm vi khôi phục</label><select id="v371RestoreScope">${scopeOptions}</select></div><div class="field"><label>Chế độ</label><select id="v371RestoreMode"><option value="add">Chỉ thêm câu chưa có</option><option value="update">Gộp – câu file cập nhật nếu trùng ID</option><option value="replace">Ghi đè phạm vi đã chọn</option></select></div></div><div class="restore-warnings"><b>V37.1 luôn kiểm tra cấu trúc câu trước khi ghi.</b><br>Chế độ “Ghi đè” sẽ xóa câu hiện tại trong đúng phạm vi đã chọn rồi nạp câu từ file. Trước thao tác này Data Safety tạo Recovery Snapshot trên IndexedDB.</div>`;
-    openModal('Khôi phục ngân hàng V37.1','Chọn phạm vi và cách hợp nhất dữ liệu',body,'<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="v371CommitRestore()">Kiểm tra & khôi phục</button>');
+    const body=`<div class="notice"><b>${esc(p.fileName)}</b>${p.createdAt?`${new Date(p.createdAt).toLocaleString('vi-VN')}`:''}${p.version?`V${esc(p.version)}`:''}<br>${integrity}</div><div class="backup-summary"><div><b>${rc.total.toLocaleString('vi-VN')}</b><small>Câu trong file</small></div><div><b>${rc.chapters}</b><small>Phạm vi chương</small></div><div><b>${currentBank().length.toLocaleString('vi-VN')}</b><small>Câu hiện tại</small></div></div><div class="field-grid mt"><div class="field"><label>Phạm vi khôi phục</label><select id="v371RestoreScope">${scopeOptions}</select></div><div class="field"><label>Chế độ</label><select id="v371RestoreMode"><option value="add">Chỉ thêm câu chưa có</option><option value="update">Gộp – câu file cập nhật nếu trùng ID</option><option value="replace">Ghi đè phạm vi đã chọn</option></select></div></div><div class="restore-warnings"><b> luôn kiểm tra cấu trúc câu trước khi ghi.</b><br>Chế độ “Ghi đè” sẽ xóa câu hiện tại trong đúng phạm vi đã chọn rồi nạp câu từ file. Trước thao tác này Data Safety tạo Recovery Snapshot trên IndexedDB.</div>`;
+    openModal('Khôi phục ngân hàng ','Chọn phạm vi và cách hợp nhất dữ liệu',body,'<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="v371CommitRestore()">Kiểm tra & khôi phục</button>');
   }
   async function readScopeQuestions(p,scope){
     if(p.kind==='json')return clone((p.bank||[]).filter(q=>scope==='ALL'||chapterKey(q)===scope));
@@ -153,10 +153,11 @@
   }
   function scopeMatch(q,scope){return scope==='ALL'||chapterKey(q)===scope}
   function mergeBanks(existing,incoming,scope,mode){
-    existing=Array.isArray(existing)?existing:[];incoming=Array.isArray(incoming)?incoming:[];const existingIds=new Set(existing.map(q=>String(q.id)));let next,added=0,updated=0,kept=0;
+    existing=Array.isArray(existing)?existing:[];incoming=Array.isArray(incoming)?incoming:[];const existingQuestionIds=new Map(existing.filter(q=>q?.id&&q?.questionId).map(q=>[String(q.id),String(q.questionId)]));incoming=incoming.map(q=>{const x=clone(q),keep=existingQuestionIds.get(String(x?.id||''));if(keep)x.questionId=keep;return x});const existingIds=new Set(existing.map(q=>String(q.id)));let next,added=0,updated=0,kept=0;
     if(mode==='add'){const add=incoming.filter(q=>!existingIds.has(String(q.id)));added=add.length;kept=incoming.length-add.length;next=[...existing,...add]}
     else if(mode==='update'){const map=new Map(incoming.map(q=>[String(q.id),q]));updated=existing.filter(q=>map.has(String(q.id))).length;added=incoming.filter(q=>!existingIds.has(String(q.id))).length;next=[...existing.filter(q=>!map.has(String(q.id))),...incoming]}
     else{const outside=existing.filter(q=>!scopeMatch(q,scope));added=incoming.length;next=[...outside,...incoming]}
+    try{window.QuestionIdV40?.ensureBank?.(next,{saveChanges:false,reason:'v371-restore-question-id'})}catch(_){}
     return {next,added,updated,kept}
   }
 
@@ -166,6 +167,7 @@
   async function commitRestore(){
     if(!pendingRestore)return;const scope=document.getElementById('v371RestoreScope')?.value||'ALL',mode=document.getElementById('v371RestoreMode')?.value||'add';
     try{
+      try{window.QuestionIdV40?.reconcileHighWater?.(pendingRestore?.questionIdMeta?.highWater||pendingRestore?.manifest?.questionIdMeta?.highWater)}catch(_){}
       const incoming=await readScopeQuestions(pendingRestore,scope),checked=validateIncoming(incoming);if(!checked.valid.length)return alert('Không có câu hợp lệ để khôi phục.');
       const existing=currentBank(),existingIds=new Set(existing.map(q=>String(q.id))),incomingIds=new Set(checked.valid.map(q=>String(q.id))),duplicates=checked.valid.filter(q=>existingIds.has(String(q.id))).length;
       let msg=`Phạm vi: ${scope==='ALL'?'toàn bộ file':scope}\nCâu hợp lệ: ${checked.valid.length}\nCâu lỗi bỏ qua: ${checked.invalid.length}\nID đã tồn tại: ${duplicates}.`;
@@ -175,13 +177,13 @@
       const snap=await checkpointBeforeRestore(mode);if(mode==='replace'&&!snap&&typeof v21CreateRecoverySnapshot==='function'&&!confirm('Không tạo được Recovery Snapshot. Tiếp tục ghi đè vẫn có rủi ro. Thầy/cô có chắc chắn?'))return;
       const merged=mergeBanks(existing,checked.valid,scope,mode),{next,added,updated,kept}=merged;
       state.questionBank=next;state._meta=state._meta||{};state._meta.lastQuestionBankRestoreV371={at:new Date().toISOString(),source:pendingRestore.fileName,scope,mode,incoming:checked.valid.length,invalid:checked.invalid.length,added,updated,kept,recoverySnapshotId:snap?.id||''};
-      save({reason:`v371-bank-restore-${mode}`});try{if(typeof v21MirrorStateNow==='function')await v21MirrorStateNow()}catch(_){};pendingRestore=null;closeModal();renderQuestionBank?.(true);examToast?.(`V37.1 khôi phục xong • ${state.questionBank.length} câu.`);alert(`Khôi phục thành công.\n\nNgân hàng hiện có: ${state.questionBank.length} câu\nThêm: ${added}${updated?`\nCập nhật: ${updated}`:''}${kept?`\nGiữ câu hiện tại do trùng ID: ${kept}`:''}${checked.invalid.length?`\nBỏ qua câu lỗi: ${checked.invalid.length}`:''}${snap?.id?'\nRecovery Snapshot: đã tạo':'\nRecovery Snapshot: không xác nhận được'}`);
+      save({reason:`v371-bank-restore-${mode}`});try{if(typeof v21MirrorStateNow==='function')await v21MirrorStateNow()}catch(_){};pendingRestore=null;closeModal();renderQuestionBank?.(true);examToast?.(` khôi phục xong • ${state.questionBank.length} câu.`);alert(`Khôi phục thành công.\n\nNgân hàng hiện có: ${state.questionBank.length} câu\nThêm: ${added}${updated?`\nCập nhật: ${updated}`:''}${kept?`\nGiữ câu hiện tại do trùng ID: ${kept}`:''}${checked.invalid.length?`\nBỏ qua câu lỗi: ${checked.invalid.length}`:''}${snap?.id?'\nRecovery Snapshot: đã tạo':'\nRecovery Snapshot: không xác nhận được'}`);
     }catch(err){alert('Khôi phục thất bại: '+(err?.message||err))}
   }
 
   async function undoLastRestore(){
     if(!requireTeacher?.('Hoàn tác khôi phục'))return;const info=state?._meta?.lastQuestionBankRestoreV371,id=info?.recoverySnapshotId||'';
-    if(id&&typeof v21RestoreSnapshot==='function'){if(!confirm(`Hoàn tác lần khôi phục V37.1 từ file “${info.source||''}”?\nHệ thống sẽ phục hồi Recovery Snapshot trước thao tác đó.`))return;return v21RestoreSnapshot(id)}
+    if(id&&typeof v21RestoreSnapshot==='function'){if(!confirm(`Hoàn tác lần khôi phục  từ file “${info.source||''}”?\nHệ thống sẽ phục hồi Recovery Snapshot trước thao tác đó.`))return;return v21RestoreSnapshot(id)}
     if(typeof undoLastBankRestore==='function')return undoLastBankRestore();alert('Chưa có Recovery Snapshot để hoàn tác.')
   }
 
@@ -189,7 +191,7 @@
     const toolbar=document.querySelector('#page-question-bank .toolbar');if(!toolbar||toolbar.querySelector('[data-v371-backup]'))return;const old=[...toolbar.querySelectorAll('button')].find(b=>/Sao lưu/.test(b.textContent||''));if(old){old.textContent='⬇ Backup V2';old.setAttribute('onclick','v371OpenBackupCenter()');old.dataset.v371Backup='1'}const restore=[...toolbar.querySelectorAll('button')].find(b=>/Khôi phục/.test(b.textContent||''));if(restore){restore.textContent='↥ Khôi phục V2';restore.setAttribute('onclick','v371ChooseRestore()')}
   }
   function patchProductionCenter(){
-    // Expose deterministic smoke-test information for V35 Production Center/manual diagnostics.
+    // Expose deterministic smoke-test information for  Trung tâm vận hành/manual diagnostics.
     globalThis.V371_BACKUP_STATUS={build:BUILD,schema:SCHEMA,zip:'STORE',chunkDefault:DEFAULT_CHUNK,checksum:'SHA-256+CRC32',legacyJson:true};
   }
   function init(){patchToolbar();patchProductionCenter();setTimeout(patchToolbar,600);setTimeout(patchToolbar,1800)}

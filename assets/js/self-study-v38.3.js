@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V40 — Approved Self-Study UX
+   Math12 Hub  — Approved Self-Study UX
    - every current bank question can be practised from Học theo bài;
    - Approved/Reviewed is the learner publishing gate; Draft stays teacher-only;
    - classroom/assignment UI is removed from the active product flow;
@@ -58,8 +58,8 @@ function removeClassroomUI(){
   document.getElementById('page-teacher')?.remove();
   document.querySelectorAll('#page-admin .card').forEach(card=>{if(/Quản trị lớp/i.test(card.querySelector('h3')?.textContent||''))card.remove()});
   const hero=document.querySelector('#page-dashboard .teacher-only.hero');
-  if(hero)hero.innerHTML=`<div><div class="badge" style="background:rgba(255,255,255,.16);color:white">V40 • CONTENT HUB</div><h2>Quản trị ngân hàng, tạo đề và nội dung học tập</h2><p>Chế độ lớp học online đã được loại khỏi luồng chính. Giáo viên tập trung làm sạch ngân hàng, tạo đề, kiểm tra nội dung học sinh và dùng trợ lý AI.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('question-bank')">Ngân hàng câu hỏi</button><button class="btn btn-ghost" onclick="goPage('exam-builder')">Tạo đề kiểm tra</button><button class="btn btn-ghost" onclick="goPage('ai-teacher')">Trợ lý AI</button></div></div><div class="hero-progress"><small>Ngân hàng tự học</small><br><strong>${bank().length} câu</strong><div style="margin-top:12px;font-size:13px;line-height:1.6">Học sinh có thể luyện toàn bộ câu theo từng bài ID6.</div></div>`;
-  const foot=document.querySelector('.sidebar-foot .tiny');if(foot)foot.textContent='V40 • Production';
+  if(hero)hero.innerHTML=`<div><div class="badge" style="background:rgba(255,255,255,.16);color:white">CONTENT HUB</div><h2>Quản trị ngân hàng, tạo đề và nội dung học tập</h2><p>Chế độ lớp học online đã được loại khỏi luồng chính. Giáo viên tập trung làm sạch ngân hàng, tạo đề, kiểm tra nội dung học sinh và dùng trợ lý AI.</p><div class="hero-actions"><button class="btn btn-primary" onclick="goPage('question-bank')">Ngân hàng câu hỏi</button><button class="btn btn-ghost" onclick="goPage('exam-builder')">Tạo đề kiểm tra</button><button class="btn btn-ghost" onclick="goPage('ai-teacher')">Trợ lý AI</button></div></div><div class="hero-progress"><small>Ngân hàng tự học</small><br><strong>${bank().length} câu</strong><div style="margin-top:12px;font-size:13px;line-height:1.6">Học sinh có thể luyện toàn bộ câu theo từng bài ID6.</div></div>`;
+  const foot=document.querySelector('.sidebar-foot .tiny');if(foot)foot.textContent='Production';
 }
 function wrapNavigation(){
   if(typeof window.goPage==='function'&&!window.goPage.__v383){

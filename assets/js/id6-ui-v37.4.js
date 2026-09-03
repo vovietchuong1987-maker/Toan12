@@ -1,4 +1,4 @@
-/* Math12 Hub V37.4 — ID6 UI & compatibility layer */
+/* Math12 Hub  — ID6 UI & compatibility layer */
 (function(){
   'use strict';
   const api=()=>window.ID6V374;
@@ -16,7 +16,7 @@
     const box=document.getElementById('qeId6');if(!box)return;
     const p=effectivePattern(),level=document.getElementById('qeLevel')?.value||'';
     const code=api()?.buildId6(p,level)||'';box.value=code;
-    const hint=document.getElementById('qeId6Hint');if(hint){const f=api()?.formByPattern(p);hint.innerHTML=code?`<b>${escH(code)}</b> • ${escH(f?.title||'Dạng toán chính thức')}`:'Chọn dạng toán chính thức và mức độ để tạo ID6.'}
+    const hint=document.getElementById('qeId6Hint');if(hint){const f=api()?.formByPattern(p);hint.innerHTML=code?`<b>${escH(code)}</b>${escH(f?.title||'Dạng toán chính thức')}`:'Chọn dạng toán chính thức và mức độ để tạo ID6.'}
   }
   function injectEditor(id=''){
     const internal=document.getElementById('qeId');if(!internal||document.getElementById('qeId6'))return;
@@ -36,7 +36,7 @@
   }
 
   async function normalizeAll(){
-    if(typeof requireTeacher==='function'&&!requireTeacher('Chuẩn hóa ID6 V37.4'))return;
+    if(typeof requireTeacher==='function'&&!requireTeacher('Chuẩn hóa ID6 '))return;
     const bank=Array.isArray(state.questionBank)?state.questionBank:[],before=api().analyze(bank);
     if(!before.review){window.v353Toast?.('Tất cả câu hỏi đã có ID6 hợp lệ.');renderId6Summary();return}
     if(!confirm(`Chuẩn hóa ID6 cho ngân hàng câu hỏi?\n\nHiện có ${before.complete}/${before.total} câu đã có ID6 hợp lệ; ${before.review} câu cần ánh xạ.\n\nV37.4 chỉ cập nhật metadata dạng toán/ID6, không sửa nội dung, đáp án hay mã bản ghi nội bộ.`))return;
@@ -45,14 +45,14 @@
     state.questionBank=bank.map(q=>{const n=api().normalizeQuestion(q);if(JSON.stringify(n)!==JSON.stringify(q))changed++;if(n.id6Status!=='complete')review++;return n});
     state._meta=state._meta||{};state._meta.id6Schema=1;state._meta.id6Build=api().BUILD;state._meta.id6NormalizedAt=new Date().toISOString();
     if(changed&&typeof save==='function')save({reason:'v37.4-id6-normalize'});
-    renderQuestionBank?.(true);renderId6Summary();window.v353Toast?.(`ID6 V37.4: cập nhật ${changed} câu${review?`; ${review} câu cần rà soát thủ công`:''}.`);
+    renderQuestionBank?.(true);renderId6Summary();window.v353Toast?.(`ID6 : cập nhật ${changed} câu${review?`; ${review} câu cần rà soát thủ công`:''}.`);
   }
 
   function catalog(){
     if(typeof requireTeacher==='function'&&!requireTeacher('Danh mục ID6'))return;
     const groups={};api().allForms().forEach(f=>{const key=f.id6Pattern.slice(0,3);(groups[key]??=[]).push(f)});
-    const body=`<div class="v374-catalog-intro"><b>91 dạng toán Toán 12 • ID6 chính thức</b><p>Dấu <code>?</code> trong mẫu được thay bằng N/H/V/C theo mức độ của câu hỏi.</p></div>`+Object.entries(groups).map(([key,arr])=>`<details class="v374-catalog-group"><summary><b>${escH(key)}</b> • ${arr.length} dạng</summary><div class="v374-catalog-list">${arr.map(f=>`<div><code>${escH(f.id6Pattern)}</code><span>${escH(f.title)}</span><small>${escH(f.officialLessonTitle||'')}</small></div>`).join('')}</div></details>`).join('');
-    openModal('Danh mục ID6 Toán 12 • V37.4','Theo tài liệu ID 6 tham số thầy cung cấp',body,'<button class="btn btn-blue" onclick="closeModal()">Đóng</button>');
+    const body=`<div class="v374-catalog-intro"><b>91 dạng toán Toán 12 • ID6 chính thức</b><p>Dấu <code>?</code> trong mẫu được thay bằng N/H/V/C theo mức độ của câu hỏi.</p></div>`+Object.entries(groups).map(([key,arr])=>`<details class="v374-catalog-group"><summary><b>${escH(key)}</b>${arr.length} dạng</summary><div class="v374-catalog-list">${arr.map(f=>`<div><code>${escH(f.id6Pattern)}</code><span>${escH(f.title)}</span><small>${escH(f.officialLessonTitle||'')}</small></div>`).join('')}</div></details>`).join('');
+    openModal('Danh mục ID6 Toán 12','Theo tài liệu ID 6 tham số thầy cung cấp',body,'<button class="btn btn-blue" onclick="closeModal()">Đóng</button>');
   }
 
   function renderId6Summary(){
@@ -62,7 +62,7 @@
   function injectBankUi(){
     if(document.getElementById('v374Id6Card')){renderId6Summary();return}
     const anchor=document.getElementById('v360KnowledgeMapCard');if(!anchor)return;
-    const card=document.createElement('div');card.id='v374Id6Card';card.className='v374-id6-card';card.innerHTML=`<div class="v374-id6-head"><div><span class="v374-id6-badge">V37.4 • OFFICIAL ID6</span><b>Dạng toán & ID câu hỏi</b><small>91 dạng chính thức • giữ nguyên 19 bài học nội bộ/57 chuẩn Mastery để không phá dữ liệu tiến độ cũ.</small></div><div class="v374-id6-actions"><button class="btn btn-soft" onclick="v374OpenId6Catalog()">Danh mục 91 dạng</button><button class="btn btn-blue" onclick="v374NormalizeId6()">Chuẩn hóa ID6</button></div></div><div id="v374Id6Summary" class="v374-id6-summary"></div>`;
+    const card=document.createElement('div');card.id='v374Id6Card';card.className='v374-id6-card';card.innerHTML=`<div class="v374-id6-head"><div><span class="v374-id6-badge">OFFICIAL ID6</span><b>Dạng toán & ID câu hỏi</b><small>91 dạng chính thức • giữ nguyên 19 bài học nội bộ/57 chuẩn Mastery để không phá dữ liệu tiến độ cũ.</small></div><div class="v374-id6-actions"><button class="btn btn-soft" onclick="v374OpenId6Catalog()">Danh mục 91 dạng</button><button class="btn btn-blue" onclick="v374NormalizeId6()">Chuẩn hóa ID6</button></div></div><div id="v374Id6Summary" class="v374-id6-summary"></div>`;
     anchor.parentNode.insertBefore(card,anchor);renderId6Summary();
   }
   function decorateRows(){
@@ -77,10 +77,10 @@
   function patchStaticText(){
     const mf=document.getElementById('v360MetricForms');if(mf)mf.textContent='91';
     const detail=document.querySelector('#v360KnowledgeMapCard summary small');if(detail)detail.textContent='6 chương • 19 bài học nội bộ • 57 chuẩn Mastery • 91 dạng ID6 — nhấn để mở/đóng';
-    const cov=document.querySelector('#bankCoverageCodes')?.closest('.card')?.querySelector('.section-head h3');if(cov)cov.textContent='Độ phủ chuẩn kiến thức & dạng ID6 • V37.4';
+    const cov=document.querySelector('#bankCoverageCodes')?.closest('.card')?.querySelector('.section-head h3');if(cov)cov.textContent='Độ phủ chuẩn kiến thức & dạng ID6';
   }
 
-  // Editor wrappers are installed last, after V29/V36/V37.x wrappers.
+  // Editor wrappers are installed last, after //.x wrappers.
   if(typeof window.openQuestionEditor==='function'&&!window.openQuestionEditor.__id6v374){const base=window.openQuestionEditor;const w=function(id=''){const out=base(id);setTimeout(()=>injectEditor(id),0);return out};w.__id6v374=true;window.openQuestionEditor=w}
   if(typeof window.saveQuestionEditor==='function'&&!window.saveQuestionEditor.__id6v374){const base=window.saveQuestionEditor;const w=function(editId=''){
     const pattern=effectivePattern(),level=document.getElementById('qeLevel')?.value||'',before=Number(state?._meta?.revision)||0,internal=(document.getElementById('qeId')?.value||'').trim().replace(/[^A-Za-z0-9._-]/g,'-');
