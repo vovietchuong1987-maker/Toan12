@@ -1,4 +1,4 @@
-const APP_VERSION='39.2'; // Avatar 3D Visual Upgrade on  platform.
+const APP_VERSION='40.7'; // Hall of Fame + V40.6 BBT renderer on the production platform.
 const chapters=[
 {id:1,title:'Ứng dụng đạo hàm để khảo sát hàm số',desc:'Đơn điệu, cực trị, GTLN–GTNN, tiệm cận, khảo sát đồ thị và bài toán thực tế.',lessons:[
  {id:'F1-01',common:'Sự đồng biến và nghịch biến của hàm số'},

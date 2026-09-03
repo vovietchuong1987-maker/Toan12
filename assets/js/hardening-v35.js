@@ -94,7 +94,7 @@ function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:St
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
   let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='39.2'&&meta==='39.2',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='40.7'&&meta==='40.7',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));

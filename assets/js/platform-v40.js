@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const VERSION='40.6',BUILD='40.6-native-bbt-row-aware';
+const VERSION='40.7',BUILD='40.7-hall-of-fame';
 const bus=new EventTarget();
 const issues=[];
 const now=()=>new Date().toISOString();
@@ -56,7 +56,7 @@ function qaRun(){const checks=[];const add=(name,ok,detail='')=>checks.push({nam
  add('Mega Shop',!!document.getElementById('page-shop')&&!!window.v386MegaShop,'page + shop engine');
  add('Phòng của em',!!document.getElementById('page-room')&&!!window.v390MathRoom,'page + room engine');
  add('Ngân hàng học sinh',Number(window.Math12Content?.readiness?.()?.approved||0)>0,`${window.Math12Content?.readiness?.()?.approved||0} approved`);
- add('Phân quyền student',!!window.ROLE_ACCESS?.student?.has?.('room')&&!!window.ROLE_ACCESS?.student?.has?.('shop'),'room + shop allowed');
+ add('Phân quyền student',!!window.ROLE_ACCESS?.student?.has?.('room')&&!!window.ROLE_ACCESS?.student?.has?.('shop')&&!!window.ROLE_ACCESS?.student?.has?.('honor'),'room + shop + honor allowed');
  add('PWA',!!('serviceWorker' in navigator),'service worker supported');
  add('Không thiếu tài nguyên DOM',!document.querySelector('script[src="undefined"],link[href="undefined"]'),'basic resource check');
  const failed=checks.filter(c=>!c.ok);const result={version:VERSION,ok:!failed.length,passed:checks.length-failed.length,total:checks.length,failed,checks,device:perf.device(),online:navigator.onLine,at:now()};emit('qa',result);return result}
@@ -71,6 +71,7 @@ function productionAudit(){
  add('Cửa hàng',!!window.v386MegaShop,'critical','Giao diện cửa hàng chính');
  add('Nhân vật',!!window.v384Avatar3D,'critical','adaptive 3D + fallback');
  add('Quyền vào phòng',!!window.ROLE_ACCESS?.student?.has?.('room'),'critical','student role');
+ add('Bảng vinh danh',!!window.v407HonorBoard&&!!window.ROLE_ACCESS?.student?.has?.('honor'),'critical','privacy-first hall of fame');
  add('Chế độ ứng dụng','serviceWorker' in navigator,'warning','PWA capable');
  const appKey=String(window.MATH12_APP_CHECK_SITE_KEY||'').trim();add('Firebase App Check',!!appKey&&typeof firebaseAppCheckStatus!=='undefined'&&firebaseAppCheckStatus==='active','warning',appKey?(typeof firebaseAppCheckStatus==='undefined'?'waiting':firebaseAppCheckStatus):'site key not configured');
  add('Lỗi hệ thống',issues.filter(i=>i.kind==='error'||i.kind==='promise').length===0,'warning',`${issues.length} captured issue(s)`);
