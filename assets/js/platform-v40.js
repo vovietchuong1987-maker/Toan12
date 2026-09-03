@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const VERSION='40.10',BUILD='40.10-bbt-autodetect';
+const VERSION='40.11',BUILD='40.11-unified-question-bank';
 const bus=new EventTarget();
 const issues=[];
 const now=()=>new Date().toISOString();
@@ -43,7 +43,8 @@ function renderContentReadiness(){
   if(role()==='student')return;const host=document.querySelector('#page-question-bank .question-bank-head');if(!host)return;
   let box=document.getElementById('v395ContentReadiness');if(!box){box=document.createElement('div');box.id='v395ContentReadiness';box.className='card v395-content-readiness';host.insertAdjacentElement('afterend',box)}
   const r=contentReadiness();if(!r)return;const ch=Object.values(r.chapters||{});
-  box.innerHTML=`<div class="v395-content-head"><div><small>NỘI DUNG HỌC TẬP</small><h3>Tình trạng ngân hàng học tập</h3><p>Học sinh chỉ nhận các câu đã được duyệt. Nội dung mới có thể bổ sung theo từng chương.</p></div><div><b>${r.approved}/${r.total}</b><span>câu đã phát hành</span></div></div><div class="v395-content-grid">${ch.map(c=>`<div class="v395-ch ${c.approved?'has':'empty'}"><b>Ch.${c.chapter}</b><strong>${c.approved}</strong><small>MCQ ${c.mcq} • Đ/S ${c.tf4} • Ngắn ${c.short}</small>${c.draft?`<em>${c.draft} Draft</em>`:''}</div>`).join('')}</div><div class="v395-content-foot">Gói nội dung: <b>${r.packs.length}</b>Câu bị chặn khỏi học sinh: <b>${r.excluded}</b></div>`;
+  const sourceLabel=r.source?.label||'Nguồn hợp nhất';
+  box.innerHTML=`<div class="v395-content-head"><div><small>NỘI DUNG HỌC TẬP • V40.11</small><h3>Tình trạng ngân hàng học tập</h3><p>Một luồng dữ liệu: ngân hàng hiện tại → lọc trạng thái duyệt → học sinh. Dashboard và phần luyện tập không còn dùng bộ 371 câu cũ.</p></div><div><b>${r.approved}/${r.total}</b><span>câu đủ điều kiện học tập</span></div></div><div class="v395-content-grid">${ch.map(c=>`<div class="v395-ch ${c.approved?'has':'empty'}"><b>Ch.${c.chapter}</b><strong>${c.approved}</strong><small>MCQ ${c.mcq} • Đ/S ${c.tf4} • Ngắn ${c.short}</small>${c.draft?`<em>${c.draft} Draft</em>`:''}</div>`).join('')}</div><div class="v395-content-foot"><span>Nguồn: <b>${sourceLabel}</b></span><span>Đã duyệt: <b>${r.approved}</b></span><span>Bị chặn: <b>${r.excluded}</b></span></div>`;
 }
 window.addEventListener('math12hub:content-pack',()=>setTimeout(renderContentReadiness,0));
 

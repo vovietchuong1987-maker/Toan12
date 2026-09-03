@@ -112,6 +112,15 @@ service cloud.firestore {
       allow delete: if admin() || (active() && request.auth.uid == uid);
     }
 
+
+    // V40.11 — Ngân hàng câu hỏi công khai hợp nhất.
+    // Giáo viên/quản trị viên tự xuất bản các câu Approved/Reviewed theo chunk;
+    // học sinh đang hoạt động chỉ đọc. Bản bundle trong GitHub là fallback offline.
+    match /publicQuestionBankV4011/{doc} {
+      allow read: if active();
+      allow create, update, delete: if teacher();
+    }
+
     match /joinCodes/{code} {
       allow read: if active();
       // Creation/update/deletion should be restricted to class owner/admin after validating classId.
