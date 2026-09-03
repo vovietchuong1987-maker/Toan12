@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const VERSION='40.9',BUILD='40.9-global-auto-hall-of-fame';
+const VERSION='40.10',BUILD='40.10-bbt-autodetect';
 const bus=new EventTarget();
 const issues=[];
 const now=()=>new Date().toISOString();
