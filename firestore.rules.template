@@ -87,6 +87,31 @@ service cloud.firestore {
       match /{other=**} { allow read, write: if classStaff(cid); }
     }
 
+    // V40.9 — Bảng vinh danh toàn hệ thống.
+    // Mỗi học sinh chỉ ghi được hồ sơ công khai của chính UID mình; mọi tài khoản đang hoạt động chỉ đọc dữ liệu đã làm sạch.
+    match /honorPublicV409/{uid} {
+      allow read: if active();
+      allow create, update: if active() && request.auth.uid == uid
+        && profile().role == 'student'
+        && request.resource.data.keys().hasOnly([
+          'schemaVersion','publicKey','name','avatar','level','rank','mastery','streak',
+          'metrics','milestones','clientUpdatedAt','updatedAt'
+        ])
+        && request.resource.data.schemaVersion == 409
+        && request.resource.data.publicKey is string && request.resource.data.publicKey.size() <= 40
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80
+        && request.resource.data.avatar is map
+        && request.resource.data.level is number && request.resource.data.level >= 1 && request.resource.data.level <= 999
+        && request.resource.data.rank is string && request.resource.data.rank.size() <= 60
+        && request.resource.data.mastery is number && request.resource.data.mastery >= 0
+        && request.resource.data.streak is number && request.resource.data.streak >= 0
+        && request.resource.data.metrics is map
+        && request.resource.data.milestones is map
+        && request.resource.data.clientUpdatedAt is string
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if admin() || (active() && request.auth.uid == uid);
+    }
+
     match /joinCodes/{code} {
       allow read: if active();
       // Creation/update/deletion should be restricted to class owner/admin after validating classId.

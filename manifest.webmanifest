@@ -1,7 +1,7 @@
 {
   "name": "Math12 Hub",
   "short_name": "Math12 Hub",
-  "description": "Nền tảng ôn tập Toán 12 GDPT 2018 với luyện tập, kiểm tra, phân tích, game hóa, Avatar 3D, Bảng vinh danh, trải nghiệm làm bài tối ưu trên điện thoại và nội dung được duyệt.",
+  "description": "Nền tảng ôn tập Toán 12 GDPT 2018 với luyện tập, kiểm tra, phân tích, game hóa, Avatar 3D, Bảng vinh danh toàn hệ thống tự động, trải nghiệm làm bài tối ưu trên điện thoại và nội dung được duyệt.",
   "lang": "vi",
   "start_url": "./",
   "scope": "./",

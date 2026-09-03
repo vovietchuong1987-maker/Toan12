@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const VERSION='40.8',BUILD='40.8-mobile-exam-ux';
+const VERSION='40.9',BUILD='40.9-global-auto-hall-of-fame';
 const bus=new EventTarget();
 const issues=[];
 const now=()=>new Date().toISOString();
