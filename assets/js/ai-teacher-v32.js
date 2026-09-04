@@ -49,21 +49,43 @@ function v32AuditResponseSchema(){return {type:'object',properties:{status:{type
 function v32ExtractJsonText(data){
   const parts=data?.candidates?.[0]?.content?.parts||[];let text=parts.map(p=>p.text||'').join('').trim();if(!text)throw new Error(data?.promptFeedback?.blockReason?`Yêu cầu bị chặn: ${data.promptFeedback.blockReason}`:'Gemini không trả về nội dung.');text=text.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();try{return JSON.parse(text)}catch(err){throw new Error('Gemini trả dữ liệu không phải JSON hợp lệ. Hãy thử lại hoặc đổi model.')}
 }
+function v32GeminiNormalizePart(part={}){
+  if(!part||typeof part!=='object')return part;
+  if(part.inline_data){const x=part.inline_data||{};return {inlineData:{mimeType:x.mimeType||x.mime_type||'application/octet-stream',data:x.data||''}}}
+  if(part.inlineData){const x=part.inlineData||{};return {inlineData:{mimeType:x.mimeType||x.mime_type||'application/octet-stream',data:x.data||''}}}
+  if(part.file_data){const x=part.file_data||{};return {fileData:{mimeType:x.mimeType||x.mime_type||'',fileUri:x.fileUri||x.file_uri||''}}}
+  return part
+}
+function v32GeminiJsonContract(schema){
+  let raw='';try{raw=JSON.stringify(schema)}catch(_){raw=''}
+  return `\n\nYÊU CẦU ĐẦU RA: Chỉ trả về đúng MỘT JSON object hợp lệ, không Markdown, không code fence, không lời dẫn. Cố gắng tuân thủ schema sau: ${raw.slice(0,18000)}`
+}
+function v32GeminiInvalidArgument(response,data){return response?.status===400||String(data?.error?.status||'').toUpperCase()==='INVALID_ARGUMENT'}
 async function v32GeminiGenerate(parts,schema,{timeoutMs=90000,systemInstruction=''}={}){
   if(v32AiBusy)throw new Error('AI đang xử lý một yêu cầu khác.');const key=v32AiGetKey();if(!key)throw new Error('Chưa có Gemini API key. Hãy lưu API key trong Cài đặt AI .');const s=v32AiSettings(),model=s.model||V32_AI_DEFAULT_MODEL,url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   v32AiBusy=true;v32RenderAiStatus();
-  const base={contents:[{role:'user',parts}],systemInstruction:{parts:[{text:String(systemInstruction||v32AiSystemInstruction())}]},generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseFormat:{text:{mimeType:'application/json',schema}}}};
-  let response,data;
+  const cleanParts=(parts||[]).map(v32GeminiNormalizePart),systemText=String(systemInstruction||v32AiSystemInstruction()),base={contents:[{role:'user',parts:cleanParts}],systemInstruction:{parts:[{text:systemText}]}};
+  const attempts=[
+    {name:'legacy-schema',generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseMimeType:'application/json',responseSchema:schema}},
+    {name:'legacy-schema-no-thinking',generationConfig:{responseMimeType:'application/json',responseSchema:schema}},
+    {name:'json-no-schema',generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseMimeType:'application/json'},contract:true},
+    {name:'json-no-schema-no-thinking',generationConfig:{responseMimeType:'application/json'},contract:true},
+    {name:'plain-json',generationConfig:{},contract:true}
+  ];
+  let response=null,data={},lastMessage='',used='';
   try{
-    response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(base),signal:controller.signal});data=await response.json().catch(()=>({}));
-    if(!response.ok&&response.status===400&&/response.?format|unknown name|unknown field/i.test(String(data?.error?.message||''))){
-      const fallback=v32JsonClone(base);fallback.generationConfig={thinkingConfig:{thinkingLevel:s.thinkingLevel},responseMimeType:'application/json',responseSchema:schema};response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(fallback),signal:controller.signal});data=await response.json().catch(()=>({}));
+    for(let i=0;i<attempts.length;i++){
+      const a=attempts[i],payload=v32JsonClone(base);payload.generationConfig=a.generationConfig;if(a.contract)payload.systemInstruction.parts[0].text=systemText+v32GeminiJsonContract(schema);
+      response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload),signal:controller.signal});data=await response.json().catch(()=>({}));used=a.name;
+      if(response.ok)break;lastMessage=String(data?.error?.message||'Không thể xử lý yêu cầu.');
+      if(!v32GeminiInvalidArgument(response,data))break;
+      console.warn(`[Math12 Hub AI] Gemini ${response.status} INVALID_ARGUMENT ở chế độ ${a.name}; tự thử cấu hình tương thích tiếp theo.`);
     }
-    if(!response.ok)throw new Error(`Gemini ${response.status}: ${String(data?.error?.message||'Không thể xử lý yêu cầu.').slice(0,420)}`);
-    v32AiRecordUsage(data?.usageMetadata||{});return {json:v32ExtractJsonText(data),usage:data?.usageMetadata||{},model};
+    if(!response?.ok){const detail=String(data?.error?.message||lastMessage||'Không thể xử lý yêu cầu.').slice(0,420);if(v32GeminiInvalidArgument(response,data))throw new Error(`Gemini ${response?.status||400}: API từ chối một tham số của request. Math12 Hub đã tự thử cấu hình schema, bỏ thinking và JSON không schema nhưng vẫn chưa được. ${detail}`);throw new Error(`Gemini ${response?.status||''}: ${detail}`)}
+    v32AiRecordUsage(data?.usageMetadata||{});return {json:v32ExtractJsonText(data),usage:data?.usageMetadata||{},model,transport:used};
   }catch(err){if(err?.name==='AbortError')throw new Error('Yêu cầu AI quá thời gian chờ. Hãy thử lại với ít nội dung hơn.');throw err}finally{clearTimeout(timer);v32AiBusy=false;v32RenderAiStatus()}
 }
-function v32FileToInlinePart(file){return new Promise((resolve,reject)=>{if(!file)return resolve(null);const max=file.type==='application/pdf'?12*1024*1024:8*1024*1024;if(file.size>max)return reject(new Error(`Tệp quá lớn.  giới hạn ${Math.round(max/1024/1024)} MB cho ${file.type==='application/pdf'?'PDF':'ảnh'} để tránh trình duyệt quá tải.`));const ok=/^(image\/(png|jpeg|jpg|webp)|application\/pdf)$/i.test(file.type||'');if(!ok)return reject(new Error(' chỉ nhận PNG, JPG/JPEG, WEBP hoặc PDF.'));const r=new FileReader();r.onerror=()=>reject(new Error('Không đọc được tệp.'));r.onload=()=>{const data=String(r.result||'').split(',')[1]||'';resolve({inline_data:{mime_type:file.type||'application/octet-stream',data}})};r.readAsDataURL(file)})}
+function v32FileToInlinePart(file){return new Promise((resolve,reject)=>{if(!file)return resolve(null);const max=file.type==='application/pdf'?12*1024*1024:8*1024*1024;if(file.size>max)return reject(new Error(`Tệp quá lớn.  giới hạn ${Math.round(max/1024/1024)} MB cho ${file.type==='application/pdf'?'PDF':'ảnh'} để tránh trình duyệt quá tải.`));const ok=/^(image\/(png|jpeg|jpg|webp)|application\/pdf)$/i.test(file.type||'');if(!ok)return reject(new Error(' chỉ nhận PNG, JPG/JPEG, WEBP hoặc PDF.'));const r=new FileReader();r.onerror=()=>reject(new Error('Không đọc được tệp.'));r.onload=()=>{const data=String(r.result||'').split(',')[1]||'';resolve({inlineData:{mimeType:file.type||'application/octet-stream',data}})};r.readAsDataURL(file)})}
 function v32AiHandleFile(input){v32AiSelectedFile=input?.files?.[0]||null;const box=document.getElementById('v32AiFileMeta');if(box)box.textContent=v32AiSelectedFile?`${v32AiSelectedFile.name} • ${(v32AiSelectedFile.size/1024/1024).toFixed(2)} MB • ${v32AiSelectedFile.type||'file'}`:'Chưa chọn tệp.'}
 function v32ResolveKnowledge(q={}){
   const codes=allKnowledgeCodes();let meta=codes.find(k=>k.code===String(q.knowledgeCode||'').trim());if(!meta&&q.lessonId)meta=codes.find(k=>k.lessonId===q.lessonId&&k.level===q.level)||codes.find(k=>k.lessonId===q.lessonId);if(!meta)meta=codes[0];return meta
@@ -197,7 +219,7 @@ async function v4013DocxParts(file){
   for(const name of xmlNames.slice(0,8)){const raw=await v4013EntryBytes(entries.get(name));const t=v4013XmlToText(dec.decode(raw));if(t)texts.push(t)}
   const parts=[];if(texts.length)parts.push({text:`Nội dung trích cục bộ từ tệp Word ${file.name}:\n${texts.join('\n\n').slice(0,60000)}`});
   let imgBytes=0,imgCount=0;for(const [name,e] of entries){
-    if(!/^word\/media\/.+\.(png|jpe?g|webp)$/i.test(name)||imgCount>=4)continue;const raw=await v4013EntryBytes(e);if(!raw.length||raw.length>1_500_000||imgBytes+raw.length>3_500_000)continue;const ext=(name.split('.').pop()||'png').toLowerCase(),mime=ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/png';parts.push({inline_data:{mime_type:mime,data:v4013BytesToBase64(raw)}});imgBytes+=raw.length;imgCount++
+    if(!/^word\/media\/.+\.(png|jpe?g|webp)$/i.test(name)||imgCount>=4)continue;const raw=await v4013EntryBytes(e);if(!raw.length||raw.length>1_500_000||imgBytes+raw.length>3_500_000)continue;const ext=(name.split('.').pop()||'png').toLowerCase(),mime=ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/png';parts.push({inlineData:{mimeType:mime,data:v4013BytesToBase64(raw)}});imgBytes+=raw.length;imgCount++
   }
   if(!parts.length)throw new Error('Không trích được nội dung từ tệp Word này. Hãy lưu thành PDF rồi thử lại.');return parts
 }
@@ -331,5 +353,5 @@ const v4013BaseClear=v32ClearDraftQueue;v32ClearDraftQueue=function(){v4013BaseC
 
 Object.assign(window,{v4013StartPipeline,v4013StopPipeline,v4013ResetPipeline,v4013SelectSafeDrafts,v4013BulkApproveDrafts,v4013ExportDraftsLatex,v4013CopyDraftLatex,v4013PreviewLatex,v4013RenderPipeline});
 v4013JobLoad();
-console.info('Math12 Hub V40.13 AI Import Pipeline loaded');
+console.info('Math12 Hub V40.13.1 Gemini INVALID_ARGUMENT hotfix loaded');
 })();

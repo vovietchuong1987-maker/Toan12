@@ -11,7 +11,7 @@
 const V35_HARDENING_SCHEMA=35;
 const V35_BUILD='37.4.7-figure-qc-preview-approved-gate';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=40.13',label:'Trợ lý AI'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=40.13.1',label:'Trợ lý AI'},
   reports:{src:'assets/js/reports-v33.js?v=37.4.7',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
@@ -94,7 +94,7 @@ function v35Check(name,ok,detail='',level='fail'){return {name,ok:!!ok,detail:St
 function v35RunRegressionChecks({render=true,toast=false}={}){
   let checks=[];
   let meta=document.querySelector('meta[name="app-version"]')?.content||'',build=document.querySelector('meta[name="app-build"]')?.content||'';
-  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='40.13'&&meta==='40.13',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
+  checks.push(v35Check('Phiên bản ứng dụng',String(APP_VERSION)==='40.13.1'&&meta==='40.13.1',`APP_VERSION=${APP_VERSION}; meta=${meta}; build=${build||V35_BUILD}`));
   let ids=[...document.querySelectorAll('[id]')].map(x=>x.id),dup=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];
   checks.push(v35Check('ID giao diện không trùng',dup.length===0,dup.length?`Trùng: ${dup.slice(0,8).join(', ')}`:`${ids.length} ID hợp lệ`));
   checks.push(v35Check('Hàm thi cốt lõi',typeof calculateExamResultFor==='function'&&typeof thptTfScore==='function'&&typeof thptExamConfig==='function','Exam engine + scoring'));
@@ -209,7 +209,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw.js?v=40.13',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw.js?v=40.13.1',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){
