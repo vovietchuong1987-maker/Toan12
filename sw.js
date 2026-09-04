@@ -1,5 +1,5 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260904-v40.13.2-gemini-self-diagnostic';
+const CACHE_REV='20260904-v40.13.3-gemini-429-auto-retry';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[

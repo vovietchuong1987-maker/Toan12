@@ -6,18 +6,18 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
-<meta content="40.13.1" name="app-version"/>
-<meta content="40.13.2-gemini-self-diagnostic" name="app-build"/>
+<meta content="40.13.3" name="app-version"/>
+<meta content="40.13.3-gemini-429-auto-retry" name="app-build"/>
 <meta content="modular-static-github-pages" name="app-architecture"/>
 <meta content="production" name="release-channel"/>
 <meta content="#172033" name="theme-color"/>
-<link href="manifest.webmanifest?v=40.13.1" rel="manifest"/>
+<link href="manifest.webmanifest?v=40.13.3" rel="manifest"/>
 <link href="assets/icons/icon-192.png?v=40.0" rel="icon" sizes="192x192" type="image/png"/>
 <link crossorigin="" href="https://www.gstatic.com" rel="preconnect"/>
 <script defer="" src="assets/js/mathjax-config.js?v=40.0"></script>
 <script defer="" src="assets/vendor/mathjax.js?v=40.0"></script>
-<link href="assets/css/app-v40.10.bundle.css?v=40.13.1" rel="stylesheet"/>
-<link href="assets/css/navigation-v40.12.css?v=40.13.1" rel="stylesheet"/>
+<link href="assets/css/app-v40.10.bundle.css?v=40.13.3" rel="stylesheet"/>
+<link href="assets/css/navigation-v40.12.css?v=40.13.3" rel="stylesheet"/>
 </head>
 <body>
 <div class="v33-public-shell hidden" id="v33PublicReportShell"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập </small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -494,14 +494,16 @@
 </div>
 <div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiExtractQuestions()">✦ Tạo 1 batch</button><span class="v32-inline-status" id="v32AiRunStatus"></span></div>
 <div class="v4013-pipeline mt" id="v4013PipelinePanel">
-  <div class="v4013-pipeline-head"><div><span class="v4013-kicker">AI IMPORT PIPELINE</span><h4>Nhập hàng loạt có checkpoint</h4><p>Gemini đọc nguồn theo từng batch; Math12 Hub chuẩn hóa → kiểm tra LaTeX → kiểm tra trùng → đưa vào hàng chờ. Hết quota có thể tiếp tục đúng batch đang dở.</p></div><span class="v4013-state idle" id="v4013PipelineState">SẴN SÀNG</span></div>
+  <div class="v4013-pipeline-head"><div><span class="v4013-kicker">AI IMPORT PIPELINE</span><h4>Nhập hàng loạt có checkpoint</h4><p>Gemini đọc nguồn theo từng batch; Math12 Hub chuẩn hóa → kiểm tra LaTeX → kiểm tra trùng → đưa vào hàng chờ. Khi gặp 429, mặc định hệ thống tự đếm ngược rồi chạy lại đúng batch đang dở.</p></div><span class="v4013-state idle" id="v4013PipelineState">SẴN SÀNG</span></div>
   <div class="v4013-pipeline-options">
     <div><label>Kích thước batch</label><select id="v4013BatchSize"><option value="5">5 câu</option><option value="10" selected>10 câu</option><option value="15">15 câu</option></select></div>
     <div><label>Mục tiêu tối đa</label><select id="v4013TargetCount"><option value="30">30 câu</option><option value="60" selected>60 câu</option><option value="120">120 câu</option><option value="250">250 câu</option></select></div>
     <div><label>Ngưỡng QC an toàn</label><select id="v4013QcThreshold"><option value="70">70%</option><option value="80" selected>80%</option><option value="90">90%</option></select></div>
+    <div><label>Khi Gemini trả 429</label><select id="v40133RateMode"><option value="auto" selected>Tự chờ & tiếp tục</option><option value="pause">Dừng tại checkpoint</option></select></div>
   </div>
   <div class="online-actions mt"><button class="btn btn-blue" id="v4013StartBtn" onclick="v4013StartPipeline(false)">▶ Chạy nhập hàng loạt</button><button class="btn btn-soft" id="v4013ResumeBtn" onclick="v4013StartPipeline(true)">↻ Tiếp tục checkpoint</button><button class="btn btn-danger" id="v4013StopBtn" onclick="v4013StopPipeline()">■ Dừng sau batch hiện tại</button><button class="btn btn-soft" onclick="v4013ResetPipeline()">Đặt lại tiến trình</button></div>
   <div class="v4013-progress mt"><div class="v4013-progress-bar"><i id="v4013ProgressFill"></i></div><div class="v4013-progress-text"><b id="v4013ProgressLabel">Chưa chạy</b><span id="v4013ProgressMeta">0 batch • 0 câu thêm • 0 câu trùng bỏ qua</span></div></div>
+  <div class="v40133-quota"><span id="v40133QuotaText">Request 60s gần nhất: chưa có dữ liệu.</span><b id="v40133RetryText"></b></div>
   <div class="v4013-pipeline-metrics"><span><b id="v4013MetricSafe">0</b><small>Đạt QC</small></span><span><b id="v4013MetricWarn">0</b><small>Cần xem</small></span><span><b id="v4013MetricDup">0</b><small>Nghi trùng</small></span><span><b id="v4013MetricErrors">0</b><small>Lỗi batch</small></span></div>
   <div class="v4013-checkpoint" id="v4013CheckpointText">Checkpoint chưa được tạo.</div>
 </div>

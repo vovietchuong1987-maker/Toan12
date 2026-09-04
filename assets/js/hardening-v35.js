@@ -11,7 +11,7 @@
 const V35_HARDENING_SCHEMA=35;
 const V35_BUILD='37.4.7-figure-qc-preview-approved-gate';
 const V35_FEATURES={
-  ai:{src:'assets/js/ai-teacher-v32.js?v=40.13.2',label:'Trợ lý AI'},
+  ai:{src:'assets/js/ai-teacher-v32.js?v=40.13.3',label:'Trợ lý AI'},
   reports:{src:'assets/js/reports-v33.js?v=37.4.7',label:'Báo cáo học tập'},
   xlsx:{src:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',label:'Đọc Excel',crossOrigin:true}
 };
@@ -209,7 +209,7 @@ window.addEventListener('online',v35UpdateConnectivity);window.addEventListener(
 async function v35RegisterServiceWorker(){
   if(!('serviceWorker' in navigator)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
   if(!/^https?:$/.test(location.protocol)){v35ServiceWorkerState='unsupported';v35RenderProductionCenter();return}
-  try{let reg=await navigator.serviceWorker.register('./sw.js?v=40.13.2',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
+  try{let reg=await navigator.serviceWorker.register('./sw.js?v=40.13.3',{scope:'./',updateViaCache:'none'});v35ServiceWorkerState='ready';reg.update?.().catch(()=>{});v35RenderProductionCenter()}catch(err){v35ServiceWorkerState='error';v35CaptureIssue('service-worker',err)}
 }
 
 function v35Init(){
