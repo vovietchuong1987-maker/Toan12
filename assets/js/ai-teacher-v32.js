@@ -124,3 +124,212 @@ if(v32OldFirebaseSignOut)firebaseSignOut=async function(){sessionStorage.removeI
 
 v32AiLoadDrafts();
 console.info('Math12 Hub  AI Teacher Assistant loaded');
+
+/* =========================================================
+   Math12 Hub V40.13 — AI Import Pipeline
+   Extends AI Teacher V32 without replacing the existing Gemini workflow.
+   - Word/PDF/image/text intake
+   - Batch extraction with checkpoint/resume
+   - LaTeX round-trip validation
+   - duplicate guard against bank + queue
+   - teacher-controlled bulk move to Question Bank draft
+   ========================================================= */
+(function(){
+'use strict';
+const V4013_PIPELINE_SCHEMA=4013;
+const V4013_PIPELINE_KEY='math12hub.ai.v40.13.pipeline';
+const V4013_MAX_DRAFTS=250;
+const V4013_MAX_DRAFT_BYTES=3_700_000;
+let v4013Job=null;
+let v4013StopRequested=false;
+let v4013LastAddStats={added:0,skipped:0};
+const v4013BaseNormalize=v32NormalizeAiQuestion;
+const v4013BaseChecks=v32LocalDraftChecks;
+const v4013BaseRenderAssistant=v32RenderAIAssistant;
+const v4013BaseRenderMetrics=v32RenderAiMetrics;
+
+function v4013HashText(s=''){
+  let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)
+}
+function v4013JobLoad(){
+  const x=v32SafeParse(localStorage.getItem(V4013_PIPELINE_KEY)||'null',null);v4013Job=x&&typeof x==='object'?x:null;return v4013Job
+}
+function v4013JobSave(){
+  if(!v4013Job)return localStorage.removeItem(V4013_PIPELINE_KEY);v4013Job.updatedAt=v32Now();try{localStorage.setItem(V4013_PIPELINE_KEY,JSON.stringify(v4013Job))}catch(_){ }
+}
+function v4013SourceFingerprint(text='',file=null){
+  const meta=file?`${file.name}|${file.size}|${file.lastModified}|${file.type}`:'text-only';return `S-${v4013HashText(meta+'|'+String(text||'').slice(0,50000))}`
+}
+function v4013SourceName(file=null,text=''){return file?.name||((text||'').trim()?'Văn bản/LaTeX đã dán':'Nguồn AI')}
+function v4013IsDocx(file){return !!file&&(/\.docx$/i.test(file.name||'')||String(file.type||'').includes('wordprocessingml.document'))}
+function v4013IsTextFile(file){return !!file&&(/\.(?:txt|tex|latex)$/i.test(file.name||'')||/^text\//i.test(file.type||''))}
+function v4013BytesToBase64(bytes){let out='',step=0x8000;for(let i=0;i<bytes.length;i+=step)out+=String.fromCharCode(...bytes.subarray(i,Math.min(i+step,bytes.length)));return btoa(out)}
+async function v4013InflateRaw(bytes){
+  if(!('DecompressionStream' in window))throw new Error('Trình duyệt chưa hỗ trợ giải nén Word .docx. Hãy dùng Chrome/Edge mới hoặc lưu tài liệu thành PDF.');
+  const ds=new DecompressionStream('deflate-raw'),stream=new Blob([bytes]).stream().pipeThrough(ds);return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+async function v4013ZipEntries(file){
+  const buf=await file.arrayBuffer(),u8=new Uint8Array(buf),dv=new DataView(buf);let eocd=-1;
+  for(let i=Math.max(0,u8.length-65557);i<=u8.length-22;i++){if(dv.getUint32(i,true)===0x06054b50)eocd=i}
+  if(eocd<0)throw new Error('Không đọc được cấu trúc ZIP của tệp Word.');
+  const count=dv.getUint16(eocd+10,true),cdOffset=dv.getUint32(eocd+16,true),dec=new TextDecoder('utf-8'),out=new Map();let p=cdOffset;
+  for(let n=0;n<count&&p+46<=u8.length;n++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true),compSize=dv.getUint32(p+20,true),uncompSize=dv.getUint32(p+24,true),fnLen=dv.getUint16(p+28,true),exLen=dv.getUint16(p+30,true),cmLen=dv.getUint16(p+32,true),local=dv.getUint32(p+42,true),name=dec.decode(u8.subarray(p+46,p+46+fnLen));
+    if(local+30<=u8.length&&dv.getUint32(local,true)===0x04034b50){const lfn=dv.getUint16(local+26,true),lex=dv.getUint16(local+28,true),start=local+30+lfn+lex,end=start+compSize;if(end<=u8.length)out.set(name,{name,method,compSize,uncompSize,bytes:u8.slice(start,end)})}
+    p+=46+fnLen+exLen+cmLen;
+  }
+  return out
+}
+async function v4013EntryBytes(entry){if(!entry)return new Uint8Array();if(entry.method===0)return entry.bytes;if(entry.method===8)return v4013InflateRaw(entry.bytes);throw new Error(`Word dùng kiểu nén chưa hỗ trợ (${entry.method}).`)}
+function v4013XmlToText(xml=''){
+  try{
+    const doc=new DOMParser().parseFromString(xml,'application/xml');if(doc.querySelector('parsererror'))throw new Error('xml');
+    doc.querySelectorAll('w\\:tab, tab').forEach(n=>n.replaceWith(doc.createTextNode('\t')));doc.querySelectorAll('w\\:br, br').forEach(n=>n.replaceWith(doc.createTextNode('\n')));
+    const paras=[...doc.getElementsByTagNameNS('*','p')];if(paras.length)return paras.map(p=>String(p.textContent||'').replace(/\s+/g,' ').trim()).filter(Boolean).join('\n');
+    return String(doc.documentElement?.textContent||'').replace(/\s+/g,' ').trim()
+  }catch(_){return String(xml||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()}
+}
+async function v4013DocxParts(file){
+  if(file.size>12*1024*1024)throw new Error('Word .docx vượt 12 MB. Hãy chia file hoặc lưu từng phần thành PDF.');
+  const entries=await v4013ZipEntries(file),dec=new TextDecoder('utf-8'),texts=[];
+  const xmlNames=[...entries.keys()].filter(n=>/^word\/(?:document|header\d*|footer\d*)\.xml$/i.test(n)).sort((a,b)=>a.includes('document.xml')?-1:b.includes('document.xml')?1:a.localeCompare(b));
+  for(const name of xmlNames.slice(0,8)){const raw=await v4013EntryBytes(entries.get(name));const t=v4013XmlToText(dec.decode(raw));if(t)texts.push(t)}
+  const parts=[];if(texts.length)parts.push({text:`Nội dung trích cục bộ từ tệp Word ${file.name}:\n${texts.join('\n\n').slice(0,60000)}`});
+  let imgBytes=0,imgCount=0;for(const [name,e] of entries){
+    if(!/^word\/media\/.+\.(png|jpe?g|webp)$/i.test(name)||imgCount>=4)continue;const raw=await v4013EntryBytes(e);if(!raw.length||raw.length>1_500_000||imgBytes+raw.length>3_500_000)continue;const ext=(name.split('.').pop()||'png').toLowerCase(),mime=ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/png';parts.push({inline_data:{mime_type:mime,data:v4013BytesToBase64(raw)}});imgBytes+=raw.length;imgCount++
+  }
+  if(!parts.length)throw new Error('Không trích được nội dung từ tệp Word này. Hãy lưu thành PDF rồi thử lại.');return parts
+}
+async function v4013FileParts(file){
+  if(!file)return [];
+  if(v4013IsTextFile(file)){if(file.size>4*1024*1024)throw new Error('Tệp văn bản vượt 4 MB. Hãy chia nhỏ nguồn.');return [{text:`Nội dung tệp ${file.name}:\n${(await file.text()).slice(0,120000)}`}]}
+  if(v4013IsDocx(file))return v4013DocxParts(file);
+  return [await v32FileToInlinePart(file)]
+}
+function v4013SplitSourceText(src=''){
+  const s=String(src||'').trim();if(!s)return [];
+  const ex=[];const rex=/((?:[ \t]*%[^\n]*\n)*)[ \t]*\\begin\{ex\}(?:\[[^\]]*\])?[\s\S]*?\\end\{ex\}/g;let m;while((m=rex.exec(s)))ex.push(m[0].trim());if(ex.length>=2)return ex;
+  const re=/(?:^|\n)\s*(?:Câu|Cau|Question)\s*\d+\s*[\.\:\)]/gim,marks=[];while((m=re.exec(s)))marks.push(m.index+(s[m.index]==='\n'?1:0));if(marks.length>=2){const out=[];for(let i=0;i<marks.length;i++)out.push(s.slice(marks[i],marks[i+1]??s.length).trim());return out.filter(Boolean)}
+  return [s]
+}
+function v4013QuestionSchema(){
+  const base=v32QuestionResponseSchema().properties.questions.items;return {type:'object',properties:{questions:{type:'array',minItems:0,maxItems:15,items:{...base,properties:{...base.properties,sourceOrdinal:{type:'integer',minimum:1},sourceLabel:{type:'string'}},required:[...base.required,'sourceOrdinal','sourceLabel']}},hasMore:{type:'boolean'},sourceTotalEstimate:{type:'integer',minimum:0},batchNote:{type:'string'}},required:['questions','hasMore','sourceTotalEstimate','batchNote']}
+}
+function v4013Origin({model='',sourceKind='',sourceName='',fingerprint='',task='extract',batchNo=0}={}){return {model:model||v32AiSettings().model,sourceKind,sourceName,fingerprint,task,batchNo,pipelineSchema:V4013_PIPELINE_SCHEMA}}
+
+v32NormalizeAiQuestion=function(raw={},origin={}){
+  const q=v4013BaseNormalize(raw,origin);if(origin.sourceName)q.sourceName=String(origin.sourceName).slice(0,180);q.aiV32={...(q.aiV32||{}),pipelineSchema:V4013_PIPELINE_SCHEMA,sourceFingerprint:origin.fingerprint||'',sourceOrdinal:Number(raw.sourceOrdinal)||0,sourceLabel:String(raw.sourceLabel||'').slice(0,120),batchNo:Number(origin.batchNo)||0};q.tags=v29NormalizeTags?.([...(q.tags||[]),'ai-import-v40.13'])||q.tags;return q
+};
+
+v32AiLoadDrafts=function(){const arr=v32SafeParse(localStorage.getItem(V32_AI_DRAFTS_KEY)||'[]',[]);v32AiDrafts=Array.isArray(arr)?arr.slice(0,V4013_MAX_DRAFTS):[];return v32AiDrafts};
+v32AiPersistDrafts=function(){
+  v32AiDrafts=(v32AiDrafts||[]).slice(0,V4013_MAX_DRAFTS);let raw=JSON.stringify(v32AiDrafts);while(raw.length>V4013_MAX_DRAFT_BYTES&&v32AiDrafts.length>20){v32AiDrafts.pop();raw=JSON.stringify(v32AiDrafts)}
+  try{localStorage.setItem(V32_AI_DRAFTS_KEY,raw)}catch(err){console.warn('AI pipeline draft storage',err);v32AiDrafts=v32AiDrafts.slice(0,80);try{localStorage.setItem(V32_AI_DRAFTS_KEY,JSON.stringify(v32AiDrafts))}catch(_){}}
+};
+
+function v4013QueueDuplicate(q={},selfId=''){
+  const fp=q.aiV32?.sourceFingerprint,ord=Number(q.aiV32?.sourceOrdinal)||0;let best=null,bestScore=0;
+  for(const d of v32AiDrafts||[]){if(d.draftId===selfId)continue;const x=d.question||{};if(fp&&ord&&x.aiV32?.sourceFingerprint===fp&&Number(x.aiV32?.sourceOrdinal)===ord)return {draftId:d.draftId,id:x.id,score:1,reason:'source-ordinal'};if(x.type!==q.type)continue;const sc=typeof v29Similarity==='function'?v29Similarity(q,x):0;if(sc>bestScore){bestScore=sc;best=d}}
+  return bestScore>=.88?{draftId:best?.draftId,id:best?.question?.id,score:bestScore,reason:'similarity'}:null
+}
+function v4013LatexRoundTrip(q={}){
+  const latex=typeof v29QuestionToLatex==='function'?v29QuestionToLatex(q):'';const errors=[],warnings=[];let parsed=null;
+  try{
+    if(typeof validateQuestionLatexItem==='function'){const r=validateQuestionLatexItem(q)||{};errors.push(...(r.errors||[]));warnings.push(...(r.warnings||[]))}
+    if(latex&&typeof parseBulkLatexSource==='function'){
+      const r=parseBulkLatexSource(latex,{lessonId:q.lessonId,knowledgeCode:q.knowledgeCode,level:q.level,form:q.form||''});parsed=r.items?.[0]||null;errors.push(...(r.globalErrors||[]),...(parsed?.errors||[]));warnings.push(...(parsed?.warnings||[]));if(parsed&&!parsed.valid)errors.push('Round-trip LaTeX chưa hợp lệ.');if(parsed?.item?.type&&parsed.item.type!==q.type)errors.push(`Round-trip đổi loại câu ${q.type} → ${parsed.item.type}.`)
+    }
+  }catch(err){errors.push(`Không kiểm tra được round-trip LaTeX: ${err?.message||err}`)}
+  const unicode=String(latex||'').match(/[≤≥≠∞√→←×÷]/g);if(unicode)warnings.push('Còn ký hiệu toán Unicode; nên chuẩn hóa sang lệnh LaTeX.');return {latex,errors:[...new Set(errors)],warnings:[...new Set(warnings)],parsed}
+}
+v32LocalDraftChecks=function(q={}){
+  const b=v4013BaseChecks(q),rt=v4013LatexRoundTrip(q),critical=[...(b.issues||[]),...rt.errors],warnings=[...rt.warnings],queueDuplicate=v4013QueueDuplicate(q,q._draftId||'');
+  const conf=Number(q.aiV32?.confidence)||0;if(conf<80)warnings.push(`AI confidence ${conf}% dưới ngưỡng khuyến nghị 80%.`);if(q.aiV32?.warnings?.length)warnings.push(...q.aiV32.warnings.map(x=>`AI: ${x}`));
+  const quality=Number(b.quality?.score)||0,threshold=Math.max(70,Math.min(90,Number(document.getElementById('v4013QcThreshold')?.value)||80));
+  const safe=critical.length===0&&!b.duplicate&&!queueDuplicate&&conf>=80&&(quality===0||quality>=threshold)&&!(q.aiV32?.warnings||[]).length;
+  return {...b,issues:[...new Set([...critical,...warnings])],critical:[...new Set(critical)],warnings:[...new Set(warnings)],queueDuplicate,latex:rt.latex,roundTrip:rt,safe,threshold}
+};
+
+v32AddAiDrafts=function(rawQuestions=[],origin={}){
+  let skipped=0;const list=[];for(const r of rawQuestions||[]){const q=v32NormalizeAiQuestion(r,origin),fp=q.aiV32?.sourceFingerprint,ord=Number(q.aiV32?.sourceOrdinal)||0;const exact=(v32AiDrafts||[]).some(d=>fp&&ord&&d.question?.aiV32?.sourceFingerprint===fp&&Number(d.question?.aiV32?.sourceOrdinal)===ord);if(exact){skipped++;continue}const draftId=`D4013-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;q._draftId=draftId;list.push({draftId,createdAt:v32Now(),model:origin.model||v32AiSettings().model,sourceKind:origin.sourceKind||'text',sourceName:origin.sourceName||'',task:origin.task||'extract',question:q})}
+  v32AiDrafts=[...list,...v32AiDrafts].slice(0,V4013_MAX_DRAFTS);v4013LastAddStats={added:list.length,skipped};v32AiPersistDrafts();v32RenderAiDraftQueue();v32RenderAiMetrics();return list
+};
+
+function v4013BatchPrompt({start=1,end=10,count=10,typePolicy='mixed',exactUnits=[],text='',file=null}={}){
+  const type=typePolicy==='mixed'?'trộn hợp lý mcq/tf4/short':typePolicy,sourceRule=exactUnits.length?`Nguồn đã được Math12 Hub chia chính xác thành ${exactUnits.length} mục. Mỗi mục có nhãn SOURCE_ITEM_n; trả sourceOrdinal đúng theo nhãn.`:`Chỉ trích các câu ở vị trí thứ ${start} đến ${end} theo thứ tự xuất hiện trong nguồn. Không lặp lại câu ngoài khoảng này.`;
+  return `Nhiệm vụ: chuyển nguồn giáo viên thành dữ liệu câu hỏi Toán 12 theo GDPT 2018 để Math12 Hub chuẩn hóa sang LaTeX.\n${sourceRule}\nSố câu tối đa batch này: ${count}. Loại mong muốn: ${type}.\nQUAN TRỌNG:\n- Nếu nguồn không còn câu ở khoảng yêu cầu, trả questions=[] và hasMore=false. Không tự sáng tác để đủ số lượng.\n- sourceOrdinal là số thứ tự của câu trong NGUỒN GỐC, không phải thứ tự trong batch. sourceLabel ghi nhãn như “Câu 12”.\n- Chép trung thực nội dung nguồn; chỉ sửa lỗi hiển nhiên về ký hiệu/LaTeX, mọi chỗ không chắc đưa vào warnings.\n- Công thức phải là LaTeX trong $...$. MCQ đúng 4 lựa chọn và duy nhất 1 đáp án. TF4 đúng 4 ý có liên hệ logic.\n- Tự kiểm tra đáp án trước khi trả JSON.\n${v32AiTargetDescription()}\nDanh mục mã kiến thức:\n${v32CurriculumDigest()}\n${exactUnits.length?exactUnits.map((u,i)=>`\n[SOURCE_ITEM_${start+i}]\n${u}`).join('\n').slice(0,50000):text?`\nGhi chú/văn bản nguồn:\n${String(text).slice(0,24000)}`:''}${file?`\nTệp nguồn: ${file.name}. Hãy đọc tệp/ảnh đi kèm.`:''}`
+}
+async function v4013PrepareBatch({text='',file=null,start=1,batchSize=10}={}){
+  const units=!file?v4013SplitSourceText(text):[],localUnits=units.length>1?units:[],slice=localUnits.slice(start-1,start-1+batchSize),count=slice.length||batchSize,end=slice.length?start+slice.length-1:start+batchSize-1,parts=[{text:v4013BatchPrompt({start,end,count,exactUnits:slice,text:localUnits.length?'':text,file,typePolicy:document.getElementById('v32AiTypePolicy')?.value||'mixed'})}];
+  if(file)parts.push(...await v4013FileParts(file));return {parts,count,end,localTotal:localUnits.length||0}
+}
+async function v4013RunBatch({start=1,batchSize=10,text='',file=null,batchNo=1,fingerprint='',sourceName=''}={}){
+  const prep=await v4013PrepareBatch({text,file,start,batchSize});if(prep.localTotal&&start>prep.localTotal)return {added:[],skipped:0,hasMore:false,total:prep.localTotal,end:start-1,returned:0};
+  const res=await v32GeminiGenerate(prep.parts,v4013QuestionSchema(),{timeoutMs:file?150000:100000});let rows=Array.isArray(res.json?.questions)?res.json.questions:[];
+  rows=rows.filter(x=>Number(x.sourceOrdinal)>=start&&Number(x.sourceOrdinal)<=prep.end);const origin=v4013Origin({model:res.model,sourceKind:file?(v4013IsDocx(file)?'docx':file.type==='application/pdf'?'pdf':'image'):'text',sourceName,fingerprint,task:'batch-import',batchNo});const added=v32AddAiDrafts(rows,origin);return {added,skipped:v4013LastAddStats.skipped,hasMore:prep.localTotal?prep.end<prep.localTotal:!!res.json?.hasMore,total:prep.localTotal||Number(res.json?.sourceTotalEstimate)||0,end:prep.end,returned:rows.length,note:String(res.json?.batchNote||'')}
+}
+
+v32AiHandleFile=function(input){v32AiSelectedFile=input?.files?.[0]||null;const box=document.getElementById('v32AiFileMeta');if(box)box.textContent=v32AiSelectedFile?`${v32AiSelectedFile.name} • ${(v32AiSelectedFile.size/1024/1024).toFixed(2)} MB • ${v32AiSelectedFile.type||'file'}`:'Chưa chọn tệp.';v4013RenderPipeline()};
+v32AiExtractQuestions=async function(){
+  if(!requireTeacher('AI tạo bản nháp'))return;const text=(document.getElementById('v32AiSourceText')?.value||'').trim(),file=v32AiSelectedFile,count=Math.min(15,Math.max(1,Number(document.getElementById('v32AiCount')?.value)||3));if(!text&&!file)return alert('Hãy dán nội dung/LaTeX hoặc chọn Word/PDF/ảnh.');const status=document.getElementById('v32AiRunStatus');if(status)status.innerHTML='<span class="v32-ai-spinner"></span> Đang chạy 1 batch…';
+  try{const fp=v4013SourceFingerprint(text,file),r=await v4013RunBatch({start:1,batchSize:count,text,file,batchNo:1,fingerprint:fp,sourceName:v4013SourceName(file,text)});if(status)status.textContent=`✓ Đã thêm ${r.added.length} bản nháp${r.skipped?`, bỏ qua ${r.skipped} câu đã có`:''}.`;document.getElementById('v32AiDraftQueue')?.scrollIntoView({behavior:'smooth',block:'start'})}catch(err){if(status)status.textContent='';alert(err.message||String(err))}
+};
+
+async function v4013StartPipeline(resume=false){
+  if(!requireTeacher('AI Import Pipeline'))return;const text=(document.getElementById('v32AiSourceText')?.value||'').trim(),file=v32AiSelectedFile;if(!text&&!file)return alert('Hãy dán nội dung/LaTeX hoặc chọn Word/PDF/ảnh.');if(!v32AiGetKey())return alert('Chưa có Gemini API key. Hãy lưu API key trước.');
+  const fingerprint=v4013SourceFingerprint(text,file),batchSize=Math.min(15,Math.max(5,Number(document.getElementById('v4013BatchSize')?.value)||10)),target=Math.min(250,Math.max(batchSize,Number(document.getElementById('v4013TargetCount')?.value)||60));
+  if(resume){v4013JobLoad();if(!v4013Job)return alert('Chưa có checkpoint để tiếp tục.');if(v4013Job.sourceFingerprint!==fingerprint)return alert(`Nguồn hiện tại khác checkpoint (${v4013Job.sourceName||'nguồn cũ'}). Hãy chọn/dán lại đúng nguồn hoặc đặt lại tiến trình.`);v4013Job.batchSize=batchSize;v4013Job.target=Math.max(v4013Job.target||0,target)}
+  else{if(v4013Job?.status==='running'&&!confirm('Có tiến trình đang chạy. Bắt đầu lại từ câu 1?'))return;v4013Job={schemaVersion:V4013_PIPELINE_SCHEMA,id:`P4013-${Date.now().toString(36).toUpperCase()}`,sourceFingerprint:fingerprint,sourceName:v4013SourceName(file,text),sourceKind:file?(v4013IsDocx(file)?'docx':file.type==='application/pdf'?'pdf':'image'):'text',batchSize,target,nextOrdinal:1,processed:0,added:0,skipped:0,batches:0,errors:0,lastError:'',status:'idle',startedAt:v32Now(),updatedAt:v32Now()}}
+  if(v4013Job.status==='complete'&&resume&&v4013Job.nextOrdinal>v4013Job.target)return alert('Checkpoint này đã hoàn thành. Hãy đặt lại tiến trình để chạy nguồn mới.');
+  v4013StopRequested=false;v4013Job.status='running';v4013Job.lastError='';v4013JobSave();v4013RenderPipeline();const status=document.getElementById('v32AiRunStatus');
+  try{
+    while(v4013Job.nextOrdinal<=v4013Job.target&&!v4013StopRequested){
+      const start=v4013Job.nextOrdinal,bno=v4013Job.batches+1;if(status)status.innerHTML=`<span class="v32-ai-spinner"></span> Batch ${bno}: đang đọc câu ${start}–${Math.min(v4013Job.target,start+v4013Job.batchSize-1)}…`;
+      const r=await v4013RunBatch({start,batchSize:v4013Job.batchSize,text,file,batchNo:bno,fingerprint:v4013Job.sourceFingerprint,sourceName:v4013Job.sourceName});v4013Job.batches++;v4013Job.added+=r.added.length;v4013Job.skipped+=r.skipped;v4013Job.nextOrdinal=r.end+1;v4013Job.processed=Math.min(v4013Job.target,r.end);if(r.total)v4013Job.target=Math.min(v4013Job.target,r.total);v4013JobSave();v4013RenderPipeline();
+      if(!r.hasMore||r.returned===0){v4013Job.status='complete';break}
+    }
+    if(v4013StopRequested&&v4013Job.status==='running')v4013Job.status='paused';else if(v4013Job.status==='running')v4013Job.status='complete';v4013JobSave();v4013RenderPipeline();if(status)status.textContent=v4013Job.status==='complete'?`✓ Pipeline hoàn thành: ${v4013Job.added} câu vào hàng chờ, ${v4013Job.skipped} câu trùng bỏ qua.`:`⏸ Đã dừng tại checkpoint câu ${v4013Job.nextOrdinal}.`;
+  }catch(err){v4013Job.errors=(Number(v4013Job.errors)||0)+1;v4013Job.lastError=String(err?.message||err).slice(0,600);v4013Job.status=/429|quota|resource.?exhausted|rate.?limit/i.test(v4013Job.lastError)?'paused':'error';v4013JobSave();v4013RenderPipeline();if(status)status.textContent=v4013Job.status==='paused'?`⏸ Hết hạn mức/tốc độ. Checkpoint đã lưu tại câu ${v4013Job.nextOrdinal}; bấm “Tiếp tục checkpoint” sau.`:`✗ ${v4013Job.lastError}`}
+}
+function v4013StopPipeline(){v4013StopRequested=true;if(v4013Job?.status==='running'){v4013Job.status='paused';v4013JobSave();v4013RenderPipeline()}examToast?.('Pipeline sẽ dừng sau batch hiện tại; checkpoint đã được giữ.')}
+function v4013ResetPipeline(){if(v4013Job&&!confirm('Đặt lại checkpoint AI Import Pipeline? Các bản nháp trong hàng chờ vẫn được giữ nguyên.'))return;v4013Job=null;v4013StopRequested=true;localStorage.removeItem(V4013_PIPELINE_KEY);v4013RenderPipeline();examToast?.('Đã đặt lại tiến trình AI Import Pipeline.')}
+function v4013Gate(check,q){if(check.safe)return {cls:'safe',label:'✓ ĐẠT QC'};if(check.critical.length||check.duplicate||check.queueDuplicate)return {cls:'block',label:'⛔ CHẶN'};return {cls:'review',label:'⚠ CẦN XEM'}}
+function v4013QueueStats(){let safe=0,warn=0,dup=0,block=0;for(const d of v32AiDrafts||[]){const c=v32LocalDraftChecks(d.question);if(c.safe)safe++;else warn++;if(c.duplicate||c.queueDuplicate)dup++;if(c.critical.length)block++}return {safe,warn,dup,block,total:(v32AiDrafts||[]).length}}
+function v4013RenderPipeline(){
+  v4013JobLoad();const j=v4013Job,stateEl=document.getElementById('v4013PipelineState'),fill=document.getElementById('v4013ProgressFill'),lab=document.getElementById('v4013ProgressLabel'),meta=document.getElementById('v4013ProgressMeta'),cp=document.getElementById('v4013CheckpointText'),qs=v4013QueueStats();
+  if(stateEl){const st=j?.status||'idle';stateEl.className=`v4013-state ${st}`;stateEl.textContent=st==='running'?'ĐANG CHẠY':st==='paused'?'TẠM DỪNG':st==='complete'?'HOÀN THÀNH':st==='error'?'CÓ LỖI':'SẴN SÀNG'}
+  const target=Math.max(1,Number(j?.target)||1),processed=Math.max(0,Number(j?.processed)||0),pct=j?Math.min(100,Math.round(processed/target*100)):0;if(fill)fill.style.width=`${pct}%`;if(lab)lab.textContent=j?`${processed}/${j.target} vị trí nguồn • ${pct}%`:'Chưa chạy';if(meta)meta.textContent=j?`${j.batches||0} batch • ${j.added||0} câu thêm • ${j.skipped||0} câu trùng bỏ qua`:'0 batch • 0 câu thêm • 0 câu trùng bỏ qua';if(cp)cp.textContent=j?`Checkpoint ${j.id}: nguồn “${j.sourceName}” • tiếp theo từ câu ${j.nextOrdinal}${j.lastError?` • ${j.lastError}`:''}`:'Checkpoint chưa được tạo.';
+  const vals={v4013MetricSafe:qs.safe,v4013MetricWarn:qs.warn,v4013MetricDup:qs.dup,v4013MetricErrors:Number(j?.errors)||0};Object.entries(vals).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=v});const sum=document.getElementById('v4013QueueSummary');if(sum)sum.innerHTML=`<span>${qs.total} bản nháp</span><span>✓ ${qs.safe} đạt QC</span><span>⚠ ${qs.warn} cần xem</span><span>≈ ${qs.dup} nghi trùng</span><span>⛔ ${qs.block} lỗi cấu trúc</span>`;
+  const running=j?.status==='running';['v4013StartBtn','v4013ResumeBtn'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=!!running});const stop=document.getElementById('v4013StopBtn');if(stop)stop.disabled=!running
+}
+function v4013DraftLatex(id){const d=v32AiDrafts.find(x=>x.draftId===id);return d?String(v32LocalDraftChecks(d.question).latex||''):''}
+async function v4013CopyDraftLatex(id){const tex=v4013DraftLatex(id);if(!tex)return;try{await navigator.clipboard.writeText(tex)}catch(_){const t=document.createElement('textarea');t.value=tex;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}examToast?.('Đã sao chép LaTeX của câu nháp.')}
+function v4013PreviewLatex(id){const d=v32AiDrafts.find(x=>x.draftId===id);if(!d)return;const c=v32LocalDraftChecks(d.question),g=v4013Gate(c,d.question);openModal(`LaTeX • ${d.question.id}`,`${g.label} • Round-trip ${c.roundTrip?.errors?.length?'có lỗi':'đạt'}`,`<textarea class="v4013-latex-box" readonly>${esc(c.latex||'')}</textarea><div class="math-help mt">${esc([...c.critical,...c.warnings].join(' • ')||'LaTeX vượt qua kiểm tra cấu trúc.')}</div>`,`<button class="btn btn-soft" onclick="closeModal()">Đóng</button><button class="btn btn-blue" onclick="v4013CopyDraftLatex('${attrEsc(id)}')">Sao chép LaTeX</button>`)}
+function v4013CommitDraft(d,reviewed=false){
+  const q=v32JsonClone(d.question);delete q._draftId;q.id=v32UniqueBankId(q.id);q.reviewStatus=reviewed?'reviewed':'draft';q.updatedAt=v32Now();q.createdAt=q.createdAt||v32Now();q.aiV32={...(q.aiV32||{}),teacherReviewed:!!reviewed,teacherDecision:reviewed?'reviewed':'accepted-draft',approvedAt:v32Now(),pipelineSchema:V4013_PIPELINE_SCHEMA};window.QuestionIdV40?.ensure?.(q);const normalized=v29NormalizeQuestion(q);window.QuestionIdV40?.ensure?.(normalized,{preserve:q.questionId||''});state.questionBank.unshift(normalized);return normalized
+}
+v32ApproveDraft=function(draftId,reviewed=false){
+  if(!requireTeacher('Duyệt bản nháp AI'))return;const d=v32AiDrafts.find(x=>x.draftId===draftId);if(!d)return;const c=v32LocalDraftChecks(d.question),problem=[...c.critical,...c.warnings];if((c.critical.length||c.duplicate||c.queueDuplicate)&&!confirm(`Câu đang bị chặn/cảnh báo:\n- ${[...problem,c.duplicate?`Gần câu ${c.duplicate.id} (${Math.round(c.duplicate.score*100)}%)`:'',c.queueDuplicate?`Gần bản nháp ${c.queueDuplicate.id||''}`:''].filter(Boolean).join('\n- ')}\n\nVẫn đưa vào ngân hàng?`))return;if(reviewed&&!confirm('Xác nhận thầy/cô đã tự kiểm tra nội dung, đáp án, lời giải và LaTeX để đánh dấu “Đã duyệt chuyên môn”?'))return;const q=v4013CommitDraft(d,reviewed);save({reason:reviewed?'v4013-ai-approved-reviewed':'v4013-ai-approved-draft'});v32AiDrafts=v32AiDrafts.filter(x=>x.draftId!==draftId);v32AiPersistDrafts();v29DuplicateCache.signature='';v32RenderAiDraftQueue();v32RenderAiQuestionPicker();v32RenderAiMetrics();renderQuestionBank(true);examToast?.(`Đã đưa ${q.questionId||q.id} vào ngân hàng${reviewed?' và đánh dấu đã duyệt':''}.`)
+};
+function v4013SelectSafeDrafts(){document.querySelectorAll('.v4013-draft-check').forEach(el=>{const d=v32AiDrafts.find(x=>x.draftId===el.value);el.checked=!!d&&v32LocalDraftChecks(d.question).safe});const n=[...document.querySelectorAll('.v4013-draft-check:checked')].length;examToast?.(`Đã chọn ${n} câu đạt QC.`)}
+function v4013BulkApproveDrafts(){
+  if(!requireTeacher('Đưa hàng loạt câu AI vào ngân hàng'))return;const ids=[...document.querySelectorAll('.v4013-draft-check:checked')].map(x=>x.value),picked=v32AiDrafts.filter(d=>ids.includes(d.draftId)),safe=picked.filter(d=>v32LocalDraftChecks(d.question).safe);if(!picked.length)return alert('Hãy chọn các câu đạt QC trước.');if(safe.length!==picked.length)return alert(`Có ${picked.length-safe.length} câu chưa đạt QC. Bulk import chỉ nhận câu “Đạt QC”; hãy xử lý riêng các câu đó.`);if(!confirm(`Đưa ${safe.length} câu đã chọn vào Question Bank ở trạng thái BẢN NHÁP?\n\nHệ thống sẽ cấp ID câu cố định Qxxxxxx nhưng KHÔNG tự publish.`))return;const idSet=new Set(safe.map(d=>d.draftId));const rows=safe.map(d=>v4013CommitDraft(d,false));v32AiDrafts=v32AiDrafts.filter(d=>!idSet.has(d.draftId));v32AiPersistDrafts();v29DuplicateCache.signature='';save({reason:'v4013-ai-bulk-approved-draft'});v32RenderAiDraftQueue();v32RenderAiQuestionPicker();v32RenderAiMetrics();renderQuestionBank(true);examToast?.(`Đã đưa ${rows.length} câu đạt QC vào ngân hàng ở trạng thái nháp.`)
+}
+function v4013ExportDraftsLatex(){
+  const checked=new Set([...document.querySelectorAll('.v4013-draft-check:checked')].map(x=>x.value)),rows=(v32AiDrafts||[]).filter(d=>!checked.size||checked.has(d.draftId));if(!rows.length)return alert('Hàng chờ AI đang trống.');const tex=`% Math12 Hub V40.13 — AI Import Pipeline\n% ${new Date().toISOString()}\n% ${rows.length} câu bản nháp; cần giáo viên duyệt.\n\n`+rows.map(d=>v4013DraftLatex(d.draftId)).join('\n\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([tex],{type:'text/plain;charset=utf-8'}));a.download=`math12-ai-queue-v40.13-${rows.length}-cau.tex`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+}
+function v4013SortedDrafts(){return [...(v32AiDrafts||[])].sort((a,b)=>{const af=a.question?.aiV32?.sourceFingerprint===v4013Job?.sourceFingerprint,bf=b.question?.aiV32?.sourceFingerprint===v4013Job?.sourceFingerprint;if(af!==bf)return af?-1:1;const ao=Number(a.question?.aiV32?.sourceOrdinal)||999999,bo=Number(b.question?.aiV32?.sourceOrdinal)||999999;if(af&&bf&&ao!==bo)return ao-bo;return String(b.createdAt||'').localeCompare(String(a.createdAt||''))})}
+v32RenderAiDraftQueue=function(){
+  const box=document.getElementById('v32AiDraftQueue');if(!box)return;if(!v32AiDrafts.length){box.innerHTML='<div class="online-empty">Chưa có bản nháp AI. Nội dung AI sẽ nằm ở đây và chưa tự động đi vào ngân hàng.</div>';v4013RenderPipeline();return}
+  box.innerHTML=v4013SortedDrafts().map(d=>{const q=d.question,c=v32LocalDraftChecks(q),g=v4013Gate(c,q),warn=c.critical.length+c.warnings.length,dup=c.duplicate?`<span class="v32-dup">≈ ${Math.round(c.duplicate.score*100)}% với ${esc(c.duplicate.id)}</span>`:c.queueDuplicate?`<span class="v32-dup">≈ trùng bản nháp ${esc(c.queueDuplicate.id||'')}</span>`:'',ord=Number(q.aiV32?.sourceOrdinal)||0,cardCls=g.cls==='safe'?'v4013-draft-card-safe':g.cls==='block'?'v4013-draft-card-block':'v4013-draft-card-review';return `<div class="v32-draft-card ${cardCls}"><div class="v32-draft-head"><div><label class="v4013-draft-select" title="Chọn để nhập hàng loạt"><input class="v4013-draft-check" type="checkbox" value="${attrEsc(d.draftId)}" ${c.safe?'':'disabled'}><span class="v4013-gate ${g.cls}">${g.label}</span></label><b>${esc(q.id)}</b><span>${esc(displayKnowledgeCode(q.knowledgeCode))} • ${esc(q.level)} • ${questionTypeName(q.type)}</span></div><div><span class="v32-confidence">AI ${Number(q.aiV32?.confidence)||0}%</span><span class="v32-qc">QC ${c.quality?.score||0}%</span></div></div><div class="v32-draft-question">${mathHTML(String(q.question||'').slice(0,500))}</div><div class="v32-draft-meta">${ord?`<span class="v4013-source-ordinal">Nguồn #${ord}${q.aiV32?.sourceLabel?` • ${esc(q.aiV32.sourceLabel)}`:''}</span>`:''}<span>${esc(d.sourceName||d.sourceKind||'AI')}</span><span>${esc(d.model)}</span><span class="v4013-latex-status">LaTeX ${c.roundTrip?.errors?.length?'cần sửa':'✓ round-trip'}</span>${warn?`<span class="warn">⚠ ${warn} cảnh báo</span>`:'<span class="ok">✓ Không có cảnh báo</span>'}${dup}</div><div class="v32-draft-actions"><button class="btn btn-soft" onclick="v32PreviewDraft('${attrEsc(d.draftId)}')">Xem</button><button class="btn btn-soft" onclick="v4013PreviewLatex('${attrEsc(d.draftId)}')">LaTeX</button><button class="btn btn-soft" onclick="v32EditDraft('${attrEsc(d.draftId)}')">Mở trình soạn</button><button class="btn btn-blue" onclick="v32ApproveDraft('${attrEsc(d.draftId)}',false)">Đưa vào kho (nháp)</button><button class="btn btn-soft" onclick="v32ApproveDraft('${attrEsc(d.draftId)}',true)">Đã kiểm tra & duyệt</button><button class="btn btn-danger" onclick="v32DiscardDraft('${attrEsc(d.draftId)}')">Bỏ</button></div></div>`}).join('');typesetMath(box);v4013RenderPipeline()
+};
+
+v32RenderAiMetrics=function(){v4013BaseRenderMetrics();v4013RenderPipeline()};
+v32RenderAIAssistant=function(){v4013BaseRenderAssistant();v4013JobLoad();v4013RenderPipeline()};
+const v4013BaseClear=v32ClearDraftQueue;v32ClearDraftQueue=function(){v4013BaseClear();v4013RenderPipeline()};
+
+Object.assign(window,{v4013StartPipeline,v4013StopPipeline,v4013ResetPipeline,v4013SelectSafeDrafts,v4013BulkApproveDrafts,v4013ExportDraftsLatex,v4013CopyDraftLatex,v4013PreviewLatex,v4013RenderPipeline});
+v4013JobLoad();
+console.info('Math12 Hub V40.13 AI Import Pipeline loaded');
+})();
