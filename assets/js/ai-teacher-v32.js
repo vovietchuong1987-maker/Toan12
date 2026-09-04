@@ -60,28 +60,48 @@ function v32GeminiJsonContract(schema){
   let raw='';try{raw=JSON.stringify(schema)}catch(_){raw=''}
   return `\n\nYÊU CẦU ĐẦU RA: Chỉ trả về đúng MỘT JSON object hợp lệ, không Markdown, không code fence, không lời dẫn. Cố gắng tuân thủ schema sau: ${raw.slice(0,18000)}`
 }
+function v40132JsonSchema(schema){
+  const allowed=new Set(['$id','$defs','$ref','$anchor','type','format','title','description','enum','items','prefixItems','minItems','maxItems','minimum','maximum','anyOf','oneOf','properties','additionalProperties','required','propertyOrdering']);
+  function walk(v){if(Array.isArray(v))return v.map(walk);if(!v||typeof v!=='object')return v;const out={};for(const [k,val] of Object.entries(v)){if(!allowed.has(k))continue;out[k]=walk(val)}return out}
+  return walk(schema||{type:'object'})
+}
+function v40132LegacySchema(schema){
+  const map={object:'OBJECT',array:'ARRAY',string:'STRING',integer:'INTEGER',number:'NUMBER',boolean:'BOOLEAN'};
+  function walk(v){if(Array.isArray(v))return v.map(walk);if(!v||typeof v!=='object')return v;const out={};for(const [k,val] of Object.entries(v)){if(k==='type'&&typeof val==='string')out[k]=map[val.toLowerCase()]||String(val).toUpperCase();else out[k]=walk(val)}return out}
+  return walk(schema||{type:'object'})
+}
+function v40132GeminiErrorReason(data={}){
+  const details=Array.isArray(data?.error?.details)?data.error.details:[];const info=details.find(x=>x&&typeof x==='object'&&(x.reason||String(x['@type']||'').includes('ErrorInfo')));return String(info?.reason||data?.error?.status||'').toUpperCase()
+}
 function v32GeminiInvalidArgument(response,data){return response?.status===400||String(data?.error?.status||'').toUpperCase()==='INVALID_ARGUMENT'}
+function v40132AuthErrorMessage(key,response,data){
+  const reason=v40132GeminiErrorReason(data),msg=String(data?.error?.message||'Không thể xác thực Gemini.').slice(0,360);if(response?.status===401||reason.includes('UNAUTHENTICATED')||reason.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')){const aq=String(key||'').startsWith('AQ.');return `Gemini 401: không xác thực được API key${aq?' dạng AQ':''}. ${reason?`Mã: ${reason}. `:''}${msg}`};return ''
+}
 async function v32GeminiGenerate(parts,schema,{timeoutMs=90000,systemInstruction=''}={}){
   if(v32AiBusy)throw new Error('AI đang xử lý một yêu cầu khác.');const key=v32AiGetKey();if(!key)throw new Error('Chưa có Gemini API key. Hãy lưu API key trong Cài đặt AI .');const s=v32AiSettings(),model=s.model||V32_AI_DEFAULT_MODEL,url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   v32AiBusy=true;v32RenderAiStatus();
   const cleanParts=(parts||[]).map(v32GeminiNormalizePart),systemText=String(systemInstruction||v32AiSystemInstruction()),base={contents:[{role:'user',parts:cleanParts}],systemInstruction:{parts:[{text:systemText}]}};
+  const jsonSchema=v40132JsonSchema(schema),legacySchema=v40132LegacySchema(schema);
   const attempts=[
-    {name:'legacy-schema',generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseMimeType:'application/json',responseSchema:schema}},
-    {name:'legacy-schema-no-thinking',generationConfig:{responseMimeType:'application/json',responseSchema:schema}},
+    {name:'json-schema',generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseMimeType:'application/json',responseJsonSchema:jsonSchema}},
+    {name:'json-schema-no-thinking',generationConfig:{responseMimeType:'application/json',responseJsonSchema:jsonSchema}},
     {name:'json-no-schema',generationConfig:{thinkingConfig:{thinkingLevel:s.thinkingLevel},responseMimeType:'application/json'},contract:true},
     {name:'json-no-schema-no-thinking',generationConfig:{responseMimeType:'application/json'},contract:true},
-    {name:'plain-json',generationConfig:{},contract:true}
+    {name:'legacy-response-schema',generationConfig:{responseMimeType:'application/json',responseSchema:legacySchema}},
+    {name:'minimal-plain',minimal:true,contract:true}
   ];
   let response=null,data={},lastMessage='',used='';
   try{
     for(let i=0;i<attempts.length;i++){
-      const a=attempts[i],payload=v32JsonClone(base);payload.generationConfig=a.generationConfig;if(a.contract)payload.systemInstruction.parts[0].text=systemText+v32GeminiJsonContract(schema);
+      const a=attempts[i];let payload;
+      if(a.minimal){const contract=systemText+v32GeminiJsonContract(schema),pp=[{text:contract},...cleanParts];payload={contents:[{role:'user',parts:pp}]}}
+      else{payload=v32JsonClone(base);payload.generationConfig=a.generationConfig;if(a.contract)payload.systemInstruction.parts[0].text=systemText+v32GeminiJsonContract(schema)}
       response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload),signal:controller.signal});data=await response.json().catch(()=>({}));used=a.name;
-      if(response.ok)break;lastMessage=String(data?.error?.message||'Không thể xử lý yêu cầu.');
+      if(response.ok)break;lastMessage=String(data?.error?.message||'Không thể xử lý yêu cầu.');const auth=v40132AuthErrorMessage(key,response,data);if(auth)throw new Error(auth);
       if(!v32GeminiInvalidArgument(response,data))break;
       console.warn(`[Math12 Hub AI] Gemini ${response.status} INVALID_ARGUMENT ở chế độ ${a.name}; tự thử cấu hình tương thích tiếp theo.`);
     }
-    if(!response?.ok){const detail=String(data?.error?.message||lastMessage||'Không thể xử lý yêu cầu.').slice(0,420);if(v32GeminiInvalidArgument(response,data))throw new Error(`Gemini ${response?.status||400}: API từ chối một tham số của request. Math12 Hub đã tự thử cấu hình schema, bỏ thinking và JSON không schema nhưng vẫn chưa được. ${detail}`);throw new Error(`Gemini ${response?.status||''}: ${detail}`)}
+    if(!response?.ok){const detail=String(data?.error?.message||lastMessage||'Không thể xử lý yêu cầu.').slice(0,420);if(v32GeminiInvalidArgument(response,data))throw new Error(`Gemini ${response?.status||400}: API từ chối request sau nhiều chế độ tương thích (JSON Schema → JSON thường → legacy schema → payload tối giản). ${detail}`);throw new Error(`Gemini ${response?.status||''}: ${detail}`)}
     v32AiRecordUsage(data?.usageMetadata||{});return {json:v32ExtractJsonText(data),usage:data?.usageMetadata||{},model,transport:used};
   }catch(err){if(err?.name==='AbortError')throw new Error('Yêu cầu AI quá thời gian chờ. Hãy thử lại với ít nội dung hơn.');throw err}finally{clearTimeout(timer);v32AiBusy=false;v32RenderAiStatus()}
 }
@@ -133,6 +153,19 @@ function v32RenderAiDraftQueue(){const box=document.getElementById('v32AiDraftQu
 function v32RenderAiQuestionPicker(){const list=document.getElementById('v32AiQuestionList');if(!list)return;list.innerHTML=(state.questionBank||[]).slice(0,1500).map(q=>`<option value="${attrEsc(q.id)}">${esc(String(q.question||'').slice(0,100))}</option>`).join('')}
 function v32RenderAiMetrics(){const bank=state.questionBank||[],ai=bank.filter(q=>q.source==='ai-v32'||q.aiV32),reviewed=ai.filter(q=>q.reviewStatus==='reviewed').length;const vals={v32MetricDrafts:v32AiDrafts.length,v32MetricAiBank:ai.length,v32MetricReviewed:reviewed,v32MetricRequests:Number(v32AiUsage().requests)||0};Object.entries(vals).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=v})}
 function v32RenderAiStatus(){const s=v32AiSettings(),key=v32AiGetKey(),badge=document.getElementById('v32AiConnection'),busy=document.getElementById('v32AiBusyState'),model=document.getElementById('v32AiCurrentModel'),usage=document.getElementById('v32AiUsageText');if(badge){badge.className=`v32-connection ${key?'ready':'missing'}`;badge.textContent=key?'● API key sẵn sàng':'○ Chưa có API key'}if(busy)busy.textContent=v32AiBusy?'AI đang xử lý…':'Sẵn sàng';if(model)model.textContent=s.model;if(usage){const u=v32AiUsage();usage.textContent=`${Number(u.requests)||0} yêu cầu${u.totalTokens?`~${Number(u.totalTokens).toLocaleString('vi-VN')} tokens`:''}`}}
+async function v40132GeminiDiagnostic(){
+  if(!requireTeacher('Chẩn đoán Gemini'))return;v32AiSaveSettings(false);const key=v32AiGetKey(),box=document.getElementById('v40132DiagResult');if(!key){if(box)box.innerHTML='<div class="firebase-banner error">Chưa có API key.</div>';return}
+  const s=v32AiSettings(),model=s.model||V32_AI_DEFAULT_MODEL,url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;if(box)box.innerHTML='<div class="firebase-banner">Đang chẩn đoán 4 tầng: xác thực → JSON → schema → ảnh…</div>';
+  const rows=[];let imagePart=null;try{if(v32AiSelectedFile&&/^image\//i.test(v32AiSelectedFile.type||''))imagePart=await v32FileToInlinePart(v32AiSelectedFile)}catch(err){rows.push({name:'Ảnh đầu vào',ok:false,status:'LOCAL',reason:'FILE',message:err?.message||String(err)})}
+  async function probe(name,payload){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload),signal:controller.signal});const d=await r.json().catch(()=>({}));const reason=v40132GeminiErrorReason(d);rows.push({name,ok:r.ok,status:r.status,reason,message:String(d?.error?.message||'OK').slice(0,260)});return r.ok}catch(err){rows.push({name,ok:false,status:err?.name==='AbortError'?'TIMEOUT':'NETWORK',reason:'',message:err?.message||String(err)});return false}finally{clearTimeout(timer)}}
+  const minimal=await probe('1. Xác thực + text tối giản',{contents:[{role:'user',parts:[{text:'Trả lời đúng chữ OK.'}]}]});
+  if(minimal)await probe('2. JSON mode',{contents:[{role:'user',parts:[{text:'Chỉ trả JSON {"ok":true}.'}]}],generationConfig:{responseMimeType:'application/json'}});
+  if(minimal)await probe('3. Structured JSON Schema',{contents:[{role:'user',parts:[{text:'Trả JSON xác nhận kết nối.'}]}],generationConfig:{responseMimeType:'application/json',responseJsonSchema:{type:'object',properties:{ok:{type:'boolean'},note:{type:'string'}},required:['ok','note'],additionalProperties:false}}});
+  if(minimal&&imagePart)await probe('4. Vision với ảnh đang chọn',{contents:[{role:'user',parts:[{text:'Ảnh này có chứa câu hỏi Toán không? Chỉ trả lời Có hoặc Không.'},imagePart]}]});else if(!imagePart)rows.push({name:'4. Vision',ok:null,status:'SKIP',reason:'',message:'Chọn một ảnh ở mục nhập câu hỏi rồi chạy lại để test Vision.'});
+  const aq=String(key).startsWith('AQ.'),failed=rows.filter(x=>x.ok===false),html=rows.map(x=>`<div style="display:grid;grid-template-columns:minmax(180px,1fr) 90px 1.7fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line,#e5e7eb)"><b>${esc(x.name)}</b><span>${x.ok===true?'✓ PASS':x.ok===null?'— SKIP':'✗ '+esc(String(x.status))}</span><span>${esc([x.reason,x.message].filter(Boolean).join(' • '))}</span></div>`).join('');let verdict='';
+  const first=rows[0];if(first?.ok===false&&(first.status===401||String(first.reason).includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')))verdict=`<div class="firebase-banner error mt"><b>Lỗi xác thực API key${aq?' AQ':''}.</b> Request tối giản cũng thất bại, nên không phải lỗi schema hay ảnh.</div>`;else if(first?.ok===true&&failed.some(x=>String(x.name).includes('Structured')))verdict='<div class="firebase-banner warn mt"><b>Key hoạt động.</b> Chỉ structured schema lỗi; Math12 Hub sẽ tự dùng JSON mode không schema.</div>';else if(first?.ok===true&&failed.some(x=>String(x.name).includes('Vision')))verdict='<div class="firebase-banner warn mt"><b>Text hoạt động nhưng Vision lỗi.</b> Kiểm tra MIME/ảnh hoặc quyền model.</div>';else if(first?.ok===true&&!failed.length)verdict='<div class="firebase-banner mt"><b>✓ Gemini hoạt động đầy đủ.</b> Key, model, JSON và ảnh đều qua kiểm tra.</div>';else if(first?.status==='NETWORK')verdict='<div class="firebase-banner error mt"><b>Lỗi mạng/CORS.</b> Trình duyệt chưa gọi được endpoint Gemini.</div>';
+  if(box)box.innerHTML=`<div class="firebase-banner"><b>Gemini Diagnostic • ${esc(model)}</b> • key ${aq?'AQ':'legacy'} (đã ẩn)</div>${html}${verdict}`
+}
 async function v32AiTestConnection(){if(!requireTeacher('Kiểm tra AI'))return;v32AiSaveSettings(false);const box=document.getElementById('v32AiTestResult');if(box)box.textContent='Đang kiểm tra…';try{const schema={type:'object',properties:{ok:{type:'boolean'},note:{type:'string'}},required:['ok','note']},r=await v32GeminiGenerate([{text:'Trả JSON xác nhận kết nối. ok=true, note ngắn bằng tiếng Việt.'}],schema,{timeoutMs:30000});if(box)box.textContent=`✓ Kết nối ${r.model} thành công.`}catch(err){if(box)box.textContent=`✗ ${err.message||err}`}}
 function v32ClearDraftQueue(){if(!v32AiDrafts.length)return;if(!confirm(`Xóa ${v32AiDrafts.length} bản nháp AI đang chờ? Việc này không ảnh hưởng câu đã vào ngân hàng.`))return;v32AiDrafts=[];v32AiPersistDrafts();v32RenderAiDraftQueue();v32RenderAiMetrics()}
 function v32RenderAIAssistant(){if(!requireTeacher('Trợ lý AI'))return;v32AiLoadDrafts();const s=v32AiSettings();const model=document.getElementById('v32AiModel');if(model&&!model.matches(':focus'))model.value=s.model;const km=document.getElementById('v32AiKeyMode');if(km)km.value=s.keyMode;const th=document.getElementById('v32AiThinking');if(th)th.value=s.thinkingLevel;const lesson=document.getElementById('v32AiTargetLesson');if(lesson&&lesson.options.length<=1)lesson.innerHTML='<option value="">AI tự phân loại bài</option>'+chapters.flatMap(c=>c.lessons.map(l=>`<option value="${l.id}">${l.id} • ${esc(l.common)}</option>`)).join('');v32RenderAiStatus();v32RenderAiMetrics();v32RenderAiDraftQueue();v32RenderAiQuestionPicker();v32RenderAuditResult()}
@@ -353,5 +386,5 @@ const v4013BaseClear=v32ClearDraftQueue;v32ClearDraftQueue=function(){v4013BaseC
 
 Object.assign(window,{v4013StartPipeline,v4013StopPipeline,v4013ResetPipeline,v4013SelectSafeDrafts,v4013BulkApproveDrafts,v4013ExportDraftsLatex,v4013CopyDraftLatex,v4013PreviewLatex,v4013RenderPipeline});
 v4013JobLoad();
-console.info('Math12 Hub V40.13.1 Gemini INVALID_ARGUMENT hotfix loaded');
+console.info('Math12 Hub V40.13.2 Gemini self-diagnostic loaded');
 })();

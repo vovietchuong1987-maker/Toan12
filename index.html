@@ -7,7 +7,7 @@
 <title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
 <meta content="40.13.1" name="app-version"/>
-<meta content="40.13.1-gemini-invalid-argument-hotfix" name="app-build"/>
+<meta content="40.13.2-gemini-self-diagnostic" name="app-build"/>
 <meta content="modular-static-github-pages" name="app-architecture"/>
 <meta content="production" name="release-channel"/>
 <meta content="#172033" name="theme-color"/>
@@ -478,8 +478,8 @@
 <div><label>Mức suy luận</label><select id="v32AiThinking"><option value="low">Low • nhanh</option><option selected="" value="medium">Medium • cân bằng</option><option value="high">High • bài khó</option></select></div>
 <div><label>Lưu API key</label><select id="v32AiKeyMode"><option value="session">Chỉ phiên này</option><option value="device">Trên thiết bị này</option></select></div>
 </div>
-<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiSaveSettings()">Lưu cài đặt</button><button class="btn btn-soft" onclick="v32AiTestConnection()">Kiểm tra kết nối</button><button class="btn btn-danger" onclick="v32AiClearKey()">Xóa API key</button><span class="v32-inline-status" id="v32AiTestResult"></span></div>
-<div class="firebase-banner warn mt"><b>Lưu ý bảo mật:</b>Khóa API được lưu trên trình duyệt theo lựa chọn của thầy/cô. Khi triển khai quy mô lớn, nên dùng máy chủ trung gian để bảo vệ khóa và kiểm soát hạn mức tốt hơn.</div>
+<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiSaveSettings()">Lưu cài đặt</button><button class="btn btn-soft" onclick="v32AiTestConnection()">Kiểm tra nhanh</button><button class="btn btn-soft" onclick="v40132GeminiDiagnostic()">🩺 Tự chẩn đoán Gemini</button><button class="btn btn-danger" onclick="v32AiClearKey()">Xóa API key</button><span class="v32-inline-status" id="v32AiTestResult"></span></div>
+<div id="v40132DiagResult" class="mt"></div><div class="firebase-banner warn mt"><b>Lưu ý bảo mật:</b>Khóa API được lưu trên trình duyệt theo lựa chọn của thầy/cô. Khi triển khai quy mô lớn, nên dùng máy chủ trung gian để bảo vệ khóa và kiểm soát hạn mức tốt hơn.</div>
 </div>
 <div class="grid grid-2 mt v32-ai-workbench">
 <div class="card">
