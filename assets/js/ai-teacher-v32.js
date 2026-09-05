@@ -429,3 +429,366 @@ Object.assign(window,{v4013StartPipeline,v4013StopPipeline,v4013ResetPipeline,v4
 v4013JobLoad();
 console.info('Math12 Hub V40.13.3 Gemini 429 auto-retry loaded');
 })();
+
+
+/* =========================================================
+   Math12 Hub V40.13.4 — Figure Extraction & Figure Attach
+   - giữ nguyên pipeline v40.13.3
+   - tự giữ và gắn hình gốc của nguồn vào bản nháp khi phát hiện câu có hình
+   - hỗ trợ hiển thị figureMode=image trong preview / exam / ngân hàng
+   ========================================================= */
+(function(){
+'use strict';
+const V40134_BUILD='40.13.4-figure-attach';
+const V40134_CTX_KEY='math12hub.ai.v40.13.4.figureContexts';
+const V40134_MAX_CTX=10;
+const V40134_MAX_DOCX_IMAGES=6;
+const V40134_MAX_TOTAL_IMAGE_BYTES=2_100_000;
+let v40134InitDone=false;
+
+function v40134SafeParse(raw,fallback){try{return JSON.parse(raw)}catch(_){return fallback}}
+function v40134Now(){return new Date().toISOString()}
+function v40134Hash(s=''){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function v40134Fingerprint(text='',file=null){const meta=file?`${file.name}|${file.size}|${file.lastModified}|${file.type}`:'text-only';return `S-${v40134Hash(meta+'|'+String(text||'').slice(0,50000))}`}
+function v40134LoadStore(){return v40134SafeParse(localStorage.getItem(V40134_CTX_KEY)||'{}',{})}
+function v40134SaveStore(store){try{localStorage.setItem(V40134_CTX_KEY,JSON.stringify(store||{}))}catch(_){}}
+function v40134GetCtx(fp=''){const store=v40134LoadStore();return store[String(fp||'')]||null}
+function v40134PutCtx(ctx){if(!ctx?.fingerprint)return;const store=v40134LoadStore();store[ctx.fingerprint]=ctx;const items=Object.entries(store).sort((a,b)=>String(b[1]?.updatedAt||'').localeCompare(String(a[1]?.updatedAt||''))).slice(0,V40134_MAX_CTX);const trimmed=Object.fromEntries(items);v40134SaveStore(trimmed)}
+function v40134Esc(s=''){return typeof esc==='function'?esc(String(s||'')):String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function v40134Attr(s=''){return typeof attrEsc==='function'?attrEsc(String(s||'')):v40134Esc(s).replace(/`/g,'&#96;')}
+function v40134Math(s=''){return typeof mathHTML==='function'?mathHTML(String(s||'')):v40134Esc(String(s||''))}
+function v40134IsFigureLikely(q={}){
+  const blob=[q.question,q.explanation,q.form,q.aiV32?.sourceNote,...(q.options||[]),...(q.statements||[]).map(x=>x?.text||''),...(q.aiV32?.warnings||[])].join(' ').toLowerCase();
+  return /(hình|hình vẽ|đồ thị|bảng biến thiên|biểu đồ|bên hình|hình bên|trục tọa độ|tọa độ|oxyz|oxy|quan sát hình|theo đồ thị|hàm số có đồ thị|hình sau)/i.test(blob);
+}
+function v40134ModeTag(mode='image'){return mode==='image'?'Hình gốc đính kèm':(typeof figureModeTag==='function'?figureModeTag(mode):mode)}
+
+async function v40134BlobToDataUrl(blob){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('Không đọc được Blob hình ảnh.'));r.onload=()=>resolve(String(r.result||''));r.readAsDataURL(blob)})}
+async function v40134FileToDataUrl(file){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('Không đọc được tệp hình.'));r.onload=()=>resolve(String(r.result||''));r.readAsDataURL(file)})}
+function v40134DataUrlToImage(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Không nạp được ảnh để tối ưu kích thước.'));img.src=dataUrl})}
+async function v40134OptimizeDataUrl(dataUrl,{maxW=1200,maxH=1200,quality=.82,preferJpeg=true}={}){
+  if(!String(dataUrl||'').startsWith('data:image/'))return {dataUrl,width:0,height:0,bytes:Math.round((String(dataUrl||'').length*3)/4)};
+  const img=await v40134DataUrlToImage(dataUrl);const w=img.naturalWidth||img.width||1,h=img.naturalHeight||img.height||1,scale=Math.min(1,maxW/w,maxH/h);const nw=Math.max(1,Math.round(w*scale)),nh=Math.max(1,Math.round(h*scale));
+  const c=document.createElement('canvas');c.width=nw;c.height=nh;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,nw,nh);g.drawImage(img,0,0,nw,nh);let out='';
+  try{out=c.toDataURL(preferJpeg?'image/jpeg':'image/png',quality)}catch(_){out=c.toDataURL('image/png')}
+  return {dataUrl:out,width:nw,height:nh,bytes:Math.round((out.length*3)/4)};
+}
+function v40134BytesToBase64(bytes){let out='',step=0x8000;for(let i=0;i<bytes.length;i+=step)out+=String.fromCharCode(...bytes.subarray(i,Math.min(i+step,bytes.length)));return btoa(out)}
+async function v40134InflateRaw(bytes){
+  if(!('DecompressionStream' in window))throw new Error('Trình duyệt chưa hỗ trợ giải nén Word .docx. Hãy dùng Chrome/Edge mới hoặc lưu tài liệu thành PDF.');
+  const ds=new DecompressionStream('deflate-raw'),stream=new Blob([bytes]).stream().pipeThrough(ds);return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+async function v40134ZipEntries(file){
+  const buf=await file.arrayBuffer(),u8=new Uint8Array(buf),dv=new DataView(buf);let eocd=-1;
+  for(let i=Math.max(0,u8.length-65557);i<=u8.length-22;i++){if(dv.getUint32(i,true)===0x06054b50)eocd=i}
+  if(eocd<0)throw new Error('Không đọc được cấu trúc ZIP của tệp Word.');
+  const count=dv.getUint16(eocd+10,true),cdOffset=dv.getUint32(eocd+16,true),dec=new TextDecoder('utf-8'),out=new Map();let p=cdOffset;
+  for(let n=0;n<count&&p+46<=u8.length;n++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true),compSize=dv.getUint32(p+20,true),fnLen=dv.getUint16(p+28,true),exLen=dv.getUint16(p+30,true),cmLen=dv.getUint16(p+32,true),local=dv.getUint32(p+42,true),name=dec.decode(u8.subarray(p+46,p+46+fnLen));
+    if(local+30<=u8.length&&dv.getUint32(local,true)===0x04034b50){const lfn=dv.getUint16(local+26,true),lex=dv.getUint16(local+28,true),start=local+30+lfn+lex,end=start+compSize;if(end<=u8.length)out.set(name,{name,method,bytes:u8.slice(start,end)})}
+    p+=46+fnLen+exLen+cmLen;
+  }
+  return out;
+}
+async function v40134EntryBytes(entry){if(!entry)return new Uint8Array();if(entry.method===0)return entry.bytes;if(entry.method===8)return await v40134InflateRaw(entry.bytes);throw new Error(`Word dùng kiểu nén chưa hỗ trợ (${entry.method}).`)}
+async function v40134DocxAssets(file){
+  const entries=await v40134ZipEntries(file),assets=[];let total=0,order=0;
+  for(const [name,e] of entries){
+    if(!/^word\/media\/.+\.(png|jpe?g|webp|gif|bmp)$/i.test(name))continue;
+    if(assets.length>=V40134_MAX_DOCX_IMAGES)break;
+    const raw=await v40134EntryBytes(e);if(!raw.length)continue;
+    const ext=(name.split('.').pop()||'png').toLowerCase(),mime=ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/png';
+    const base64=v40134BytesToBase64(raw);let opt=await v40134OptimizeDataUrl(`data:${mime};base64,${base64}`,{maxW:1280,maxH:1280,quality:.80,preferJpeg:true});
+    if(total+opt.bytes>V40134_MAX_TOTAL_IMAGE_BYTES&&assets.length)break;total+=opt.bytes;order++;
+    assets.push({assetId:`F${order}`,kind:'docx-media',label:`Hình nhúng ${order}`,name,dataUrl:opt.dataUrl,width:opt.width,height:opt.height,bytes:opt.bytes})
+  }
+  return assets;
+}
+async function v40134FigureAssetsFromCurrentSource(){
+  const file=v32AiSelectedFile||null,text=(document.getElementById('v32AiSourceText')?.value||'').trim(),fp=v40134Fingerprint(text,file),cached=v40134GetCtx(fp);if(cached)return cached;
+  const ctx={fingerprint:fp,sourceName:file?.name||(text?'Văn bản/LaTeX đã dán':'Nguồn AI'),sourceKind:file?(text?'text+file':'file'):'text',fileMeta:file?{name:file.name,size:file.size,type:file.type||'',lastModified:file.lastModified||0}:null,assets:[],updatedAt:v40134Now(),notes:[]};
+  try{
+    if(file){
+      if(/^image\//i.test(file.type||'')){const raw=await v40134FileToDataUrl(file),opt=await v40134OptimizeDataUrl(raw,{maxW:1400,maxH:1400,quality:.82,preferJpeg:true});ctx.assets=[{assetId:'F1',kind:'image-file',label:file.name||'Ảnh nguồn',name:file.name||'image',dataUrl:opt.dataUrl,width:opt.width,height:opt.height,bytes:opt.bytes}]}
+      else if(/\.docx$/i.test(file.name||'')||String(file.type||'').includes('wordprocessingml.document')){ctx.assets=await v40134DocxAssets(file);if(!ctx.assets.length)ctx.notes.push('Word không phát hiện ảnh nhúng phù hợp để gắn vào câu.')}
+      else if(String(file.type||'')==='application/pdf'){ctx.notes.push('PDF hiện vẫn gửi tốt cho Gemini nhưng v40.13.4 chưa tách được hình riêng từng câu ở phía trình duyệt. Có thể vẫn nhập câu; phần gắn hình riêng sẽ cần bước kiểm tra thủ công.')}
+    }
+  }catch(err){ctx.notes.push(String(err?.message||err))}
+  v40134PutCtx(ctx);return ctx;
+}
+function v40134AssignAssets(newDrafts=[],ctx=null){
+  if(!Array.isArray(newDrafts)||!newDrafts.length||!ctx?.assets?.length)return 0;
+  const candidates=newDrafts.filter(d=>v40134IsFigureLikely(d.question||{}));if(!candidates.length)return 0;
+  let changed=0,figureOrdinal=0;
+  for(const d of candidates){
+    const q=d.question||{};if(q.figureMode==='image'&&q.figureImageData)continue;
+    const ord=Math.max(0,Number(q.aiV32?.sourceOrdinal)||0);
+    let asset=null;
+    if(ctx.assets.length===1)asset=ctx.assets[0];
+    else if(ord>0&&ctx.assets[ord-1])asset=ctx.assets[ord-1];
+    else asset=ctx.assets[Math.min(figureOrdinal,ctx.assets.length-1)];
+    if(!asset)continue;figureOrdinal++;
+    q.figureMode='image';q.figureLayout=q.figureLayout||'below';q.figureCaption=q.figureCaption||'';q.figureImageData=asset.dataUrl;q.figureSourceKind='source-image';q.figureImageName=asset.name||asset.label||'';
+    q.figureAssetMeta={assetId:asset.assetId,label:asset.label||'',kind:asset.kind||'image',width:asset.width||0,height:asset.height||0,bytes:asset.bytes||0,assignedBy:'v40.13.4-auto',assignedAt:v40134Now(),sourceFingerprint:ctx.fingerprint};
+    q.aiV32={...(q.aiV32||{}),figureAttached:true,figureAttachmentMode:'source-image',figureAttachmentSource:ctx.sourceKind||'',pipelineSchema:Math.max(40134,Number(q.aiV32?.pipelineSchema)||0)};
+    const existing=Array.isArray(q.tags)?q.tags.slice():[];if(!existing.includes('figure-source-image'))existing.push('figure-source-image');q.tags=typeof v29NormalizeTags==='function'?v29NormalizeTags(existing):existing;
+    d.sourceName=d.sourceName||ctx.sourceName;changed++;
+  }
+  if(changed&&typeof v32AiPersistDrafts==='function')v32AiPersistDrafts();
+  return changed;
+}
+async function v40134PrepareContext(){
+  const box=document.getElementById('v32AiFileMeta');
+  try{const ctx=await v40134FigureAssetsFromCurrentSource();if(box&&v32AiSelectedFile){const extra=ctx.assets?.length?` • phát hiện ${ctx.assets.length} hình nhúng/gốc`:(ctx.notes?.length?` • ${ctx.notes[0]}`:'');box.textContent=`${v32AiSelectedFile.name} • ${(v32AiSelectedFile.size/1024/1024).toFixed(2)} MB • ${v32AiSelectedFile.type||'file'}${extra}`}return ctx}catch(err){if(box&&v32AiSelectedFile)box.textContent=`${v32AiSelectedFile.name} • ${(v32AiSelectedFile.size/1024/1024).toFixed(2)} MB • ${v32AiSelectedFile.type||'file'} • ${String(err?.message||err)}`;return null}
+}
+
+const v40134BaseHandleFile=window.v32AiHandleFile;
+window.v32AiHandleFile=function(input){const r=v40134BaseHandleFile? v40134BaseHandleFile(input):undefined;Promise.resolve().then(v40134PrepareContext).catch(()=>{});return r};
+
+const v40134BaseAddDrafts=window.v32AddAiDrafts;
+window.v32AddAiDrafts=function(rawQuestions=[],origin={}){
+  const file=v32AiSelectedFile||null,text=(document.getElementById('v32AiSourceText')?.value||'').trim();const origin2={...(origin||{})};
+  if(!origin2.fingerprint)origin2.fingerprint=v40134Fingerprint(text,file);
+  if(!origin2.sourceName)origin2.sourceName=file?.name||(text?'Văn bản/LaTeX đã dán':'Nguồn AI');
+  if(!origin2.sourceKind)origin2.sourceKind=file?(text?'text+file':'file'):'text';
+  const list=v40134BaseAddDrafts? v40134BaseAddDrafts(rawQuestions,origin2):[];const ctx=v40134GetCtx(origin2.fingerprint)||null;const attached=v40134AssignAssets(list,ctx);
+  if(attached&&typeof v32RenderAiDraftQueue==='function')v32RenderAiDraftQueue();
+  return list;
+};
+
+const v40134BaseExtract=window.v32AiExtractQuestions;
+window.v32AiExtractQuestions=async function(){await v40134PrepareContext();return await v40134BaseExtract.apply(this,arguments)};
+const v40134BasePipeStart=window.v4013StartPipeline;
+window.v4013StartPipeline=async function(){await v40134PrepareContext();return await v40134BasePipeStart.apply(this,arguments)};
+
+const v40134BaseFigureTag=window.figureModeTag;
+window.figureModeTag=function(mode='tikz'){if(mode==='image')return 'Hình gốc đính kèm';return v40134BaseFigureTag? v40134BaseFigureTag(mode):mode};
+
+const v40134BaseQuestionFigureHTML=window.questionFigureHTML;
+window.questionFigureHTML=function(item={},compact=false){
+  const mode=item.figureMode||((item.figureLatex||'').trim()?'tikz':'none');
+  if(mode==='image'&&String(item.figureImageData||'').startsWith('data:image/')){
+    const cap=item.figureCaption?`<div class="latex-figure-caption">${v40134Math(item.figureCaption)}</div>`:'';
+    const meta=item.figureAssetMeta||{},summary=`Hình gốc của câu • ${meta.label||item.figureImageName||'ảnh nguồn'}`;
+    return `<div class="latex-figure ${compact?'compact':''} v40134-image-figure"><div class="v40134-image-shell"><img class="v40134-image" loading="lazy" alt="Hình gốc câu hỏi" src="${v40134Attr(item.figureImageData)}"></div>${cap}<details class="latex-figure-code"><summary>${v40134Esc(summary)}</summary><div class="math-help">Chế độ: hình gốc đính kèm • ${v40134Esc(meta.kind||item.figureSourceKind||'image')} ${meta.width&&meta.height?`• ${meta.width}×${meta.height}`:''}</div></details></div>`;
+  }
+  return v40134BaseQuestionFigureHTML? v40134BaseQuestionFigureHTML(item,compact):'';
+};
+
+const v40134BaseBuildPreview=window.buildQuestionPreviewHTML;
+if(typeof v40134BaseBuildPreview==='function')window.buildQuestionPreviewHTML=function(x,opts={}){
+  let html=v40134BaseBuildPreview(x,opts);
+  if((x?.figureMode==='image'&&x?.figureImageData)&&!html.includes('Hình gốc đính kèm')){
+    html=html.replace(/(<div class="quiz-meta">)/,`$1<span class="bank-tag-figure">Hình gốc đính kèm</span>`)
+  }
+  return html;
+};
+
+const v40134BaseQuestionToLatex=window.v29QuestionToLatex;
+if(typeof v40134BaseQuestionToLatex==='function')window.v29QuestionToLatex=function(q={}){
+  let tex=v40134BaseQuestionToLatex(q);
+  if(q?.figureMode==='image'&&q?.figureImageData){
+    tex += `\n% figure-mode=image\n% figure-image-name=${String(q.figureImageName||q.figureAssetMeta?.label||'source-image').replace(/\s+/g,' ')}\n% figure-note=Hinh goc duoc dinh kem trong Math12 Hub v40.13.4; neu xuat sang LaTeX doc lap can thay bang \\includegraphics hoac ve lai TikZ.\n`;
+  }
+  return tex;
+};
+
+function v40134InjectStyles(){if(document.getElementById('v40134FigureStyles'))return;const css=`
+.v40134-image-figure{border:1px solid rgba(63,92,179,.15);border-radius:16px;padding:10px;background:linear-gradient(180deg,#fff,#f7f9ff)}
+.v40134-image-shell{display:flex;justify-content:center;align-items:center;background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:12px;padding:8px;overflow:auto}
+.v40134-image{display:block;max-width:100%;height:auto;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.v40134-queue-figure{margin-top:10px;border:1px dashed rgba(59,130,246,.35);background:#f8fbff;border-radius:12px;padding:10px}
+.v40134-queue-figure-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.v40134-queue-chip{display:inline-flex;align-items:center;gap:6px;background:#eaf2ff;color:#23408e;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
+.v40134-queue-thumb{max-width:100%;max-height:240px;border:1px solid rgba(15,23,42,.08);border-radius:10px;background:#fff;display:block;margin:auto}
+.v40134-preview-note{font-size:12px;color:#5f6c82;line-height:1.55;margin-top:8px}
+`;
+  const st=document.createElement('style');st.id='v40134FigureStyles';st.textContent=css;document.head.appendChild(st)}
+function v40134EnhanceDraftCards(){
+  v40134InjectStyles();const box=document.getElementById('v32AiDraftQueue');if(!box)return;
+  box.querySelectorAll('.v32-draft-card').forEach(card=>{
+    if(card.querySelector('.v40134-queue-figure'))return;const html=card.innerHTML||'';const m=html.match(/v32PreviewDraft\('([^']+)'\)/);if(!m)return;const id=m[1];const draft=(v32AiDrafts||[]).find(x=>x.draftId===id);const q=draft?.question||{};if(!(q.figureMode==='image'&&q.figureImageData))return;
+    const wrap=document.createElement('div');wrap.className='v40134-queue-figure';const meta=q.figureAssetMeta||{};wrap.innerHTML=`<div class="v40134-queue-figure-head"><span class="v40134-queue-chip">🖼 Hình gốc</span><span class="v40134-queue-chip">${v40134Esc(meta.label||q.figureImageName||'ảnh nguồn')}</span>${meta.width&&meta.height?`<span class="v40134-queue-chip">${meta.width}×${meta.height}</span>`:''}</div><img class="v40134-queue-thumb" alt="Hình gốc câu hỏi" src="${v40134Attr(q.figureImageData)}"><div class="v40134-preview-note">v40.13.4 đã đính kèm hình gốc từ nguồn vào câu này. Thầy/cô vẫn nên xem lại việc gắn đúng câu, nhất là khi nguồn có nhiều hình hoặc PDF scan.</div>`;
+    const anchor=card.querySelector('.v32-draft-meta')||card.querySelector('.v32-draft-actions')||card;anchor.parentNode.insertBefore(wrap,anchor.nextSibling);
+  })
+}
+const v40134BaseRenderDraftQueue=window.v32RenderAiDraftQueue;
+window.v32RenderAiDraftQueue=function(){const r=v40134BaseRenderDraftQueue? v40134BaseRenderDraftQueue.apply(this,arguments):undefined;setTimeout(v40134EnhanceDraftCards,0);return r};
+
+const v40134BasePreviewDraft=window.v32PreviewDraft;
+window.v32PreviewDraft=function(){const r=v40134BasePreviewDraft? v40134BasePreviewDraft.apply(this,arguments):undefined;setTimeout(v40134InjectStyles,0);return r};
+
+window.V40134FigureAttach={prepareContext:v40134PrepareContext,build:V40134_BUILD,loadContext:v40134GetCtx,assignAssets:v40134AssignAssets};
+Promise.resolve().then(()=>{if(!v40134InitDone){v40134InitDone=true;v40134InjectStyles();setTimeout(v40134EnhanceDraftCards,100)}}).catch(()=>{});
+console.info('Math12 Hub V40.13.4 Figure Attach loaded');
+})();
+
+
+/* =========================================================
+   Math12 Hub V40.13.5 — Figure Picker & Image Editor Support
+   - gán/đổi/xóa hình thủ công cho từng draft AI
+   - trình soạn hỗ trợ figureMode=image, không làm mất hình khi sửa/lưu
+   ========================================================= */
+(function(){
+'use strict';
+const V40135_BUILD='40.13.5-figure-picker-editor';
+const V40135_CTX_KEY='math12hub.ai.v40.13.4.figureContexts';
+function v40135Safe(raw,fallback){try{return JSON.parse(raw)}catch(_){return fallback}}
+function v40135Store(){return v40135Safe(localStorage.getItem(V40135_CTX_KEY)||'{}',{})}
+function v40135Esc(s=''){return typeof esc==='function'?esc(String(s||'')):String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function v40135Attr(s=''){return typeof attrEsc==='function'?attrEsc(String(s||'')):v40135Esc(s).replace(/`/g,'&#96;')}
+function v40135Math(s=''){return typeof mathHTML==='function'?mathHTML(String(s||'')):v40135Esc(s)}
+function v40135Draft(id){return (v32AiDrafts||[]).find(x=>x.draftId===id)||null}
+function v40135QuestionLikelyHasFigure(q={}){const blob=[q.question,q.explanation,q.form,...(q.options||[]),...(q.statements||[]).map(x=>x?.text||''),...(q.aiV32?.warnings||[])].join(' ').toLowerCase();return /(hình|hình vẽ|đồ thị|bảng biến thiên|biểu đồ|hình bên|bên hình|quan sát hình|theo đồ thị|oxyz|oxy|trục tọa độ|hàm số có đồ thị)/i.test(blob)}
+function v40135RelevantContexts(draft){
+  const store=v40135Store(),fp=draft?.question?.aiV32?.sourceFingerprint||'';
+  const arr=[];if(fp&&store[fp])arr.push({fingerprint:fp,...store[fp]});
+  Object.entries(store).forEach(([k,v])=>{if(k===fp)return;arr.push({fingerprint:k,...(v||{})})});
+  return arr.filter(x=>Array.isArray(x.assets)&&x.assets.length)
+}
+function v40135SetDraftImageData(draftId,{dataUrl='',name='',label='',kind='image',width=0,height=0,bytes=0,ctxFingerprint='',ctxSourceKind='',assetId=''}={}){
+  const d=v40135Draft(draftId);if(!d)return false;const q=d.question||{};if(!String(dataUrl||'').startsWith('data:image/'))return false;
+  q.figureMode='image';q.figureLayout=q.figureLayout||'below';q.figureCaption=q.figureCaption||'';q.figureLatex='';q.figureImageData=dataUrl;q.figureImageName=name||label||'image';q.figureSourceKind=ctxSourceKind||'image';
+  q.figureAssetMeta={assetId:assetId||'',label:label||name||'',kind,width,height,bytes,assignedBy:'v40.13.5-manual',sourceFingerprint:ctxFingerprint||q.aiV32?.sourceFingerprint||'',assignedAt:new Date().toISOString()};
+  q.aiV32={...(q.aiV32||{}),figureAttached:true,figureAttachmentMode:'manual-image',pipelineSchema:40135};
+  let tags=Array.isArray(q.tags)?q.tags.slice():[];if(!tags.includes('figure-source-image'))tags.push('figure-source-image');if(typeof v29NormalizeTags==='function')tags=v29NormalizeTags(tags);q.tags=tags;
+  v32AiPersistDrafts?.();v32RenderAiDraftQueue?.();return true
+}
+function v40135ClearDraftImage(draftId){
+  const d=v40135Draft(draftId);if(!d)return false;const q=d.question||{};delete q.figureImageData;delete q.figureImageName;delete q.figureAssetMeta;delete q.figureSourceKind;q.figureLatex='';q.figureMode='none';q.figureCaption='';
+  if(Array.isArray(q.tags))q.tags=q.tags.filter(x=>x!=='figure-source-image');
+  q.aiV32={...(q.aiV32||{}),figureAttached:false,figureAttachmentMode:'cleared',pipelineSchema:40135};
+  v32AiPersistDrafts?.();v32RenderAiDraftQueue?.();return true
+}
+async function v40135ReadFileAsDataUrl(file){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('Không đọc được tệp hình.'));r.onload=()=>resolve(String(r.result||''));r.readAsDataURL(file)})}
+function v40135ImageInfo(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve({width:img.naturalWidth||img.width||0,height:img.naturalHeight||img.height||0});img.onerror=()=>reject(new Error('Không đọc được kích thước ảnh.'));img.src=dataUrl})}
+async function v40135UploadDraftFigure(draftId,input){const file=input?.files?.[0];if(!file)return;if(!/^image\//i.test(file.type||''))return alert('Chỉ nhận tệp ảnh.');const dataUrl=await v40135ReadFileAsDataUrl(file);const info=await v40135ImageInfo(dataUrl).catch(()=>({width:0,height:0}));v40135SetDraftImageData(draftId,{dataUrl,name:file.name,label:file.name,kind:'manual-upload',width:info.width,height:info.height,bytes:Math.round((dataUrl.length*3)/4)});closeModal();examToast?.('Đã gắn hình cho câu trong Hàng chờ AI.');}
+function v40135PickDraftSourceFigure(draftId,ctxFp,assetId){const ctx=v40135Store()[ctxFp];const asset=(ctx?.assets||[]).find(x=>x.assetId===assetId);if(!asset)return;v40135SetDraftImageData(draftId,{dataUrl:asset.dataUrl,name:asset.name||asset.label,label:asset.label||asset.name,kind:asset.kind||'source-image',width:Number(asset.width)||0,height:Number(asset.height)||0,bytes:Number(asset.bytes)||0,ctxFingerprint:ctxFp,ctxSourceKind:ctx?.sourceKind||'',assetId:asset.assetId||''});closeModal();examToast?.('Đã gắn hình nguồn cho câu.');}
+function v40135OpenDraftFigurePicker(draftId){
+  const d=v40135Draft(draftId);if(!d)return;const q=d.question||{},contexts=v40135RelevantContexts(d),cur=q.figureMode==='image'&&q.figureImageData?`<div class="v40135-current"><b>Hình hiện tại</b><img src="${v40135Attr(q.figureImageData)}" alt="Hình hiện tại"><div class="math-help">${v40135Esc(q.figureImageName||q.figureAssetMeta?.label||'')}</div></div>`:'<div class="math-help">Câu này chưa có hình đính kèm.</div>';
+  const gallery=contexts.length?contexts.map(ctx=>`<div class="v40135-ctx"><div class="v40135-ctx-head"><b>${v40135Esc(ctx.sourceName||'Nguồn ảnh')}</b><span>${v40135Esc(ctx.sourceKind||'')}</span></div><div class="v40135-gallery">${(ctx.assets||[]).map(a=>`<div class="v40135-asset"><img src="${v40135Attr(a.dataUrl||'')}" alt="${v40135Attr(a.label||a.name||'asset')}"><div class="v40135-asset-meta"><b>${v40135Esc(a.label||a.name||'Ảnh')}</b><small>${a.width&&a.height?`${a.width}×${a.height}`:''}</small></div><button class="btn btn-blue" onclick="v40135PickDraftSourceFigure('${v40135Attr(draftId)}','${v40135Attr(ctx.fingerprint)}','${v40135Attr(a.assetId||'')}')">Chọn ảnh này</button></div>`).join('')}</div></div>`).join(''):'<div class="math-help">Chưa có bộ hình nguồn đã lưu. Hãy nhập lại bằng ảnh/Word hoặc tải ảnh lên trực tiếp cho câu này.</div>';
+  const body=`<div class="v40135-picker"><div class="firebase-banner"><b>${v40135Esc(q.id)}</b> • ${v40135Esc(displayKnowledgeCode?.(q.knowledgeCode)||q.knowledgeCode||'')} • ${v40135Esc(q.level||'')}</div>${cur}<div class="field"><label>Tải ảnh thủ công cho riêng câu này</label><input type="file" accept="image/*" onchange="v40135UploadDraftFigure('${v40135Attr(draftId)}',this)"></div><div class="v40135-sep"></div>${gallery}</div>`;
+  openModal('Gán/đổi hình cho bản nháp AI','Chọn một ảnh nguồn hoặc tải ảnh mới',body,`<button class="btn btn-soft" onclick="closeModal()">Đóng</button><button class="btn btn-danger" onclick="v40135ClearDraftImage('${v40135Attr(draftId)}');closeModal();">Bỏ hình</button>`);v40135InjectStyles();
+}
+function v40135InjectStyles(){if(document.getElementById('v40135FigureStyles'))return;const st=document.createElement('style');st.id='v40135FigureStyles';st.textContent=`
+.v40135-picker{display:grid;gap:14px}.v40135-current{border:1px solid rgba(59,130,246,.18);background:#f8fbff;border-radius:14px;padding:12px}.v40135-current img{display:block;max-width:100%;max-height:260px;margin:10px auto 0;border-radius:10px;border:1px solid rgba(15,23,42,.08)}
+.v40135-sep{height:1px;background:rgba(15,23,42,.08)}.v40135-ctx{border:1px solid rgba(15,23,42,.08);border-radius:14px;padding:12px;background:#fff}.v40135-ctx-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;color:#44506a}
+.v40135-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.v40135-asset{border:1px solid rgba(15,23,42,.08);border-radius:12px;padding:10px;background:#fcfdff;display:grid;gap:8px}.v40135-asset img{width:100%;height:140px;object-fit:contain;background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:10px}
+.v40135-asset-meta{display:grid;gap:4px}.v40135-draft-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#eaf2ff;color:#1e3a8a;padding:4px 10px;font-size:12px;font-weight:700;margin-left:8px}
+#qeFigureImageWrap .v40135-editor-preview{margin-top:10px;border:1px dashed rgba(59,130,246,.35);border-radius:12px;padding:10px;background:#f8fbff}#qeFigureImageWrap .v40135-editor-preview img{display:block;max-width:100%;max-height:260px;margin:auto;border-radius:10px;border:1px solid rgba(15,23,42,.08);background:#fff}
+`;document.head.appendChild(st)}
+function v40135EnhanceDraftActions(){
+  v40135InjectStyles();const box=document.getElementById('v32AiDraftQueue');if(!box)return;
+  box.querySelectorAll('.v32-draft-card').forEach(card=>{
+    const m=(card.innerHTML||'').match(/v32PreviewDraft\('([^']+)'\)/);if(!m)return;const id=m[1],d=v40135Draft(id),q=d?.question||{};const act=card.querySelector('.v32-draft-actions');if(!act)return;
+    if(!act.querySelector('.v40135-pick-btn')){const btn=document.createElement('button');btn.className='btn btn-soft v40135-pick-btn';btn.textContent=(q.figureMode==='image'&&q.figureImageData)?'Đổi hình':'Gán hình';btn.onclick=()=>v40135OpenDraftFigurePicker(id);act.insertBefore(btn,act.firstChild)}
+    const pick=act.querySelector('.v40135-pick-btn');if(pick)pick.textContent=(q.figureMode==='image'&&q.figureImageData)?'Đổi hình':'Gán hình';
+    let clear=act.querySelector('.v40135-clear-btn');if(q.figureMode==='image'&&q.figureImageData){if(!clear){clear=document.createElement('button');clear.className='btn btn-soft v40135-clear-btn';clear.textContent='Bỏ hình';clear.onclick=()=>{if(confirm('Bỏ hình đang gắn cho bản nháp này?'))v40135ClearDraftImage(id)};act.insertBefore(clear,pick?.nextSibling||null)}if(!card.querySelector('.v40135-draft-chip')){const meta=card.querySelector('.v32-draft-meta');if(meta){const span=document.createElement('span');span.className='v40135-draft-chip';span.textContent='🖼 có hình gốc';meta.appendChild(span)}}}
+    else{clear?.remove();card.querySelector('.v40135-draft-chip')?.remove()}
+  })
+}
+const v40135BaseRenderDraftQueue=window.v32RenderAiDraftQueue;window.v32RenderAiDraftQueue=function(){const r=v40135BaseRenderDraftQueue?v40135BaseRenderDraftQueue.apply(this,arguments):undefined;setTimeout(v40135EnhanceDraftActions,0);return r};
+
+function v40135EnsureEditorImageControls(){
+  const modeSel=document.getElementById('qeFigureMode');if(!modeSel)return;v40135InjectStyles();if(!modeSel.querySelector('option[value="image"]')){const op=document.createElement('option');op.value='image';op.textContent='Hình ảnh gốc đính kèm';modeSel.appendChild(op)}
+  let wrap=document.getElementById('qeFigureImageWrap');if(!wrap){wrap=document.createElement('div');wrap.id='qeFigureImageWrap';wrap.className='field full hidden';wrap.innerHTML=`<label>Hình gốc đính kèm</label><div class="figure-toolbar"><button type="button" class="btn btn-soft" onclick="v40135PickEditorImage()">Chọn / đổi ảnh</button><button type="button" class="btn btn-soft" onclick="document.getElementById('v40135UploadEditorImageInput').click()">Tải ảnh lên</button><button type="button" class="btn btn-soft" onclick="v40135ClearEditorImage()">Xóa ảnh</button><input id="v40135UploadEditorImageInput" type="file" accept="image/*" style="display:none" onchange="v40135UploadEditorImage(this)"><input type="hidden" id="qeFigureImageData"><input type="hidden" id="qeFigureImageName"><input type="hidden" id="qeFigureAssetMetaJson"></div><div id="qeFigureImagePreview" class="v40135-editor-preview"></div><div class="math-help">Dùng cho câu có hình gốc/ảnh scan. Khi xuất LaTeX độc lập, thầy/cô nên thay bằng <code>\\includegraphics</code> hoặc vẽ lại TikZ nếu cần.</div>`;const anchor=document.getElementById('qeFigureWrap');if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(wrap,anchor.nextSibling)}
+}
+function v40135SyncEditorImageUI(){
+  v40135EnsureEditorImageControls();const mode=document.getElementById('qeFigureMode')?.value||'none',codeWrap=document.getElementById('qeFigureWrap'),imgWrap=document.getElementById('qeFigureImageWrap'),prev=document.getElementById('qeFigureImagePreview');if(codeWrap)codeWrap.classList.toggle('hidden',mode==='none'||mode==='image');if(imgWrap)imgWrap.classList.toggle('hidden',mode!=='image');
+  const data=document.getElementById('qeFigureImageData')?.value||'',name=document.getElementById('qeFigureImageName')?.value||'',meta=v40135Safe(document.getElementById('qeFigureAssetMetaJson')?.value||'{}',{});
+  if(prev){prev.innerHTML=data?`<img src="${v40135Attr(data)}" alt="Hình câu hỏi"><div class="v40135-editor-meta">${v40135Esc(name||meta.label||'')}</div>`:'<div class="math-help">Chưa chọn hình cho câu này.</div>'}
+}
+function v40135SetEditorImage({dataUrl='',name='',meta=null}={}){v40135EnsureEditorImageControls();const d=document.getElementById('qeFigureImageData'),n=document.getElementById('qeFigureImageName'),m=document.getElementById('qeFigureAssetMetaJson'),mode=document.getElementById('qeFigureMode');if(d)d.value=dataUrl||'';if(n)n.value=name||'';if(m)m.value=JSON.stringify(meta||{});if(mode)mode.value=dataUrl?'image':'none';v40135SyncEditorImageUI();updateQuestionEditorPreview?.()}
+async function v40135UploadEditorImage(input){const file=input?.files?.[0];if(!file)return;const dataUrl=await v40135ReadFileAsDataUrl(file),info=await v40135ImageInfo(dataUrl).catch(()=>({width:0,height:0}));v40135SetEditorImage({dataUrl,name:file.name,meta:{kind:'manual-upload',label:file.name,width:info.width,height:info.height,bytes:Math.round((dataUrl.length*3)/4)}});if(input)input.value=''}
+function v40135ClearEditorImage(){v40135SetEditorImage({dataUrl:'',name:'',meta:{}})}
+function v40135PickEditorImage(){
+  const sourceDraft=(()=>{const qid=document.getElementById('qeId')?.value||'';return (v32AiDrafts||[]).find(d=>d.question?.id===qid)||null})();
+  const contexts=v40135RelevantContexts(sourceDraft||{}),gallery=contexts.length?contexts.map(ctx=>`<div class="v40135-ctx"><div class="v40135-ctx-head"><b>${v40135Esc(ctx.sourceName||'Nguồn ảnh')}</b><span>${v40135Esc(ctx.sourceKind||'')}</span></div><div class="v40135-gallery">${(ctx.assets||[]).map(a=>`<div class="v40135-asset"><img src="${v40135Attr(a.dataUrl||'')}" alt="${v40135Attr(a.label||a.name||'asset')}"><div class="v40135-asset-meta"><b>${v40135Esc(a.label||a.name||'Ảnh')}</b><small>${a.width&&a.height?`${a.width}×${a.height}`:''}</small></div><button class="btn btn-blue" onclick="v40135UseEditorAsset('${v40135Attr(ctx.fingerprint)}','${v40135Attr(a.assetId||'')}')">Dùng ảnh này</button></div>`).join('')}</div></div>`).join(''):'<div class="math-help">Chưa có bộ hình nguồn đã lưu để chọn.</div>';
+  openModal('Chọn hình cho trình soạn','Gán ảnh gốc vào câu hỏi',`<div class="v40135-picker"><div class="field"><label>Tải ảnh lên từ máy</label><input type="file" accept="image/*" onchange="v40135UploadEditorImage(this);closeModal()"></div><div class="v40135-sep"></div>${gallery}</div>`,`<button class="btn btn-soft" onclick="closeModal()">Đóng</button><button class="btn btn-danger" onclick="v40135ClearEditorImage();closeModal()">Xóa ảnh</button>`);v40135InjectStyles();
+}
+function v40135UseEditorAsset(ctxFp,assetId){const ctx=v40135Store()[ctxFp];const asset=(ctx?.assets||[]).find(x=>x.assetId===assetId);if(!asset)return;v40135SetEditorImage({dataUrl:asset.dataUrl,name:asset.name||asset.label,meta:{assetId:asset.assetId||'',label:asset.label||asset.name||'',kind:asset.kind||'source-image',width:Number(asset.width)||0,height:Number(asset.height)||0,bytes:Number(asset.bytes)||0,sourceFingerprint:ctxFp,sourceKind:ctx?.sourceKind||'',assignedBy:'v40.13.5-editor'}});closeModal()}
+
+const v40135BaseOpenEditor=window.openQuestionEditor;window.openQuestionEditor=function(id=''){const r=v40135BaseOpenEditor? v40135BaseOpenEditor.apply(this,arguments):undefined;setTimeout(()=>{v40135EnsureEditorImageControls();const q=id?state.questionBank.find(x=>x.id===id):null;if(q?.figureMode==='image'&&q?.figureImageData)v40135SetEditorImage({dataUrl:q.figureImageData,name:q.figureImageName||q.figureAssetMeta?.label||'',meta:q.figureAssetMeta||{}});else v40135SyncEditorImageUI()},0);return r};
+const v40135BaseToggleFigure=window.toggleQuestionFigureFields;window.toggleQuestionFigureFields=function(){const r=v40135BaseToggleFigure? v40135BaseToggleFigure.apply(this,arguments):undefined;v40135SyncEditorImageUI();return r};
+const v40135BaseReadDraft=window.readQuestionEditorDraft;window.readQuestionEditorDraft=function(){const x=v40135BaseReadDraft? v40135BaseReadDraft.apply(this,arguments):{};const mode=document.getElementById('qeFigureMode')?.value||x.figureMode||'none';if(mode==='image'){x.figureMode='image';x.figureLatex='';x.figureImageData=document.getElementById('qeFigureImageData')?.value||'';x.figureImageName=document.getElementById('qeFigureImageName')?.value||'';x.figureAssetMeta=v40135Safe(document.getElementById('qeFigureAssetMetaJson')?.value||'{}',{})}return x};
+const v40135BaseEditDraft=window.v32EditDraft;window.v32EditDraft=function(id){const r=v40135BaseEditDraft? v40135BaseEditDraft.apply(this,arguments):undefined;setTimeout(()=>{const d=v40135Draft(id),q=d?.question||{};if(q.figureMode==='image'&&q.figureImageData)v40135SetEditorImage({dataUrl:q.figureImageData,name:q.figureImageName||q.figureAssetMeta?.label||'',meta:q.figureAssetMeta||{}})},0);return r};
+
+const v40135BaseSaveEditor=window.saveQuestionEditor;window.saveQuestionEditor=function(editId=''){
+  const mode=document.getElementById('qeFigureMode')?.value||'none';if(mode!=='image')return v40135BaseSaveEditor? v40135BaseSaveEditor.apply(this,arguments):undefined;
+  if(!requireTeacher('Lưu câu hỏi'))return;
+  let lessonId=document.getElementById('qeLesson').value,lesson=getLesson(lessonId),type=document.getElementById('qeType').value,question=document.getElementById('qeQuestion').value.trim(),rawAns=document.getElementById('qeAnswer').value.trim(),customId=document.getElementById('qeId').value.trim().replace(/[^A-Za-z0-9._-]/g,'-');
+  const extracted=extractTikzFromText(question);question=(extracted.text||question).trim();if(!question){alert('Cần nhập nội dung câu hỏi.');return}
+  const figureImageData=document.getElementById('qeFigureImageData')?.value||'',figureImageName=document.getElementById('qeFigureImageName')?.value||'',figureAssetMeta=v40135Safe(document.getElementById('qeFigureAssetMetaJson')?.value||'{}',{}),figureCaption=document.getElementById('qeFigureCaption').value.trim(),figureLayout=document.getElementById('qeFigureLayout')?.value||'below';
+  if(!figureImageData){alert('Đã chọn chế độ hình ảnh nhưng chưa gắn ảnh.');return}
+  let item={id:customId||editId||`QB-${Date.now().toString(36).toUpperCase()}`,chapterId:lesson.chapter.id,lessonId,knowledgeCode:document.getElementById('qeKnowledge').value,form:document.getElementById('qeForm').value.trim(),level:document.getElementById('qeLevel').value,type,question,explanation:document.getElementById('qeExplanation').value.trim(),figureMode:'image',figureLatex:'',figureCaption,figureLayout,figureImageData,figureImageName,figureAssetMeta,source:'custom'};
+  if(type==='mcq'){let opts=document.getElementById('qeOptions').value.split('\n').map(x=>x.trim()).filter(Boolean);if(opts.length<2){alert('Câu nhiều lựa chọn cần ít nhất 2 phương án.');return}let ai='ABCD'.indexOf(rawAns.toUpperCase());if(ai<0||ai>=opts.length){alert('Đáp án câu nhiều lựa chọn cần là A, B, C hoặc D tương ứng phương án.');return}item.options=opts;item.answer=ai}else if(type==='tf4'){let lines=(document.getElementById('qeTF4Statements')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean);if(lines.length!==4){alert('Câu Đúng/Sai 4 ý cần đúng 4 dòng.');return}let exps=(document.getElementById('qeTF4Explanations')?.value||'').split('\n');item.statements=lines.map((s,i)=>({text:s.replace(/\\True\b/g,'').trim(),answer:/\\True\b/.test(s),explanation:(exps[i]||'').trim()}))}else if(type==='tf'){let a=rawAns.toLowerCase();if(!['đúng','dung','true','sai','false'].includes(a)){alert('Đáp án Đúng/Sai hãy nhập “Đúng” hoặc “Sai”.');return}item.answer=['đúng','dung','true'].includes(a)}else{if(!rawAns){alert('Cần nhập đáp án ngắn.');return}item.answer=rawAns}
+  const latexCheck=validateQuestionLatexItem(item);if(latexCheck.errors.length){alert('Câu hỏi còn lỗi LaTeX cần sửa trước khi lưu:\n- '+latexCheck.errors.join('\n- '));return}if(latexCheck.warnings.length&&!confirm('Có một số cảnh báo LaTeX:\n- '+latexCheck.warnings.join('\n- ')+'\n\nVẫn lưu câu hỏi?'))return;
+  const oldStableId=editId?state.questionBank.find(q=>q.id===editId)?.questionId||'':'';window.QuestionIdV40?.ensure?.(item,{preserve:oldStableId});
+  if(state.questionBank.some(q=>q.id===item.id&&q.id!==editId)){alert('Mã câu đã tồn tại.');return}
+  if(editId){let i=state.questionBank.findIndex(q=>q.id===editId);if(i>=0)state.questionBank[i]=item}else state.questionBank.unshift(item);save();closeModal();renderQuestionBank(true)
+ };
+
+window.v40135OpenDraftFigurePicker=v40135OpenDraftFigurePicker;window.v40135UploadDraftFigure=v40135UploadDraftFigure;window.v40135PickDraftSourceFigure=v40135PickDraftSourceFigure;window.v40135ClearDraftImage=function(draftId){v40135ClearDraftImage(draftId);examToast?.('Đã bỏ hình khỏi bản nháp AI.')};window.v40135PickEditorImage=v40135PickEditorImage;window.v40135UploadEditorImage=v40135UploadEditorImage;window.v40135UseEditorAsset=v40135UseEditorAsset;window.v40135ClearEditorImage=v40135ClearEditorImage;
+Promise.resolve().then(()=>setTimeout(v40135EnhanceDraftActions,120));console.info('Math12 Hub V40.13.5 Figure Picker & Image Editor loaded');
+})();
+
+/* =========================================================
+   Math12 Hub V40.13.6 — Smart Figure Mapping & Review Center
+   - map Word embedded images to sourceOrdinal from document order
+   - block bulk QC when a referenced figure is missing/unverified
+   - bulk Figure Review Center for teacher confirmation
+   ========================================================= */
+(function(){
+'use strict';
+const V40136_BUILD='40.13.6-smart-figure-review';
+const V40136_CTX_KEY='math12hub.ai.v40.13.4.figureContexts';
+function v40136Safe(raw,fallback){try{return JSON.parse(raw)}catch(_){return fallback}}
+function v40136Store(){return v40136Safe(localStorage.getItem(V40136_CTX_KEY)||'{}',{})}
+function v40136SaveStore(x){try{localStorage.setItem(V40136_CTX_KEY,JSON.stringify(x||{}))}catch(_){}}
+function v40136Esc(s=''){return typeof esc==='function'?esc(String(s||'')):String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function v40136Attr(s=''){return typeof attrEsc==='function'?attrEsc(String(s||'')):v40136Esc(s).replace(/`/g,'&#96;')}
+function v40136Likely(q={}){const blob=[q.question,q.explanation,q.form,q.aiV32?.sourceNote,...(q.options||[]),...(q.statements||[]).map(x=>x?.text||''),...(q.aiV32?.warnings||[])].join(' ').toLowerCase();return /(hình|hình vẽ|đồ thị|bảng biến thiên|biểu đồ|hình bên|bên hình|quan sát hình|theo đồ thị|hàm số có đồ thị|oxyz|oxy|trục tọa độ|hình sau)/i.test(blob)}
+function v40136HasImage(q={}){return q.figureMode==='image'&&String(q.figureImageData||'').startsWith('data:image/')}
+function v40136HasCodeFigure(q={}){return q.figureMode&&q.figureMode!=='none'&&q.figureMode!=='image'&&!!String(q.figureLatex||'').trim()}
+function v40136Verified(q={}){const m=q.figureAssetMeta||{};return !!m.verifiedByTeacher||/manual|editor/i.test(String(m.assignedBy||''))}
+function v40136Status(q={}){if(v40136HasImage(q))return v40136Verified(q)?'verified':'unverified';if(v40136HasCodeFigure(q))return 'latex';if(v40136Likely(q))return 'missing';return 'none'}
+function v40136Draft(id){return (v32AiDrafts||[]).find(x=>x.draftId===id)||null}
+function v40136CurrentFingerprint(){const file=v32AiSelectedFile||null,text=(document.getElementById('v32AiSourceText')?.value||'').trim();const meta=file?`${file.name}|${file.size}|${file.lastModified}|${file.type}`:'text-only';let h=2166136261,s=meta+'|'+text.slice(0,50000);for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return `S-${(h>>>0).toString(36)}`}
+async function v40136InflateRaw(bytes){if(!('DecompressionStream' in window))throw new Error('Trình duyệt chưa hỗ trợ giải nén Word.');const ds=new DecompressionStream('deflate-raw');return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer())}
+async function v40136ZipEntries(file){const buf=await file.arrayBuffer(),u8=new Uint8Array(buf),dv=new DataView(buf);let eocd=-1;for(let i=Math.max(0,u8.length-65557);i<=u8.length-22;i++){if(dv.getUint32(i,true)===0x06054b50)eocd=i}if(eocd<0)throw new Error('Không đọc được cấu trúc Word.');const count=dv.getUint16(eocd+10,true),cdOffset=dv.getUint32(eocd+16,true),dec=new TextDecoder('utf-8'),out=new Map();let p=cdOffset;for(let n=0;n<count&&p+46<=u8.length;n++){if(dv.getUint32(p,true)!==0x02014b50)break;const method=dv.getUint16(p+10,true),compSize=dv.getUint32(p+20,true),fnLen=dv.getUint16(p+28,true),exLen=dv.getUint16(p+30,true),cmLen=dv.getUint16(p+32,true),local=dv.getUint32(p+42,true),name=dec.decode(u8.subarray(p+46,p+46+fnLen));if(local+30<=u8.length&&dv.getUint32(local,true)===0x04034b50){const lfn=dv.getUint16(local+26,true),lex=dv.getUint16(local+28,true),start=local+30+lfn+lex,end=start+compSize;if(end<=u8.length)out.set(name,{name,method,bytes:u8.slice(start,end)})}p+=46+fnLen+exLen+cmLen}return out}
+async function v40136EntryBytes(e){if(!e)return new Uint8Array();if(e.method===0)return e.bytes;if(e.method===8)return await v40136InflateRaw(e.bytes);throw new Error('Kiểu nén Word chưa hỗ trợ.')}
+function v40136RelTargetPath(target=''){let t=String(target||'').replace(/\\/g,'/').replace(/^\.\//,'');if(t.startsWith('../'))t=t.replace(/^\.\.\//,'');return t.startsWith('word/')?t:`word/${t}`}
+function v40136EmbedId(node){if(!node)return '';for(const a of [...(node.attributes||[])])if(a.localName==='embed'||/(:|^)embed$/i.test(a.name))return a.value||'';return ''}
+async function v40136AnnotateDocx(file,ctx){
+  if(!file||!(/\.docx$/i.test(file.name||'')||String(file.type||'').includes('wordprocessingml.document'))||!ctx?.assets?.length)return ctx;
+  const entries=await v40136ZipEntries(file),dec=new TextDecoder('utf-8'),docE=entries.get('word/document.xml'),relsE=entries.get('word/_rels/document.xml.rels');if(!docE||!relsE)return ctx;
+  const docXml=dec.decode(await v40136EntryBytes(docE)),relsXml=dec.decode(await v40136EntryBytes(relsE)),doc=new DOMParser().parseFromString(docXml,'application/xml'),rels=new DOMParser().parseFromString(relsXml,'application/xml');
+  const relMap={};[...rels.getElementsByTagNameNS('*','Relationship')].forEach(r=>{const id=r.getAttribute('Id')||'',target=r.getAttribute('Target')||'';if(id&&target)relMap[id]=v40136RelTargetPath(target)});
+  let currentOrdinal=0,lastText='',imgSeq=0;const mapped=[];for(const p of [...doc.getElementsByTagNameNS('*','p')]){const text=String(p.textContent||'').replace(/\s+/g,' ').trim();const qm=text.match(/(?:Câu|Cau|Question)\s*(\d+)/i);if(qm)currentOrdinal=Number(qm[1])||currentOrdinal;if(text)lastText=text.slice(0,220);for(const blip of [...p.getElementsByTagNameNS('*','blip')]){const rid=v40136EmbedId(blip),path=relMap[rid]||'',base=path.split('/').pop()||'';let asset=ctx.assets.find(a=>String(a.name||'').replace(/\\/g,'/')===path)||ctx.assets.find(a=>String(a.name||'').endsWith('/'+base))||ctx.assets[imgSeq]||null;if(!asset)continue;imgSeq++;asset.sourceOrdinalHint=currentOrdinal||0;asset.nearText=(text||lastText||'').slice(0,220);asset.relationshipId=rid;asset.documentPath=path;asset.smartMappedAt=new Date().toISOString();mapped.push(asset.assetId)}}
+  ctx.smartWordMap={mappedAssets:[...new Set(mapped)].length,totalAssets:ctx.assets.length,version:40136,updatedAt:new Date().toISOString()};ctx.updatedAt=new Date().toISOString();return ctx
+}
+async function v40136PrepareSmartContext(){
+  const file=v32AiSelectedFile||null;if(!file)return null;let ctx=null;try{ctx=await window.V40134FigureAttach?.prepareContext?.()}catch(_){}if(!ctx)return null;
+  if(/\.docx$/i.test(file.name||'')||String(file.type||'').includes('wordprocessingml.document')){try{ctx=await v40136AnnotateDocx(file,ctx)}catch(err){ctx.notes=Array.isArray(ctx.notes)?ctx.notes:[];ctx.notes.push('Smart Word mapping: '+String(err?.message||err))}}
+  const store=v40136Store();store[ctx.fingerprint]=ctx;v40136SaveStore(store);const meta=document.getElementById('v32AiFileMeta');if(meta&&ctx.smartWordMap?.mappedAssets)meta.textContent=`${file.name} • ${(file.size/1024/1024).toFixed(2)} MB • ${file.type||'file'} • ${ctx.assets.length} hình • ghép vị trí được ${ctx.smartWordMap.mappedAssets}/${ctx.assets.length}`;return ctx
+}
+function v40136AssignExact(drafts=[],ctx=null){if(!ctx?.assets?.length)return 0;let changed=0;for(const d of drafts||[]){const q=d.question||{},ord=Number(q.aiV32?.sourceOrdinal)||0;if(!ord||!v40136Likely(q))continue;const current=q.figureAssetMeta||{};if(current.verifiedByTeacher||/manual|editor/i.test(String(current.assignedBy||'')))continue;const asset=ctx.assets.find(a=>Number(a.sourceOrdinalHint)===ord);if(!asset?.dataUrl)continue;q.figureMode='image';q.figureLatex='';q.figureLayout=q.figureLayout||'below';q.figureImageData=asset.dataUrl;q.figureImageName=asset.name||asset.label||'';q.figureSourceKind='docx-smart-map';q.figureAssetMeta={assetId:asset.assetId||'',label:asset.label||asset.name||'',kind:asset.kind||'docx-media',width:Number(asset.width)||0,height:Number(asset.height)||0,bytes:Number(asset.bytes)||0,sourceFingerprint:ctx.fingerprint,sourceOrdinalHint:ord,nearText:asset.nearText||'',assignedBy:'v40.13.6-word-ordinal',mappingConfidence:95,verifiedByTeacher:false,assignedAt:new Date().toISOString()};q.aiV32={...(q.aiV32||{}),figureAttached:true,figureAttachmentMode:'word-ordinal-smart',pipelineSchema:40136};changed++}if(changed)v32AiPersistDrafts?.();return changed}
+const v40136BaseAdd=window.v32AddAiDrafts;window.v32AddAiDrafts=function(rawQuestions=[],origin={}){const rows=v40136BaseAdd?v40136BaseAdd.apply(this,arguments):[];const fp=origin?.fingerprint||rows?.[0]?.question?.aiV32?.sourceFingerprint||v40136CurrentFingerprint(),ctx=v40136Store()[fp]||null;const n=v40136AssignExact(rows,ctx);if(n)setTimeout(()=>v32RenderAiDraftQueue?.(),0);return rows};
+const v40136BaseExtract=window.v32AiExtractQuestions;window.v32AiExtractQuestions=async function(){await v40136PrepareSmartContext();return await v40136BaseExtract.apply(this,arguments)};
+const v40136BasePipeline=window.v4013StartPipeline;window.v4013StartPipeline=async function(){await v40136PrepareSmartContext();return await v40136BasePipeline.apply(this,arguments)};
+const v40136BaseHandle=window.v32AiHandleFile;window.v32AiHandleFile=function(input){const r=v40136BaseHandle? v40136BaseHandle.apply(this,arguments):undefined;setTimeout(()=>v40136PrepareSmartContext().catch(()=>{}),180);return r};
+
+const v40136BaseChecks=window.v32LocalDraftChecks;window.v32LocalDraftChecks=function(q={}){const r=v40136BaseChecks?v40136BaseChecks(q):{issues:[],critical:[],warnings:[],safe:false};const likely=v40136Likely(q),status=v40136Status(q),critical=[...(r.critical||[])],warnings=[...(r.warnings||[])],issues=[...(r.issues||[])];if(likely&&status==='missing'){const msg='Câu có tham chiếu hình nhưng chưa gắn hình.';critical.push(msg);issues.push(msg)}else if(status==='unverified'){const msg='Hình đang được gán tự động, giáo viên chưa xác nhận đúng hình.';warnings.push(msg);issues.push(msg)}return {...r,critical:[...new Set(critical)],warnings:[...new Set(warnings)],issues:[...new Set(issues)],figureStatus:status,safe:!!r.safe&&status!=='missing'&&status!=='unverified'}};
+function v40136VerifyDraft(id){const d=v40136Draft(id);if(!d||!v40136HasImage(d.question))return;d.question.figureAssetMeta={...(d.question.figureAssetMeta||{}),verifiedByTeacher:true,verifiedAt:new Date().toISOString(),verifiedBy:'teacher'};d.question.aiV32={...(d.question.aiV32||{}),figureVerifiedByTeacher:true,pipelineSchema:40136};v32AiPersistDrafts?.();v32RenderAiDraftQueue?.();examToast?.('Đã xác nhận hình đúng với câu.');}
+function v40136ReassignAll(){const store=v40136Store();let n=0;for(const ctx of Object.values(store))n+=v40136AssignExact(v32AiDrafts||[],ctx);v32RenderAiDraftQueue?.();examToast?.(`Đã ghép lại ${n} câu theo vị trí hình Word.`);setTimeout(()=>v40136OpenFigureReviewCenter('all'),80)}
+function v40136Counts(){const c={total:0,verified:0,unverified:0,latex:0,missing:0,none:0};for(const d of v32AiDrafts||[]){c.total++;const s=v40136Status(d.question||{});c[s]=(c[s]||0)+1}return c}
+function v40136InjectStyles(){if(document.getElementById('v40136Styles'))return;const st=document.createElement('style');st.id='v40136Styles';st.textContent=`
+.v40136-review{display:grid;gap:12px}.v40136-review-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.v40136-review-tools button.active{box-shadow:0 0 0 2px rgba(59,130,246,.25)}.v40136-review-list{display:grid;gap:10px;max-height:58vh;overflow:auto;padding-right:3px}.v40136-row{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:12px;border:1px solid rgba(15,23,42,.09);border-radius:14px;padding:12px;background:#fff}.v40136-row.missing{border-color:#ef4444;background:#fffafa}.v40136-row.unverified{border-color:#f59e0b;background:#fffdf6}.v40136-row.verified{border-color:#22c55e;background:#fbfffc}.v40136-stem{font-weight:700;line-height:1.55}.v40136-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.v40136-chip{font-size:12px;font-weight:800;border-radius:999px;padding:4px 9px;background:#eef2ff;color:#334155}.v40136-thumb{width:100%;height:120px;object-fit:contain;border:1px solid rgba(15,23,42,.08);border-radius:10px;background:#fff}.v40136-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.v40136-actions .btn{padding:6px 9px}.v40136-noimg{height:120px;border:1px dashed rgba(15,23,42,.18);border-radius:10px;display:grid;place-items:center;color:#64748b;font-size:12px;text-align:center;padding:8px}.v40136-summary{display:flex;flex-wrap:wrap;gap:8px}.v40136-summary span{background:#f6f8fc;border:1px solid rgba(15,23,42,.07);border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700}@media(max-width:720px){.v40136-row{grid-template-columns:1fr}.v40136-thumb,.v40136-noimg{height:180px}}
+`;document.head.appendChild(st)}
+function v40136ReviewHtml(filter='all'){const counts=v40136Counts(),rows=(v32AiDrafts||[]).filter(d=>filter==='all'||v40136Status(d.question||{})===filter).slice(0,160);const label={verified:'✓ Đã xác nhận',unverified:'⚠ Chưa xác nhận',latex:'LaTeX/TikZ',missing:'⛔ Thiếu hình',none:'Không cần hình'};return `<div class="v40136-review"><div class="v40136-summary"><span>Tổng ${counts.total}</span><span>✓ ${counts.verified} đã xác nhận</span><span>⚠ ${counts.unverified} chưa xác nhận</span><span>⛔ ${counts.missing} thiếu hình</span><span>LaTeX ${counts.latex}</span></div><div class="v40136-review-tools"><button class="btn btn-soft ${filter==='all'?'active':''}" onclick="v40136OpenFigureReviewCenter('all')">Tất cả</button><button class="btn btn-soft ${filter==='missing'?'active':''}" onclick="v40136OpenFigureReviewCenter('missing')">Thiếu hình</button><button class="btn btn-soft ${filter==='unverified'?'active':''}" onclick="v40136OpenFigureReviewCenter('unverified')">Chưa xác nhận</button><button class="btn btn-soft ${filter==='verified'?'active':''}" onclick="v40136OpenFigureReviewCenter('verified')">Đã xác nhận</button><button class="btn btn-blue" onclick="v40136ReassignAll()">↻ Ghép lại theo Word</button></div><div class="v40136-review-list">${rows.length?rows.map(d=>{const q=d.question||{},s=v40136Status(q),has=v40136HasImage(q);return `<div class="v40136-row ${s}"><div><div class="v40136-stem">${v40136Esc(q.id||'')} • ${v40136Esc(String(q.question||'').slice(0,220))}</div><div class="v40136-meta"><span class="v40136-chip">${label[s]||s}</span>${q.aiV32?.sourceOrdinal?`<span class="v40136-chip">Nguồn #${Number(q.aiV32.sourceOrdinal)}</span>`:''}${q.figureAssetMeta?.mappingConfidence?`<span class="v40136-chip">Ghép ${Number(q.figureAssetMeta.mappingConfidence)}%</span>`:''}${q.figureAssetMeta?.nearText?`<span class="v40136-chip" title="${v40136Attr(q.figureAssetMeta.nearText)}">Theo vị trí Word</span>`:''}</div><div class="v40136-actions"><button class="btn btn-soft" onclick="closeModal();v32PreviewDraft('${v40136Attr(d.draftId)}')">Xem câu</button><button class="btn btn-soft" onclick="closeModal();v40135OpenDraftFigurePicker('${v40136Attr(d.draftId)}')">${has?'Đổi hình':'Gán hình'}</button>${has&&!v40136Verified(q)?`<button class="btn btn-blue" onclick="v40136VerifyDraft('${v40136Attr(d.draftId)}');v40136OpenFigureReviewCenter('${v40136Attr(filter)}')">✓ Đúng hình</button>`:''}</div></div><div>${has?`<img class="v40136-thumb" src="${v40136Attr(q.figureImageData)}" alt="Hình câu hỏi">`:`<div class="v40136-noimg">${s==='missing'?'Câu có nhắc tới hình nhưng chưa có ảnh':'Không có hình ảnh gốc'}</div>`}</div></div>`}).join(''):'<div class="online-empty">Không có câu trong nhóm này.</div>'}</div></div>`}
+function v40136OpenFigureReviewCenter(filter='all'){v40136InjectStyles();openModal('Kiểm duyệt hình AI','Rà soát câu có hình trước khi đưa vào ngân hàng',v40136ReviewHtml(filter),`<button class="btn btn-soft" onclick="closeModal()">Đóng</button><button class="btn btn-blue" onclick="closeModal();v4013SelectSafeDrafts()">✓ Chọn câu đạt QC</button>`)}
+function v40136UpdateQueueSummary(){const sum=document.getElementById('v4013QueueSummary');if(!sum)return;const c=v40136Counts();if(sum.querySelector('.v40136-summary-extra'))return;const extra=document.createElement('span');extra.className='v40136-summary-extra';extra.textContent=`🖼 ${c.verified} xác nhận • ${c.unverified} chờ xác nhận • ${c.missing} thiếu hình`;sum.appendChild(extra)}
+const v40136BaseRenderQueue=window.v32RenderAiDraftQueue;window.v32RenderAiDraftQueue=function(){const r=v40136BaseRenderQueue?v40136BaseRenderQueue.apply(this,arguments):undefined;setTimeout(v40136UpdateQueueSummary,0);return r};
+window.v40136OpenFigureReviewCenter=v40136OpenFigureReviewCenter;window.v40136VerifyDraft=v40136VerifyDraft;window.v40136ReassignAll=v40136ReassignAll;window.V40136FigureReview={build:V40136_BUILD,counts:v40136Counts,prepareSmartContext:v40136PrepareSmartContext};v40136InjectStyles();setTimeout(v40136UpdateQueueSummary,150);console.info('Math12 Hub V40.13.6 Smart Figure Review loaded');
+})();
