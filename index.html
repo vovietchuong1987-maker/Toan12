@@ -6,8 +6,8 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
-<meta content="40.13.3" name="app-version"/>
-<meta content="40.13.6-smart-figure-review" name="app-build"/>
+<meta content="40.13.7" name="app-version"/>
+<meta content="40.13.7-auto-id6-classifier" name="app-build"/>
 <meta content="modular-static-github-pages" name="app-architecture"/>
 <meta content="production" name="release-channel"/>
 <meta content="#172033" name="theme-color"/>
@@ -500,6 +500,7 @@
     <div><label>Mục tiêu tối đa</label><select id="v4013TargetCount"><option value="30">30 câu</option><option value="60" selected>60 câu</option><option value="120">120 câu</option><option value="250">250 câu</option></select></div>
     <div><label>Ngưỡng QC an toàn</label><select id="v4013QcThreshold"><option value="70">70%</option><option value="80" selected>80%</option><option value="90">90%</option></select></div>
     <div><label>Khi Gemini trả 429</label><select id="v40133RateMode"><option value="auto" selected>Tự chờ & tiếp tục</option><option value="pause">Dừng tại checkpoint</option></select></div>
+    <div><label>Ngưỡng ID6 tự động</label><select id="v40137Id6AutoThreshold" onchange="v40137ReclassifyAll()"><option value="85">85%</option><option value="90" selected>90%</option><option value="95">95%</option></select></div>
   </div>
   <div class="online-actions mt"><button class="btn btn-blue" id="v4013StartBtn" onclick="v4013StartPipeline(false)">▶ Chạy nhập hàng loạt</button><button class="btn btn-soft" id="v4013ResumeBtn" onclick="v4013StartPipeline(true)">↻ Tiếp tục checkpoint</button><button class="btn btn-danger" id="v4013StopBtn" onclick="v4013StopPipeline()">■ Dừng sau batch hiện tại</button><button class="btn btn-soft" onclick="v4013ResetPipeline()">Đặt lại tiến trình</button></div>
   <div class="v4013-progress mt"><div class="v4013-progress-bar"><i id="v4013ProgressFill"></i></div><div class="v4013-progress-text"><b id="v4013ProgressLabel">Chưa chạy</b><span id="v4013ProgressMeta">0 batch • 0 câu thêm • 0 câu trùng bỏ qua</span></div></div>
@@ -521,7 +522,7 @@
 </div>
 </div>
 <div class="card mt">
-<div class="section-head v4013-queue-head" style="margin:0 0 10px"><div><h3>5. Hàng chờ AI — bắt buộc giáo viên quyết định</h3><p>Bản nháp nằm cục bộ trên thiết bị, tối đa 250 câu. Câu “Đạt QC” đã qua validator cấu trúc, round-trip LaTeX và kiểm tra trùng; vẫn chưa tự publish.</p></div><div class="v4013-queue-actions"><button class="btn btn-soft" onclick="v4013SelectSafeDrafts()">✓ Chọn câu đạt QC</button><button class="btn btn-soft" onclick="v40136OpenFigureReviewCenter()">🖼 Kiểm duyệt hình</button><button class="btn btn-blue" onclick="v4013BulkApproveDrafts()">⇩ Đưa câu đã chọn vào kho (nháp)</button><button class="btn btn-soft" onclick="v4013ExportDraftsLatex()">LaTeX</button><button class="btn btn-danger" onclick="v32ClearDraftQueue()">Xóa hàng chờ</button></div></div>
+<div class="section-head v4013-queue-head" style="margin:0 0 10px"><div><h3>5. Hàng chờ AI — bắt buộc giáo viên quyết định</h3><p>Bản nháp nằm cục bộ trên thiết bị, tối đa 250 câu. Câu “Đạt QC” đã qua validator cấu trúc, round-trip LaTeX và kiểm tra trùng; vẫn chưa tự publish.</p></div><div class="v4013-queue-actions"><button class="btn btn-soft" onclick="v4013SelectSafeDrafts()">✓ Chọn câu đạt QC</button><button class="btn btn-soft" onclick="v40136OpenFigureReviewCenter()">🖼 Kiểm duyệt hình</button><button class="btn btn-soft" onclick="v40137OpenId6ReviewCenter()">🏷 Kiểm duyệt ID6</button><button class="btn btn-blue" onclick="v4013BulkApproveDrafts()">⇩ Đưa câu đã chọn vào kho (nháp)</button><button class="btn btn-soft" onclick="v4013ExportDraftsLatex()">LaTeX</button><button class="btn btn-danger" onclick="v32ClearDraftQueue()">Xóa hàng chờ</button></div></div>
 <div class="v4013-queue-summary" id="v4013QueueSummary"></div>
 <div id="v32AiDraftQueue"><div class="online-empty">Chưa có bản nháp AI.</div></div>
 </div>

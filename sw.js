@@ -1,5 +1,5 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260904-v40.13.6-smart-figure-review';
+const CACHE_REV='20260906-v40.13.7-auto-id6-classifier';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
