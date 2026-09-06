@@ -589,7 +589,7 @@ const v40134BaseQuestionToLatex=window.v29QuestionToLatex;
 if(typeof v40134BaseQuestionToLatex==='function')window.v29QuestionToLatex=function(q={}){
   let tex=v40134BaseQuestionToLatex(q);
   if(q?.figureMode==='image'&&q?.figureImageData){
-    tex += `\n% figure-mode=image\n% figure-image-name=${String(q.figureImageName||q.figureAssetMeta?.label||'source-image').replace(/\s+/g,' ')}\n% figure-note=Hinh goc duoc dinh kem trong Math12 Hub v40.13.4; neu xuat sang LaTeX doc lap can thay bang \\includegraphics hoac ve lai TikZ.\n`;
+    tex += `\n% figure-mode=image\n% figure-image-name=${String(q.figureImageName||q.figureAssetMeta?.label||'source-image').replace(/\s+/g,' ')}\n% figure-note=Hinh goc duoc dinh kem trong Math12 Hub; neu xuat sang LaTeX doc lap can thay bang \\includegraphics hoac ve lai TikZ.\n`;
   }
   return tex;
 };
@@ -609,7 +609,7 @@ function v40134EnhanceDraftCards(){
   v40134InjectStyles();const box=document.getElementById('v32AiDraftQueue');if(!box)return;
   box.querySelectorAll('.v32-draft-card').forEach(card=>{
     if(card.querySelector('.v40134-queue-figure'))return;const html=card.innerHTML||'';const m=html.match(/v32PreviewDraft\('([^']+)'\)/);if(!m)return;const id=m[1];const draft=(v32AiDrafts||[]).find(x=>x.draftId===id);const q=draft?.question||{};if(!(q.figureMode==='image'&&q.figureImageData))return;
-    const wrap=document.createElement('div');wrap.className='v40134-queue-figure';const meta=q.figureAssetMeta||{};wrap.innerHTML=`<div class="v40134-queue-figure-head"><span class="v40134-queue-chip">🖼 Hình gốc</span><span class="v40134-queue-chip">${v40134Esc(meta.label||q.figureImageName||'ảnh nguồn')}</span>${meta.width&&meta.height?`<span class="v40134-queue-chip">${meta.width}×${meta.height}</span>`:''}</div><img class="v40134-queue-thumb" alt="Hình gốc câu hỏi" src="${v40134Attr(q.figureImageData)}"><div class="v40134-preview-note">v40.13.4 đã đính kèm hình gốc từ nguồn vào câu này. Thầy/cô vẫn nên xem lại việc gắn đúng câu, nhất là khi nguồn có nhiều hình hoặc PDF scan.</div>`;
+    const wrap=document.createElement('div');wrap.className='v40134-queue-figure';const meta=q.figureAssetMeta||{};wrap.innerHTML=`<div class="v40134-queue-figure-head"><span class="v40134-queue-chip">🖼 Hình gốc</span><span class="v40134-queue-chip">${v40134Esc(meta.label||q.figureImageName||'ảnh nguồn')}</span>${meta.width&&meta.height?`<span class="v40134-queue-chip">${meta.width}×${meta.height}</span>`:''}</div><img class="v40134-queue-thumb" alt="Hình gốc câu hỏi" src="${v40134Attr(q.figureImageData)}"><div class="v40134-preview-note">Hệ thống đã đính kèm hình gốc từ nguồn vào câu này. Cơ chế hiện tại ưu tiên 1 hình → 1 câu; thầy/cô vẫn nên xác nhận trước khi nhập hàng loạt.</div>`;
     const anchor=card.querySelector('.v32-draft-meta')||card.querySelector('.v32-draft-actions')||card;anchor.parentNode.insertBefore(wrap,anchor.nextSibling);
   })
 }
@@ -893,4 +893,118 @@ function injectStyles(){if(document.getElementById('v40137Styles'))return;const 
 const baseRenderQueue=window.v32RenderAiDraftQueue;window.v32RenderAiDraftQueue=function(){const r=baseRenderQueue?baseRenderQueue.apply(this,arguments):undefined;setTimeout(enhanceCards,0);return r};
 const baseRenderAssistant=window.v32RenderAIAssistant;window.v32RenderAIAssistant=function(){const r=baseRenderAssistant?baseRenderAssistant.apply(this,arguments):undefined;setTimeout(()=>{for(const d of v32AiDrafts||[]){if(!d.question?.id6Auto)d.question=applyClassification(d.question,{},false)}v32AiPersistDrafts?.();enhanceCards()},80);return r};
 window.v40137OpenId6ReviewCenter=reviewCenter;window.v40137OpenId6Picker=openPicker;window.v40137SetDraftPattern=setDraftPattern;window.v40137ConfirmDraftId6=confirmDraft;window.v40137ConfirmAllAuto=confirmAllAuto;window.v40137ReclassifyAll=reclassifyAll;window.V40137AutoId6={build:V40137_BUILD,counts,applyClassification,confirmPattern,id6Status,patternMeta};injectStyles();setTimeout(()=>{for(const d of v32AiDrafts||[]){if(!d.question?.id6Auto)d.question=applyClassification(d.question,{},false)}v32AiPersistDrafts?.();enhanceCards()},180);console.info('Math12 Hub V40.13.7 Auto ID6 Classifier loaded');
+})();
+
+/* =========================================================
+   Math12 Hub V40.13.8 — One-to-One Figure Mapping Fix
+   Fixes false multi-attachment when a source has a single figure.
+   Rules:
+   - one source asset is auto-assigned to at most one draft
+   - DOCX relationship/sourceOrdinal mapping wins
+   - generic words such as Oxyz, Oxy, hinh hop are NOT figure references
+   - legacy automatic wrong attachments are removed and remapped
+   - teacher-verified/manual attachments are never removed
+   ========================================================= */
+(function(){
+'use strict';
+const V40138_BUILD='40.13.8-one-to-one-figure-mapping';
+const V40138_CTX_KEY='math12hub.ai.v40.13.4.figureContexts';
+const FALSE_FIGURE_MSG='Câu có tham chiếu hình nhưng chưa gắn hình.';
+const UNVERIFIED_MSG='Hình đang được gán tự động, giáo viên chưa xác nhận đúng hình.';
+function safeParse(raw,fallback){try{return JSON.parse(raw)}catch(_){return fallback}}
+function store(){return safeParse(localStorage.getItem(V40138_CTX_KEY)||'{}',{})}
+function saveStore(x){try{localStorage.setItem(V40138_CTX_KEY,JSON.stringify(x||{}))}catch(_){}}
+function esc38(s=''){return typeof esc==='function'?esc(String(s||'')):String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function attr38(s=''){return typeof attrEsc==='function'?attrEsc(String(s||'')):esc38(s).replace(/`/g,'&#96;')}
+function hasImage(q={}){return q.figureMode==='image'&&String(q.figureImageData||'').startsWith('data:image/')}
+function hasCodeFigure(q={}){return q.figureMode&&q.figureMode!=='none'&&q.figureMode!=='image'&&!!String(q.figureLatex||'').trim()}
+function teacherProtected(q={}){const m=q.figureAssetMeta||{};return !!m.verifiedByTeacher||/manual|editor|teacher/i.test(String(m.assignedBy||''))}
+function autoAssigned(q={}){if(!hasImage(q)||teacherProtected(q))return false;const a=String(q.figureAssetMeta?.assignedBy||'');return /^v40\.13\.(?:4|6|8)-/i.test(a)||/auto|word-ordinal|source-image/i.test(a)}
+function strongFigureReferenceText(text=''){
+  const s=String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').replace(/\s+/g,' ').trim();
+  if(!s)return false;
+  // Deliberately exclude bare "Oxyz", "Oxy", "hinh hop", "hinh chop", "truc toa do".
+  return /(?:nhu|theo|quan sat|dua vao)\s+hinh\b|\bhinh\s+(?:ve|ben|sau|duoi|tren|minh hoa|cho san|kem theo)\b|\bhinh\s+duoi\s+day\b|\bdo thi\s+(?:nhu|o|trong)?\s*(?:hinh|ben|sau|duoi|tren)\b|\bdo thi\s+duoi\s+day\b|\bbang\s+bien\s+thien\b|\bbieu\s+do\b/.test(s)
+}
+function strictNeed(q={}){
+  const blob=[q.question,q.explanation,q.aiV32?.sourceNote,...(q.options||[]),...(q.statements||[]).map(x=>x?.text||'')].join(' ');
+  return strongFigureReferenceText(blob)
+}
+function ordinalFromAsset(a={}){
+  const hint=Number(a.sourceOrdinalHint)||0;if(hint>0)return hint;
+  const m=String(a.nearText||'').match(/(?:Câu|Cau|Question)\s*(\d+)/i);return m?Number(m[1])||0:0
+}
+function sameFingerprintDrafts(fp=''){return (v32AiDrafts||[]).filter(d=>String(d.question?.aiV32?.sourceFingerprint||'')===String(fp||''))}
+function clearAutoImage(q={}){
+  if(!autoAssigned(q))return false;
+  delete q.figureImageData;delete q.figureImageName;delete q.figureAssetMeta;delete q.figureSourceKind;
+  q.figureLatex='';q.figureMode='none';q.figureCaption=q.figureCaption||'';
+  if(Array.isArray(q.tags))q.tags=q.tags.filter(x=>x!=='figure-source-image');
+  q.aiV32={...(q.aiV32||{}),figureAttached:false,figureAttachmentMode:'one-to-one-cleared',figureVerifiedByTeacher:false,pipelineSchema:40138};
+  return true
+}
+function assignAsset(q={},asset={},ctx={},confidence=99,reason='word-ordinal'){
+  if(!asset?.dataUrl||teacherProtected(q))return false;
+  q.figureMode='image';q.figureLatex='';q.figureLayout=q.figureLayout||'below';q.figureImageData=asset.dataUrl;q.figureImageName=asset.name||asset.label||'';q.figureSourceKind=reason==='word-ordinal'?'docx-one-to-one':'source-one-to-one';
+  q.figureAssetMeta={assetId:asset.assetId||'',label:asset.label||asset.name||'',kind:asset.kind||'image',width:Number(asset.width)||0,height:Number(asset.height)||0,bytes:Number(asset.bytes)||0,sourceFingerprint:ctx.fingerprint||q.aiV32?.sourceFingerprint||'',sourceOrdinalHint:ordinalFromAsset(asset),nearText:asset.nearText||'',relationshipId:asset.relationshipId||'',documentPath:asset.documentPath||'',assignedBy:'v40.13.8-one-to-one',mappingConfidence:confidence,verifiedByTeacher:false,oneToOne:true,mappingReason:reason,assignedAt:new Date().toISOString()};
+  q.aiV32={...(q.aiV32||{}),figureAttached:true,figureAttachmentMode:reason==='word-ordinal'?'one-to-one-word-ordinal':'one-to-one-unique-reference',pipelineSchema:40138};
+  let tags=Array.isArray(q.tags)?q.tags.slice():[];if(!tags.includes('figure-source-image'))tags.push('figure-source-image');q.tags=typeof v29NormalizeTags==='function'?v29NormalizeTags(tags):tags;
+  return true
+}
+function reconcileContext(ctx={},drafts=[]){
+  if(!ctx?.assets?.length||!drafts?.length)return {removed:0,assigned:0,ambiguous:0,used:0};
+  let removed=0,assigned=0,ambiguous=0;const used=new Set();
+  // First remove only legacy/new AUTO attachments. Never touch teacher/manual decisions.
+  for(const d of drafts){const q=d.question||{};if(clearAutoImage(q))removed++;if(teacherProtected(q)&&q.figureAssetMeta?.assetId)used.add(String(q.figureAssetMeta.assetId))}
+  const byOrdinal=new Map();for(const d of drafts){const ord=Number(d.question?.aiV32?.sourceOrdinal)||0;if(ord>0){if(!byOrdinal.has(ord))byOrdinal.set(ord,[]);byOrdinal.get(ord).push(d)}}
+  const hinted=[],unhinted=[];for(const a of ctx.assets||[]){const ord=ordinalFromAsset(a);(ord>0?hinted:unhinted).push({asset:a,ord})}
+  // Strongest mapping: physical DOCX image relationship appears while current sourceOrdinal=N.
+  for(const {asset,ord} of hinted){
+    const aid=String(asset.assetId||asset.documentPath||asset.name||'');if(aid&&used.has(aid))continue;
+    const candidates=(byOrdinal.get(ord)||[]).filter(d=>!teacherProtected(d.question||{})&&!hasCodeFigure(d.question||{}));
+    if(candidates.length!==1){ambiguous++;continue}
+    if(assignAsset(candidates[0].question,asset,ctx,99,'word-ordinal')){assigned++;if(aid)used.add(aid)}
+  }
+  // Conservative fallback for non-DOCX/unmapped sources: only when the asset and target are both unique.
+  const remainingAssets=unhinted.filter(({asset})=>{const aid=String(asset.assetId||asset.documentPath||asset.name||'');return !aid||!used.has(aid)});
+  const remainingCandidates=drafts.filter(d=>{const q=d.question||{};return !teacherProtected(q)&&!hasImage(q)&&!hasCodeFigure(q)&&strictNeed(q)});
+  if(remainingAssets.length===1&&remainingCandidates.length===1){const asset=remainingAssets[0].asset,aid=String(asset.assetId||asset.documentPath||asset.name||'');if(assignAsset(remainingCandidates[0].question,asset,ctx,90,'unique-reference')){assigned++;if(aid)used.add(aid)}}
+  else if(remainingAssets.length&&remainingCandidates.length)ambiguous+=Math.min(remainingAssets.length,remainingCandidates.length);
+  ctx.oneToOneMap={version:40138,assigned,removed,ambiguous,usedAssets:used.size,totalAssets:(ctx.assets||[]).length,updatedAt:new Date().toISOString()};ctx.updatedAt=new Date().toISOString();
+  return {removed,assigned,ambiguous,used:used.size}
+}
+function reconcileAll(){
+  const st=store();let removed=0,assigned=0,ambiguous=0,contexts=0;
+  for(const [fp,ctx0] of Object.entries(st)){const ctx={fingerprint:fp,...(ctx0||{})},drafts=sameFingerprintDrafts(fp);if(!drafts.length)continue;const r=reconcileContext(ctx,drafts);removed+=r.removed;assigned+=r.assigned;ambiguous+=r.ambiguous;contexts++;st[fp]=ctx}
+  saveStore(st);if(removed||assigned)v32AiPersistDrafts?.();return {removed,assigned,ambiguous,contexts}
+}
+function strictStatus(q={}){if(hasImage(q))return teacherProtected(q)?'verified':'unverified';if(hasCodeFigure(q))return 'latex';if(strictNeed(q))return 'missing';return 'none'}
+function strictCounts(){const c={total:0,verified:0,unverified:0,latex:0,missing:0,none:0};for(const d of v32AiDrafts||[]){c.total++;const s=strictStatus(d.question||{});c[s]=(c[s]||0)+1}return c}
+function recomputeSafe(q={},r={},critical=[],warnings=[]){
+  const conf=Number(q.aiV32?.confidence)||0,quality=Number(r.quality?.score)||0,threshold=Math.max(70,Math.min(90,Number(r.threshold)||Number(document.getElementById('v4013QcThreshold')?.value)||80));
+  const core=critical.length===0&&!r.duplicate&&!r.queueDuplicate&&conf>=80&&(quality===0||quality>=threshold)&&!(q.aiV32?.warnings||[]).length;
+  const id6ok=!r.id6Status||r.id6Status==='auto'||r.id6Status==='confirmed';const fs=strictStatus(q),figureOk=fs!=='missing'&&fs!=='unverified';return core&&id6ok&&figureOk
+}
+const baseChecks=window.v32LocalDraftChecks;window.v32LocalDraftChecks=function(q={}){
+  const r=baseChecks?baseChecks(q):{issues:[],critical:[],warnings:[],safe:false};const need=strictNeed(q),fs=strictStatus(q);
+  let critical=[...(r.critical||[])],warnings=[...(r.warnings||[])],issues=[...(r.issues||[])];
+  if(!need&&fs==='none'){critical=critical.filter(x=>x!==FALSE_FIGURE_MSG);issues=issues.filter(x=>x!==FALSE_FIGURE_MSG)}
+  if(need&&fs==='missing'&&!critical.includes(FALSE_FIGURE_MSG)){critical.push(FALSE_FIGURE_MSG);issues.push(FALSE_FIGURE_MSG)}
+  if(fs!=='unverified'){warnings=warnings.filter(x=>x!==UNVERIFIED_MSG);issues=issues.filter(x=>x!==UNVERIFIED_MSG)}
+  critical=[...new Set(critical)];warnings=[...new Set(warnings)];issues=[...new Set(issues)];
+  return {...r,critical,warnings,issues,figureStatus:fs,figureNeed:need,safe:recomputeSafe(q,r,critical,warnings)}
+};
+const baseAdd=window.v32AddAiDrafts;window.v32AddAiDrafts=function(rawQuestions=[],origin={}){const rows=baseAdd?baseAdd.apply(this,arguments):[];const fp=origin?.fingerprint||rows?.[0]?.question?.aiV32?.sourceFingerprint||'';if(fp){const st=store(),ctx=st[fp];if(ctx){const r=reconcileContext({fingerprint:fp,...ctx},sameFingerprintDrafts(fp));if(r.removed||r.assigned)v32AiPersistDrafts?.();st[fp]={fingerprint:fp,...ctx,oneToOneMap:{version:40138,...r,updatedAt:new Date().toISOString()}};saveStore(st)}}setTimeout(()=>v32RenderAiDraftQueue?.(),0);return rows};
+function clearOneAuto(id){const d=(v32AiDrafts||[]).find(x=>x.draftId===id);if(!d)return;if(clearAutoImage(d.question||{})){v32AiPersistDrafts?.();v32RenderAiDraftQueue?.();examToast?.('Đã bỏ gán hình tự động khỏi câu này.')}}
+function reassignAll(){const r=reconcileAll();v32RenderAiDraftQueue?.();examToast?.(`Đã dọn ${r.removed} gán cũ và ghép lại ${r.assigned} hình theo nguyên tắc 1 hình → 1 câu.`);setTimeout(()=>openReview('all'),80)}
+function reviewHtml(filter='all'){
+  const c=strictCounts(),rows=(v32AiDrafts||[]).filter(d=>filter==='all'||strictStatus(d.question||{})===filter).slice(0,180),label={verified:'✓ Đã xác nhận',unverified:'⚠ Chưa xác nhận',latex:'LaTeX/TikZ',missing:'⛔ Thiếu hình',none:'Không cần hình'};
+  return `<div class="v40136-review"><div class="firebase-banner"><b>Ghép hình 1 → 1 đang bật.</b> Một ảnh nguồn chỉ được tự gắn tối đa cho một câu. Các từ như Oxyz, Oxy, hình hộp không còn tự động được xem là tham chiếu ảnh.</div><div class="v40136-summary"><span>Tổng ${c.total}</span><span>✓ ${c.verified} đã xác nhận</span><span>⚠ ${c.unverified} chưa xác nhận</span><span>⛔ ${c.missing} thiếu hình</span><span>${c.none} không cần hình</span></div><div class="v40136-review-tools"><button class="btn btn-soft ${filter==='all'?'active':''}" onclick="v40136OpenFigureReviewCenter('all')">Tất cả</button><button class="btn btn-soft ${filter==='missing'?'active':''}" onclick="v40136OpenFigureReviewCenter('missing')">Thiếu hình</button><button class="btn btn-soft ${filter==='unverified'?'active':''}" onclick="v40136OpenFigureReviewCenter('unverified')">Chưa xác nhận</button><button class="btn btn-soft ${filter==='verified'?'active':''}" onclick="v40136OpenFigureReviewCenter('verified')">Đã xác nhận</button><button class="btn btn-blue" onclick="v40136ReassignAll()">↻ Dọn & ghép lại 1→1</button></div><div class="v40136-review-list">${rows.length?rows.map(d=>{const q=d.question||{},s=strictStatus(q),img=hasImage(q),m=q.figureAssetMeta||{};return `<div class="v40136-row ${s}"><div><div class="v40136-stem">${esc38(q.id||'')} • ${esc38(String(q.question||'').slice(0,240))}</div><div class="v40136-meta"><span class="v40136-chip">${label[s]||s}</span>${q.aiV32?.sourceOrdinal?`<span class="v40136-chip">Nguồn #${Number(q.aiV32.sourceOrdinal)}</span>`:''}${m.oneToOne?'<span class="v40136-chip">1 ảnh → 1 câu</span>':''}${m.sourceOrdinalHint?`<span class="v40136-chip">Ảnh thuộc câu #${Number(m.sourceOrdinalHint)}</span>`:''}${m.mappingConfidence?`<span class="v40136-chip">Ghép ${Number(m.mappingConfidence)}%</span>`:''}</div><div class="v40136-actions"><button class="btn btn-soft" onclick="closeModal();v32PreviewDraft('${attr38(d.draftId)}')">Xem câu</button><button class="btn btn-soft" onclick="closeModal();v40135OpenDraftFigurePicker('${attr38(d.draftId)}')">${img?'Đổi hình':'Gán hình'}</button>${img&&!teacherProtected(q)?`<button class="btn btn-soft" onclick="v40138ClearOneAuto('${attr38(d.draftId)}');v40136OpenFigureReviewCenter('${attr38(filter)}')">Bỏ gán tự động</button><button class="btn btn-blue" onclick="v40136VerifyDraft('${attr38(d.draftId)}');v40136OpenFigureReviewCenter('${attr38(filter)}')">✓ Đúng hình</button>`:''}</div></div><div>${img?`<img class="v40136-thumb" src="${attr38(q.figureImageData)}" alt="Hình câu hỏi">`:`<div class="v40136-noimg">${s==='missing'?'Câu tham chiếu hình rõ ràng nhưng chưa có ảnh':'Không cần ảnh gốc'}</div>`}</div></div>`}).join(''):'<div class="online-empty">Không có câu trong nhóm này.</div>'}</div></div>`
+}
+function openReview(filter='all'){reconcileAll();if(typeof v40136InjectStyles==='function')try{v40136InjectStyles()}catch(_){}openModal('Kiểm duyệt hình AI','Ghép hình chính xác theo nguyên tắc 1 ảnh → 1 câu',reviewHtml(filter),`<button class="btn btn-soft" onclick="closeModal()">Đóng</button><button class="btn btn-blue" onclick="closeModal();v4013SelectSafeDrafts()">✓ Chọn câu đạt QC</button>`)}
+function updateSummary(){const sum=document.getElementById('v4013QueueSummary');if(!sum)return;const c=strictCounts(),old=sum.querySelector('.v40136-summary-extra');if(old)old.textContent=`🖼 ${c.verified} xác nhận • ${c.unverified} chờ xác nhận • ${c.missing} thiếu hình • 1→1`;else{const e=document.createElement('span');e.className='v40136-summary-extra';e.textContent=`🖼 ${c.verified} xác nhận • ${c.unverified} chờ xác nhận • ${c.missing} thiếu hình • 1→1`;sum.appendChild(e)}}
+const baseRender=window.v32RenderAiDraftQueue;window.v32RenderAiDraftQueue=function(){const r=baseRender?baseRender.apply(this,arguments):undefined;setTimeout(updateSummary,0);return r};
+window.v40136ReassignAll=reassignAll;window.v40136OpenFigureReviewCenter=openReview;window.v40138ClearOneAuto=clearOneAuto;window.V40138FigureMapping={build:V40138_BUILD,reconcileAll,strictNeed,strictStatus,counts:strictCounts};
+setTimeout(()=>{const r=reconcileAll();if(r.removed||r.assigned){v32RenderAiDraftQueue?.();console.info(`[V40.13.8] migrated figures: removed=${r.removed}, assigned=${r.assigned}, ambiguous=${r.ambiguous}`)}updateSummary()},220);
+console.info('Math12 Hub V40.13.8 One-to-One Figure Mapping loaded');
 })();
