@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V37.4.2 — Pure ID6 Taxonomy UI
+   Math12 Hub  — Pure ID6 Taxonomy UI
    Visible question-bank taxonomy follows only:
    Chương → Bài → Dạng → Mức độ → ID6.
    Legacy lessonId / knowledgeCode remain hidden compatibility metadata.
@@ -90,9 +90,9 @@
       const internal=(cells[0].querySelector('.v374-internal-id')||cells[0].querySelector('b'))?.textContent?.trim()||'';
       const q=(state.questionBank||[]).find(x=>x.id===internal)||null;if(!q)return;
       const m=meta(q),code=m.id6||'Chưa gán ID6';
-      cells[0].innerHTML=`<b class="v3742-id6 ${m.id6?'ok':'review'}">${esc(code)}</b><small class="v3742-id6-sub">${m.chapter?`Chương ${m.chapter}`:'—'}${m.lesson?` • Bài ${m.lesson}`:''}${m.form?` • Dạng ${m.form}`:''}</small>`;
-      const qs=cells[1].querySelector('small');if(qs)qs.innerHTML=`${m.lessonTitle?`<b>${esc(m.lessonTitle)}</b>`:''}${m.formTitle?`${m.lessonTitle?' • ':''}${esc(m.formTitle)}`:''}`;
-      const source=[q.sourceName||'Chưa ghi nguồn',q.sourceYear||''].filter(Boolean).join(' • ');
+      cells[0].innerHTML=`<b class="v3742-id6 ${m.id6?'ok':'review'}">${esc(code)}</b><small class="v3742-id6-sub">${m.chapter?`Chương ${m.chapter}`:'—'}${m.lesson?`Bài ${m.lesson}`:''}${m.form?`Dạng ${m.form}`:''}</small>`;
+      const qs=cells[1].querySelector('small');if(qs)qs.innerHTML=`${m.lessonTitle?`<b>${esc(m.lessonTitle)}</b>`:''}${m.formTitle?`${m.lessonTitle?'':''}${esc(m.formTitle)}`:''}`;
+      const source=[q.sourceName||'Chưa ghi nguồn',q.sourceYear||''].filter(Boolean).join('');
       cells[2].innerHTML=`<span class="pill v3742-pattern-pill">${esc(m.pattern||'Chưa phân loại')}</span><small class="v29-meta-line">${esc(source)}</small>`;
     });
   }
@@ -139,7 +139,7 @@
   function patchStatic(){
     const card=document.getElementById('v374Id6Card');if(card){
       const small=card.querySelector('.v374-id6-head small');if(small)small.textContent='6 chương • 17 bài • 91 dạng chính thức. Giao diện ngân hàng chỉ dùng ID6; mã F/K cũ được giữ ẩn để tương thích dữ liệu.';
-      const badge=card.querySelector('.v374-id6-badge');if(badge)badge.textContent='V37.4.2 • PURE ID6';
+      const badge=card.querySelector('.v374-id6-badge');if(badge)badge.textContent='PURE ID6';
     }
     const bankDesc=document.querySelector('#page-question-bank > .page-head p');if(bankDesc&&/Lớp 12|Năm học/.test(bankDesc.textContent||'')){}
   }

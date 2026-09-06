@@ -1,10 +1,10 @@
 /* ==========================================================
-   Math12 Hub V37.2 — TikZ Figure Support
+   Math12 Hub  — TikZ Figure Support
    - Keeps original TikZ source for round-trip LaTeX export.
    - Native SVG renderer for common THPT Cartesian TikZ figures.
    - TikZJax 1.6.0 fallback for more complex TikZ when online.
    - Captures generated SVG into question.figureSvg when available.
-   - V37.7.1 hotfix: compact node-at syntax + plain scope/rectangular clip compatibility.
+   -  hotfix: compact node-at syntax + plain scope/rectangular clip compatibility.
    ========================================================== */
 (function(){
 'use strict';
@@ -137,7 +137,7 @@ function parseDraw(cmd=''){
 }
 function parseTikz(tex=''){
   const s=normalize(tex),m=s.match(/\\begin\{tikzpicture\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{tikzpicture\}/);if(!m)return {ok:false,reason:'Không tìm thấy môi trường tikzpicture.'};
-  // V37.7.1 compatibility: Word/LaTeX imports commonly wrap a numeric plot in a plain scope
+  //  compatibility: Word/LaTeX imports commonly wrap a numeric plot in a plain scope
   // only to apply a rectangular clip. The Smart SVG renderer already clips graph plots to
   // the detected Oxy viewport, so this narrow structural wrapper can be removed safely.
   // Scopes with options/transforms remain unsupported and still fall back to full TeX.
@@ -186,7 +186,7 @@ function tikzJaxSrcdoc(tex=''){
   const source=normalize(tex).replace(/<\/script/gi,'<\\/script'),key=keyFor(source),safeKey=key.replace(/[^a-z0-9_-]/gi,'');
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${TIKZJAX_BASE}fonts.min.css"><style>html,body{margin:0;background:#fff;color:#111}body{padding:10px;display:flex;align-items:center;justify-content:center;min-height:180px;overflow:auto}.status{position:absolute;left:8px;bottom:5px;font:10px system-ui;color:#8290a5;background:rgba(255,255,255,.88);padding:3px 6px;border-radius:6px}svg{max-width:100%;height:auto}</style></head><body><script src="${TIKZJAX_BASE}tikzjax.min.js" defer><\/script><script id="src" type="text/tikz">${source}<\/script><div id="st" class="status">Đang dựng TikZ…</div><script>(function(){const K='${safeKey}',st=document.getElementById('st');let n=0;const send=()=>{const svg=document.querySelector('svg:not(.loader)');if(svg){st.textContent='TikZJax ✓';try{parent.postMessage({type:'math12-v372-tikz-svg',key:K,svg:svg.outerHTML},'*')}catch(e){}return true}return false};const obs=new MutationObserver(()=>{if(send())obs.disconnect()});obs.observe(document.body,{childList:true,subtree:true});const t=setInterval(()=>{n++;if(send()||n>60){clearInterval(t);if(n>60)st.textContent='Không dựng được — xem mã TikZ'}},250)})();<\/script></body></html>`;
 }
-function statusHtml(engine,extra=''){const cls=engine==='native-svg'?'ok':engine==='cached-svg'?'ok':engine==='tikzjax'?'wait':'warn';const name=engine==='native-svg'?'SVG nhanh V37.3.4':engine==='cached-svg'?'SVG đã lưu':engine==='tikzjax'?'TikZJax dự phòng':'Chưa dựng';return `<div class="v372-tikz-status ${cls}"><span>${name}</span>${extra?`<small>${extra}</small>`:''}</div>`}
+function statusHtml(engine,extra=''){const cls=engine==='native-svg'?'ok':engine==='cached-svg'?'ok':engine==='tikzjax'?'wait':'warn';const name=engine==='native-svg'?'SVG nhanh ':engine==='cached-svg'?'SVG đã lưu':engine==='tikzjax'?'TikZJax dự phòng':'Chưa dựng';return `<div class="v372-tikz-status ${cls}"><span>${name}</span>${extra?`<small>${extra}</small>`:''}</div>`}
 function figureHtml(item={},compact=false){
   const mode=item.figureMode||((item.figureLatex||'').trim()?'tikz':'none');
   if(!['tikz','tkz'].includes(mode))return null;
@@ -202,7 +202,7 @@ function figureHtml(item={},compact=false){
 
 function previewEditorStatus(){
   const box=document.getElementById('qeFigureHint'),mode=document.getElementById('qeFigureMode')?.value,tex=document.getElementById('qeFigureLatex')?.value||extractFromQuestion();if(!box||!['tikz','tkz'].includes(mode)||!tex)return;
-  const r=nativeSvg(tex);box.innerHTML=`<b>TikZ V37.2:</b> ${r.ok?'hình này được dựng SVG trực tiếp, dùng được cả khi mất mạng.':'sẽ dùng TikZJax cho các lệnh nâng cao khi có mạng.'} <span class="v372-inline-state ${r.ok?'ok':'wait'}">${r.ok?'SVG nhanh ✓':'TikZJax fallback'}</span>`;
+  const r=nativeSvg(tex);box.innerHTML=`<b>TikZ :</b> ${r.ok?'hình này được dựng SVG trực tiếp, dùng được cả khi mất mạng.':'sẽ dùng TikZJax cho các lệnh nâng cao khi có mạng.'} <span class="v372-inline-state ${r.ok?'ok':'wait'}">${r.ok?'SVG nhanh ✓':'TikZJax fallback'}</span>`;
 }
 function extractFromQuestion(){try{return (typeof extractTikzFromText==='function'?extractTikzFromText(document.getElementById('qeQuestion')?.value||''):{figure:''}).figure||''}catch(_){return ''}}
 function svgForTex(tex=''){
@@ -227,7 +227,7 @@ if(typeof window.questionFigureHTML==='function'){
   window.questionFigureHTML=function(item={},compact=false){const x=figureHtml(item,compact);return x===null?baseFigure(item,compact):x};
 }
 
-// Extend editor without replacing mature V29/V36 validation and version-history logic.
+// Extend editor without replacing mature / validation and version-history logic.
 if(typeof window.openQuestionEditor==='function'){
   const baseOpen=window.openQuestionEditor;
   window.openQuestionEditor=function(id=''){baseOpen(id);setTimeout(()=>{const bar=document.querySelector('#qeFigureWrap .figure-toolbar');if(bar&&!document.getElementById('v372TikzTestBtn')){const b=document.createElement('button');b.type='button';b.className='btn btn-soft';b.id='v372TikzTestBtn';b.textContent='▶ Kiểm tra TikZ';b.onclick=()=>{updateQuestionEditorPreview?.();previewEditorStatus()};bar.appendChild(b)}previewEditorStatus();const ta=document.getElementById('qeFigureLatex');ta?.addEventListener('input',previewEditorStatus);document.getElementById('qeFigureMode')?.addEventListener('change',previewEditorStatus);const qt=document.getElementById('qeQuestion');qt?.addEventListener('input',()=>{const fig=extractFromQuestion(),mode=document.getElementById('qeFigureMode'),fb=document.getElementById('qeFigureLatex');if(fig&&mode&&fb){if(mode.value==='none')mode.value='tikz';if(!fb.value.trim())fb.value=fig;toggleQuestionFigureFields?.();previewEditorStatus();updateQuestionEditorPreview?.()}})},0)};
@@ -258,8 +258,8 @@ function auditBank(){
   if(typeof requireTeacher==='function'&&!requireTeacher('Kiểm tra hình TikZ'))return;
   const rows=(state.questionBank||[]).filter(q=>q.figureLatex&&['tikz','tkz'].includes(q.figureMode||'tikz'));let native=0,cached=0,fallback=0,missing=0;
   rows.forEach(q=>{const r=nativeSvg(q.figureLatex);if(r.ok)native++;else if(q.figureSvg||loadCachedSvg(q.figureLatex))cached++;else fallback++;if(!normalize(q.figureLatex))missing++});
-  const body=`<div class="v372-audit-grid"><div><b>${rows.length}</b><small>Câu có TikZ</small></div><div><b>${native}</b><small>Dựng SVG nhanh</small></div><div><b>${cached}</b><small>Đã có SVG cache</small></div><div><b>${fallback}</b><small>Cần TikZJax</small></div></div><div class="math-help mt"><b>V37.3.4:</b> mã TikZ gốc luôn được giữ để xuất LaTeX. Hình đơn giản kiểu trục tọa độ, đường thẳng, đường gấp khúc, điểm và <code>plot(\\x,{...})</code> được dựng SVG ngay trên máy. Hình nâng cao dùng TikZJax khi có mạng và sẽ cache SVG sau khi dựng thành công.</div>${missing?`<div class="bulk-errors fatal mt">${missing} câu có metadata hình nhưng không có mã TikZ hợp lệ.</div>`:''}`;
-  openModal('TikZ Figure Support V37.3.4','Kiểm tra khả năng hiển thị hình trong ngân hàng',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
+  const body=`<div class="v372-audit-grid"><div><b>${rows.length}</b><small>Câu có TikZ</small></div><div><b>${native}</b><small>Dựng SVG nhanh</small></div><div><b>${cached}</b><small>Đã có SVG cache</small></div><div><b>${fallback}</b><small>Cần TikZJax</small></div></div><div class="math-help mt"><b>:</b> mã TikZ gốc luôn được giữ để xuất LaTeX. Hình đơn giản kiểu trục tọa độ, đường thẳng, đường gấp khúc, điểm và <code>plot(\\x,{...})</code> được dựng SVG ngay trên máy. Hình nâng cao dùng TikZJax khi có mạng và sẽ cache SVG sau khi dựng thành công.</div>${missing?`<div class="bulk-errors fatal mt">${missing} câu có metadata hình nhưng không có mã TikZ hợp lệ.</div>`:''}`;
+  openModal('TikZ Figure Support ','Kiểm tra khả năng hiển thị hình trong ngân hàng',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
 }
 window.v372OpenTikzAudit=auditBank;
 window.V372Tikz={version:V,normalize,keyFor,parseTikz,nativeSvg,svgForTex,enrichItem,auditBank};

@@ -1,5 +1,5 @@
 /* =========================================================
-   V21 — DATA SAFETY VAULT
+    — DATA SAFETY VAULT
    IndexedDB mirror, rotating recovery snapshots, full backup/restore,
    and local rescue storage for teacher content before role lock/logout.
    ========================================================= */
@@ -45,7 +45,7 @@ async function v21MirrorStateNow(){
     const now=Date.now();
     if(now-v21LastAutoBackupAt>=V21_AUTO_BACKUP_INTERVAL){v21LastAutoBackupAt=now;await v21CreateRecoverySnapshot('auto',false);}
     if(state._meta){state._meta.lastVaultMirrorAt=payload.updatedAt;state._meta.storageMode='localStorage+IndexedDB'}
-  }catch(err){console.warn('V21 vault mirror',err);if(state._meta)state._meta.storageWarning=String(err?.message||err)}
+  }catch(err){console.warn(' vault mirror',err);if(state._meta)state._meta.storageWarning=String(err?.message||err)}
 }
 function v21MirrorState(){clearTimeout(v21MirrorTimer);v21MirrorTimer=setTimeout(v21MirrorStateNow,800)}
 
@@ -67,8 +67,8 @@ async function v21ListRecoverySnapshots(){return (await v21VaultGetAll('snapshot
 
 async function v21StashTeacherContent(reason='role-lock'){
   const payload=v21TeacherPayload();payload.reason=reason;payload.key='latest-teacher';
-  try{localStorage.setItem(V21_RESCUE_KEY,JSON.stringify(payload))}catch(err){console.warn('V21 local rescue quota',err)}
-  try{await v21VaultPut('kv',payload)}catch(err){console.warn('V21 teacher vault rescue',err)}
+  try{localStorage.setItem(V21_RESCUE_KEY,JSON.stringify(payload))}catch(err){console.warn(' local rescue quota',err)}
+  try{await v21VaultPut('kv',payload)}catch(err){console.warn(' teacher vault rescue',err)}
   return payload;
 }
 function v21ReadTeacherRescue(){try{const raw=localStorage.getItem(V21_RESCUE_KEY);return raw?JSON.parse(raw):null}catch(_){return null}}
@@ -98,17 +98,17 @@ async function v21HydrateFromVault(){
       state._meta=state._meta||{};state._meta.recoveredFromVaultAt=new Date().toISOString();state._meta.vaultFallback=false;
     }
     if(state._meta?.teacherContentInVault)await v21RestoreTeacherRescueIfUseful();
-  }catch(err){console.warn('V21 hydrate vault',err)}
+  }catch(err){console.warn(' hydrate vault',err)}
 }
 
 async function v21HandleStorageQuota(serialized,err){
-  console.warn('V21 localStorage fallback to IndexedDB',err);
+  console.warn(' localStorage fallback to IndexedDB',err);
   try{
     await v21VaultPut('kv',{key:'latest-state',updatedAt:new Date().toISOString(),revision:Number(state._meta?.revision)||0,state:v21SafeStateSnapshot()});
     if(Array.isArray(state.questionBank))await v21StashTeacherContent('localStorage-quota');
     const slim=v21Clone(state);slim.questionBank=null;slim.customExams=[];slim._meta=slim._meta||{};slim._meta.vaultFallback=true;slim._meta.teacherContentInVault=true;slim._meta.storageMode='IndexedDB fallback';slim._meta.storageWarning='localStorage đầy; nội dung lớn đã chuyển sang IndexedDB.';
     localStorage.setItem('math12hub2026',JSON.stringify(slim));
-  }catch(fallbackErr){console.error('V21 storage fallback failed',fallbackErr)}
+  }catch(fallbackErr){console.error(' storage fallback failed',fallbackErr)}
 }
 
 function v21FullBackupPayload(){return {format:'math12hub-full-backup',version:APP_VERSION,schemaVersion:34,createdAt:new Date().toISOString(),meta:{revision:Number(state._meta?.revision)||0,role:state.role||'student'},state:v21SafeStateSnapshot()}}
@@ -125,8 +125,8 @@ function v21ChooseFullBackup(){
 }
 function v21OpenFullRestorePreview(){
   const p=v21PendingFullRestore;if(!p)return;const s=p.data.state||{},bank=Array.isArray(s.questionBank)?s.questionBank.length:0,exams=Array.isArray(s.customExams)?s.customExams.length:0,attempts=Array.isArray(s.examAttempts)?s.examAttempts.length:0;
-  const body=`<div class="notice"><b>${esc(p.fileName)}</b><br>Phiên bản ${esc(p.data.version||'?')} • ${p.data.createdAt?new Date(p.data.createdAt).toLocaleString('vi-VN'):''}</div><div class="backup-summary"><div><b>${bank}</b><small>Câu hỏi</small></div><div><b>${exams}</b><small>Đề đã lưu</small></div><div><b>${attempts}</b><small>Lượt kiểm tra</small></div></div><div class="restore-warnings"><b>V35 sẽ tạo điểm khôi phục trước khi thay dữ liệu.</b><br>Dữ liệu khôi phục được giữ ở máy trước; nếu đang đăng nhập, hệ thống sẽ đánh dấu cần đồng bộ lại thay vì âm thầm ghi đè cloud.</div>`;
-  openModal('Khôi phục toàn bộ dữ liệu','V28 • Data Safety',body,`<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="v21CommitFullRestore()">Khôi phục</button>`);
+  const body=`<div class="notice"><b>${esc(p.fileName)}</b><br>Phiên bản ${esc(p.data.version||'?')} • ${p.data.createdAt?new Date(p.data.createdAt).toLocaleString('vi-VN'):''}</div><div class="backup-summary"><div><b>${bank}</b><small>Câu hỏi</small></div><div><b>${exams}</b><small>Đề đã lưu</small></div><div><b>${attempts}</b><small>Lượt kiểm tra</small></div></div><div class="restore-warnings"><b> sẽ tạo điểm khôi phục trước khi thay dữ liệu.</b><br>Dữ liệu khôi phục được giữ ở máy trước; nếu đang đăng nhập, hệ thống sẽ đánh dấu cần đồng bộ lại thay vì âm thầm ghi đè cloud.</div>`;
+  openModal('Khôi phục toàn bộ dữ liệu','Data Safety',body,`<button class="btn btn-soft" onclick="closeModal()">Hủy</button><button class="btn btn-blue" onclick="v21CommitFullRestore()">Khôi phục</button>`);
 }
 async function v21CommitFullRestore(){
   if(!v21PendingFullRestore)return;
@@ -145,6 +145,6 @@ async function v21OpenDataSafetyCenter(){
   const m=state._meta||{},latest=snaps[0],conflict=m.syncConflict;
   const rows=snaps.slice(0,6).map(s=>`<div class="teacher-history-row"><div><b>${s.kind==='auto'?'Tự động':s.kind==='manual'?'Thủ công':s.kind}</b><small>${new Date(s.createdAt).toLocaleString('vi-VN')} • rev ${s.revision||0}</small></div><button class="btn btn-soft" onclick="v21RestoreSnapshot('${attrEsc(s.id)}')">Khôi phục</button></div>`).join('')||'<div class="online-empty">Chưa có điểm khôi phục.</div>';
   const bundleRows=cloudBundles.slice(0,6).map(x=>`<div class="teacher-history-row"><div><b>${esc(x.payload?.type==='submission'?'Lượt nộp đã xóa':'Bài giao đã xóa')}</b><small>${new Date(x.createdAt||Date.now()).toLocaleString('vi-VN')} • ${esc(x.payload?.assignmentId||'')}</small></div><div class="online-actions"><button class="btn btn-soft" onclick="v26ExportCloudRecovery('${attrEsc(x.key)}')">Xuất JSON</button><button class="btn btn-danger" onclick="v26DeleteCloudRecovery('${attrEsc(x.key)}')">Xóa gói</button></div></div>`).join('')||'<div class="online-empty">Chưa có gói cứu hộ thao tác cloud.</div>';
-  const body=`<div class="grid grid-3"><div class="card"><small>Phiên bản dữ liệu</small><h2>V35 / rev ${m.revision||0}</h2></div><div class="card"><small>Lưu cục bộ</small><h2>${esc(m.storageMode||'localStorage')}</h2></div><div class="card"><small>Cloud</small><h2>${conflict?'⚠ Xung đột':firebaseUser?'✓ Đã đăng nhập':'—'}</h2></div></div>${m.storageWarning?`<div class="firebase-banner warn mt">${esc(m.storageWarning)}</div>`:''}${conflict?'<div class="firebase-banner error mt"><b>Đang có xung đột local/cloud.</b> V35 đã tạm dừng tự ghi đè nội dung giáo viên.</div>':''}<div class="card mt"><div class="section-head" style="margin:0 0 8px"><div><h3>Sao lưu đầy đủ</h3><p>Bao gồm tiến độ, lịch sử, ngân hàng câu hỏi và đề đã lưu.</p></div></div><div class="online-actions"><button class="btn btn-blue" onclick="v21ExportFullBackup()">⬇ Xuất bản sao lưu</button><button class="btn btn-soft" onclick="v21ChooseFullBackup()">↥ Khôi phục từ file</button><button class="btn btn-soft" onclick="v21CreateRecoverySnapshot('manual',true).then(()=>v21OpenDataSafetyCenter())">＋ Tạo điểm khôi phục</button></div></div><div class="card mt"><h3 style="margin-top:0">Điểm khôi phục trên thiết bị</h3>${rows}</div><div class="card mt"><h3 style="margin-top:0">Gói cứu hộ thao tác cloud • V35</h3><p class="cloud-sync-note">V35 tiếp tục tự lưu bản câu trả lời/chỉ mục trước khi giáo viên xóa vĩnh viễn lượt nộp hoặc bài giao. Gói này nằm trong IndexedDB của thiết bị và có thể xuất JSON để đối soát.</p>${bundleRows}</div><div class="math-help mt">IndexedDB được dùng như kho cứu hộ và bản sao cho dữ liệu lớn. V35 vẫn giữ tương thích localStorage để website hoạt động như các bản trước.</div>`;
-  openModal('Dữ liệu & sao lưu','V26 • Data Safety Vault',body,'<button class="btn btn-soft" onclick="closeModal()">Đóng</button>');
+  const body=`<div class="grid grid-3"><div class="card"><small>Phiên bản dữ liệu</small><h2> / rev ${m.revision||0}</h2></div><div class="card"><small>Lưu cục bộ</small><h2>${esc(m.storageMode||'localStorage')}</h2></div><div class="card"><small>Cloud</small><h2>${conflict?'⚠ Xung đột':firebaseUser?'✓ Đã đăng nhập':'—'}</h2></div></div>${m.storageWarning?`<div class="firebase-banner warn mt">${esc(m.storageWarning)}</div>`:''}${conflict?'<div class="firebase-banner error mt"><b>Đang có xung đột local/cloud.</b>  đã tạm dừng tự ghi đè nội dung giáo viên.</div>':''}<div class="card mt"><div class="section-head" style="margin:0 0 8px"><div><h3>Sao lưu đầy đủ</h3><p>Bao gồm tiến độ, lịch sử, ngân hàng câu hỏi và đề đã lưu.</p></div></div><div class="online-actions"><button class="btn btn-blue" onclick="v21ExportFullBackup()">⬇ Xuất bản sao lưu</button><button class="btn btn-soft" onclick="v21ChooseFullBackup()">↥ Khôi phục từ file</button><button class="btn btn-soft" onclick="v21CreateRecoverySnapshot('manual',true).then(()=>v21OpenDataSafetyCenter())">＋ Tạo điểm khôi phục</button></div></div><div class="card mt"><h3 style="margin-top:0">Điểm khôi phục trên thiết bị</h3>${rows}</div><div class="card mt"><h3 style="margin-top:0">Gói cứu hộ thao tác cloud</h3><p class="cloud-sync-note"> tiếp tục tự lưu bản câu trả lời/chỉ mục trước khi giáo viên xóa vĩnh viễn lượt nộp hoặc bài giao. Gói này nằm trong IndexedDB của thiết bị và có thể xuất JSON để đối soát.</p>${bundleRows}</div><div class="math-help mt">IndexedDB được dùng như kho cứu hộ và bản sao cho dữ liệu lớn.  vẫn giữ tương thích localStorage để website hoạt động như các bản trước.</div>`;
+  openModal('Dữ liệu & sao lưu','Data Safety Vault',body,'<button class="btn btn-soft" onclick="closeModal()">Đóng</button>');
 }

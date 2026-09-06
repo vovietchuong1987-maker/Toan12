@@ -1,5 +1,5 @@
 /* ==========================================================
-   Math12 Hub V37.4.5 — Hybrid LaTeX Figure Engine
+   Math12 Hub  — Hybrid LaTeX Figure Engine
    - Stored SVG first (highest fidelity / LaTeX-compiled output).
    - Smart native SVG for common THPT TikZ Cartesian figures.
    - Existing TikZJax renderer remains the fallback for advanced TikZ.
@@ -7,7 +7,7 @@
    - Responsive, tight-crop post-processing for stored SVG.
    - Native support for legacy 2-row tkz-tab (x, f(x)).
    - No question schema migration and no Firestore collection changes.
-   - V37.7.1 hotfix retries Smart SVG before stale TikZJax metadata fallback.
+   -  hotfix retries Smart SVG before stale TikZJax metadata fallback.
    ========================================================== */
 (function(){
 'use strict';
@@ -166,7 +166,7 @@ function renderTikz(item={},compact=false){
   let stored=sanitizeStoredSvg(item.figureSvg||'');
   if(stored&&item.figureSourceHash&&item.figureSourceHash!==keyFor(tex))stored='';
   if(stored){renderedStats.stored++;return figureWrap(item,stored,'stored-svg',kind,compact)}
-  // V37.7.1: always retry the strict Smart SVG parser first. Older imported questions may
+  // : always retry the strict Smart SVG parser first. Older imported questions may
   // carry `tikzjax-pending` only because a previous parser rejected harmless scope/clip or
   // compact `node[...]at(...)` syntax. If Smart SVG now succeeds, prefer it automatically.
   const native=smartNativeSvg(tex);if(native.ok){renderedStats.smart++;return figureWrap(item,native.svg,'smart-native-svg',native.kind||kind,compact)}
@@ -236,15 +236,15 @@ function regression(){
   return {ok:!!(axisOk&&ratioOk&&clipOk),version:V,build:BUILD,axisBounds:axisOk,compactCanvas:ratioOk,plotClipping:clipOk,width:r.width||0,height:r.height||0,engine:r.engine||'fallback'};
 }
 function audit(){
-  if(typeof requireTeacher==='function'&&!requireTeacher('Kiểm tra hình V37.4.5'))return;
+  if(typeof requireTeacher==='function'&&!requireTeacher('Kiểm tra hình '))return;
   const rows=(window.state?.questionBank||[]).filter(q=>q.figureLatex&&q.figureMode!=='none'),counts={stored:0,smart:0,fallback:0,tkztab:0,tkz2:0};
   rows.forEach(q=>{if(q.figureMode==='tkztab'){counts.tkztab++;try{const d=window.parseTkzTabFigure?.(q.figureLatex);if(d?.rows?.length===2)counts.tkz2++}catch(_){}return}if(!TIKZ_MODES.has(q.figureMode))return;const tex=normalize(q.figureLatex);let stored=sanitizeStoredSvg(q.figureSvg||'');if(stored&&(!q.figureSourceHash||q.figureSourceHash===keyFor(tex)))counts.stored++;else if(smartNativeSvg(tex).ok)counts.smart++;else counts.fallback++});
-  const rr=regression(),body=`<div class="v3745-audit-grid"><div><b>${rows.length}</b><small>Hình trong ngân hàng</small></div><div><b>${counts.stored}</b><small>LaTeX SVG ưu tiên</small></div><div><b>${counts.smart}</b><small>Smart SVG</small></div><div><b>${counts.fallback}</b><small>TikZJax fallback</small></div><div><b>${counts.tkztab}</b><small>Bảng biến thiên</small></div><div><b>${counts.tkz2}</b><small>BBT 2 dòng</small></div></div><div class="math-help mt"><b>Hybrid Figure Engine V37.4.5:</b> ưu tiên SVG đã biên dịch, sau đó dùng Smart SVG với viewport lấy từ trục tọa độ; TikZ nâng cao mới chuyển sang TikZJax. Plot gần tiệm cận được clip trong vùng trục nên không kéo dẹt hình.</div><div class="notice mt"><b>${rr.ok?'✓ Regression đạt':'⚠ Regression cần kiểm tra'}:</b> canvas ${rr.width}×${rr.height}px • axis bounds ${rr.axisBounds?'đạt':'chưa đạt'} • clipping ${rr.plotClipping?'đạt':'chưa đạt'}.</div>`;
-  window.openModal?.('Figure Engine • V37.4.5','LaTeX SVG → Smart SVG → TikZJax fallback',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`);
+  const rr=regression(),body=`<div class="v3745-audit-grid"><div><b>${rows.length}</b><small>Hình trong ngân hàng</small></div><div><b>${counts.stored}</b><small>LaTeX SVG ưu tiên</small></div><div><b>${counts.smart}</b><small>Smart SVG</small></div><div><b>${counts.fallback}</b><small>TikZJax fallback</small></div><div><b>${counts.tkztab}</b><small>Bảng biến thiên</small></div><div><b>${counts.tkz2}</b><small>BBT 2 dòng</small></div></div><div class="math-help mt"><b>Hybrid Figure Engine :</b> ưu tiên SVG đã biên dịch, sau đó dùng Smart SVG với viewport lấy từ trục tọa độ; TikZ nâng cao mới chuyển sang TikZJax. Plot gần tiệm cận được clip trong vùng trục nên không kéo dẹt hình.</div><div class="notice mt"><b>${rr.ok?'✓ Regression đạt':'⚠ Regression cần kiểm tra'}:</b> canvas ${rr.width}×${rr.height}px • axis bounds ${rr.axisBounds?'đạt':'chưa đạt'} • clipping ${rr.plotClipping?'đạt':'chưa đạt'}.</div>`;
+  window.openModal?.('Figure Engine','LaTeX SVG → Smart SVG → TikZJax fallback',body,`<button class="btn btn-blue" onclick="closeModal()">Đóng</button>`);
 }
 function installProductionCheck(){
   if(typeof window.v35RunRegressionChecks!=='function')return;const base=window.v35RunRegressionChecks;
-  window.v35RunRegressionChecks=function(opts={}){const res=base(opts);try{const rr=regression(),exists=res?.checks?.some(x=>x.name==='Hybrid Figure Engine V37.4.5');if(res?.checks&&!exists){res.checks.push({name:'Hybrid Figure Engine V37.4.5',ok:rr.ok,detail:rr.ok?`Stored SVG first • Smart viewport ${rr.width}×${rr.height} • TikZ fallback`:'Figure regression chưa đạt',level:rr.ok?'pass':'fail'});res.pass=res.checks.filter(x=>x.level==='pass').length;res.warn=res.checks.filter(x=>x.level==='warn').length;res.fail=res.checks.filter(x=>x.level==='fail').length;if(opts.render!==false)window.v35RenderProductionCenter?.()}}catch(_){}return res};
+  window.v35RunRegressionChecks=function(opts={}){const res=base(opts);try{const rr=regression(),exists=res?.checks?.some(x=>x.name==='Hybrid Figure Engine ');if(res?.checks&&!exists){res.checks.push({name:'Hybrid Figure Engine ',ok:rr.ok,detail:rr.ok?`Stored SVG first • Smart viewport ${rr.width}×${rr.height} • TikZ fallback`:'Figure regression chưa đạt',level:rr.ok?'pass':'fail'});res.pass=res.checks.filter(x=>x.level==='pass').length;res.warn=res.checks.filter(x=>x.level==='warn').length;res.fail=res.checks.filter(x=>x.level==='fail').length;if(opts.render!==false)window.v35RenderProductionCenter?.()}}catch(_){}return res};
 }
 function init(){installTkzTwoRow();installQuestionRenderer();installEditorMetadata();installCropWatcher();installProductionCheck();}
 window.v3745OpenFigureAudit=audit;

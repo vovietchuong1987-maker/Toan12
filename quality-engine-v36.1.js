@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V36.1 — Question Quality Engine
+   Math12 Hub  — Question Quality Engine
    Structural + LaTeX + metadata + duplicate-option + TF4 coherence checks.
    Runs locally against the question bank already loaded in the session.
    No Firestore reads are started by this module.
@@ -98,10 +98,10 @@
     if(placeholderText(stem))push(issues,issue('STEM_PLACEHOLDER','warning','Nội dung còn dấu hiệu placeholder','Phát hiện “…”, “___”, “[?]” hoặc TODO.','Cấu trúc'));
     if(referencedVisualButMissing(q))push(issues,issue('VISUAL_MISSING','warning','Đề có nhắc hình/bảng/đồ thị nhưng chưa có hình kèm theo','','Dữ kiện'));
     const persistedMeta=Number(q.questionBankSchema)===36&&Number(q.knowledgeMapVersion)===36&&q.metadataStatusV36==='complete'&&String(q.formId||'').trim()&&String(q.blueprintKey||'').trim();
-    if(!persistedMeta&&q.id!=='CÂU MỚI')push(issues,issue('META_V36','warning','Metadata Knowledge Map V36 chưa hoàn chỉnh','Cần chuẩn hóa metadata đã lưu: bài, mã kiến thức, dạng toán và blueprintKey.','Metadata',true));
+    if(!persistedMeta&&q.id!=='CÂU MỚI')push(issues,issue('META_V36','warning','Metadata Knowledge Map  chưa hoàn chỉnh','Cần chuẩn hóa metadata đã lưu: bài, mã kiến thức, dạng toán và blueprintKey.','Metadata',true));
     if(!['NB','TH','VD','VDC'].includes(q.level))push(issues,issue('LEVEL','warning','Mức độ NB/TH/VD/VDC chưa chuẩn','','Metadata',true));
     if(!['mcq','tf','tf4','short'].includes(q.type))push(issues,issue('TYPE','critical','Loại câu hỏi không hợp lệ','','Cấu trúc'));
-    if(!String(q.formId||metadata.formId||'').trim())push(issues,issue('FORM','info','Chưa gắn dạng toán chuẩn V36','','Metadata',true));
+    if(!String(q.formId||metadata.formId||'').trim())push(issues,issue('FORM','info','Chưa gắn dạng toán chuẩn ','','Metadata',true));
     latexAudit(stem,'Nội dung').forEach(x=>issues.push(x));latexAudit(q.explanation||'','Lời giải').forEach(x=>issues.push(x));latexAudit(q.figureLatex||'','Hình vẽ').forEach(x=>issues.push(x));
     if(q.type==='mcq')auditMcq(q,issues);
     else if(q.type==='tf4')auditTf4(q,issues);
@@ -149,29 +149,29 @@
   }
 
   function issueRowsHtml(report){
-    if(!report.issues.length)return '<div class="online-empty">Không phát hiện vấn đề theo bộ kiểm tra V36.1.</div>';
+    if(!report.issues.length)return '<div class="online-empty">Không phát hiện vấn đề theo bộ kiểm tra .</div>';
     return `<div class="v361-rule-list">${report.issues.slice(0,24).map(x=>`<div class="v361-rule-row ${x.severity}"><span class="v361-sev">${labels[x.severity]}</span><div><b>${escHtml(x.title)}</b><small>${escHtml(x.category)} • ${x.count} câu</small></div></div>`).join('')}</div>`;
   }
   function questionRowsHtml(report){
     const rows=[...report.rows].sort((a,b)=>a.audit.score-b.audit.score||b.audit.counts.critical-a.audit.counts.critical||String(a.q.id).localeCompare(String(b.q.id))).slice(0,MAX_CENTER_ROWS);
     if(!rows.length)return '<div class="online-empty">Ngân hàng chưa có câu hỏi.</div>';
-    return `<div class="v361-question-list">${rows.map(({q,audit:a})=>`<button type="button" class="v361-question-row ${a.status}" onclick="v361OpenQuestionAudit('${attr(q.id)}')"><span class="v361-score">${a.score}%</span><span class="v361-question-copy"><b>${escHtml(q.id||'Chưa có mã')} • ${escHtml((q.question||'').replace(/\s+/g,' ').slice(0,96))}</b><small>${a.counts.critical?`${a.counts.critical} lỗi • `:''}${a.counts.warning?`${a.counts.warning} cảnh báo • `:''}${a.details.slice(0,2).map(i=>i.title).join(' • ')||'Đạt kiểm tra'}</small></span><span>›</span></button>`).join('')}</div>`;
+    return `<div class="v361-question-list">${rows.map(({q,audit:a})=>`<button type="button" class="v361-question-row ${a.status}" onclick="v361OpenQuestionAudit('${attr(q.id)}')"><span class="v361-score">${a.score}%</span><span class="v361-question-copy"><b>${escHtml(q.id||'Chưa có mã')} • ${escHtml((q.question||'').replace(/\s+/g,' ').slice(0,96))}</b><small>${a.counts.critical?`${a.counts.critical} lỗi`:''}${a.counts.warning?`${a.counts.warning} cảnh báo`:''}${a.details.slice(0,2).map(i=>i.title).join('')||'Đạt kiểm tra'}</small></span><span>›</span></button>`).join('')}</div>`;
   }
 
   function openQualityCenter(){
-    if(typeof requireTeacher==='function'&&!requireTeacher('Question Quality Engine V36.1'))return;
+    if(typeof requireTeacher==='function'&&!requireTeacher('Question Quality Engine '))return;
     const r=scanBank({force:true,full:true});
-    const body=`<div class="v361-center-hero"><div><span class="v360-kicker">V36.1 • QUESTION QUALITY ENGINE</span><h3>Kiểm tra chất lượng trước khi dùng câu hỏi</h3><p>Quét trên dữ liệu đã tải trong phiên, không tự phát sinh Firestore Reads. Engine kiểm tra cấu trúc, LaTeX, metadata, phương án trùng, Đúng/Sai 4 ý, dữ kiện tham chiếu và câu gần trùng. Không thay thế thẩm định chuyên môn Toán của giáo viên.</p></div><div class="v361-center-score ${r.counts.critical?'bad':r.counts.warning?'warn':'good'}"><b>${r.average}%</b><small>Điểm kỹ thuật TB</small></div></div>
+    const body=`<div class="v361-center-hero"><div><span class="v360-kicker">QUESTION QUALITY ENGINE</span><h3>Kiểm tra chất lượng trước khi dùng câu hỏi</h3><p>Quét trên dữ liệu đã tải trong phiên, không tự phát sinh Firestore Reads. Engine kiểm tra cấu trúc, LaTeX, metadata, phương án trùng, Đúng/Sai 4 ý, dữ kiện tham chiếu và câu gần trùng. Không thay thế thẩm định chuyên môn Toán của giáo viên.</p></div><div class="v361-center-score ${r.counts.critical?'bad':r.counts.warning?'warn':'good'}"><b>${r.average}%</b><small>Điểm kỹ thuật TB</small></div></div>
     <div class="v361-center-metrics"><div><b>${r.counts.critical}</b><small>Câu có lỗi</small></div><div><b>${r.counts.warning}</b><small>Câu cần rà soát</small></div><div><b>${r.counts.pass}</b><small>Câu đạt sạch</small></div><div><b>${r.pairs}</b><small>Cặp gần trùng</small></div></div>
     <div class="grid grid-2 mt"><div class="card"><h3 style="margin-top:0">Vấn đề thường gặp</h3>${issueRowsHtml(r)}</div><div class="card"><h3 style="margin-top:0">Câu cần ưu tiên</h3>${questionRowsHtml(r)}</div></div>`;
-    openModal('Question Quality Engine • V36.1',`${r.total} câu • quét cục bộ • ${new Date(r.at).toLocaleString('vi-VN')}`,body,`<button class="btn btn-soft" onclick="v361ExportAudit()">⬇ Xuất báo cáo</button><button class="btn btn-soft" onclick="v361SafeFixBank()">🛡 Sửa an toàn</button><button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
+    openModal('Question Quality Engine',`${r.total} câu • quét cục bộ • ${new Date(r.at).toLocaleString('vi-VN')}`,body,`<button class="btn btn-soft" onclick="v361ExportAudit()">⬇ Xuất báo cáo</button><button class="btn btn-soft" onclick="v361SafeFixBank()">🛡 Sửa an toàn</button><button class="btn btn-blue" onclick="closeModal()">Đóng</button>`)
   }
 
   function openQuestionAudit(id=''){
     const q=(state?.questionBank||[]).find(x=>x.id===id);if(!q)return;
     const full=scanBank({force:false,full:true}),row=full.rows.find(x=>x.q.id===id),a=row?.audit||auditQuestion(q);
     const list=a.details.length?`<div class="v361-audit-list">${a.details.sort((x,y)=>sevRank[y.severity]-sevRank[x.severity]).map(i=>`<div class="v361-audit-item ${i.severity}"><span>${labels[i.severity]}</span><div><b>${escHtml(i.title)}</b>${i.detail?`<small>${escHtml(i.detail)}</small>`:''}<em>${escHtml(i.category)}</em></div></div>`).join('')}</div>`:'<div class="firebase-banner"><b>✓ Không phát hiện lỗi kỹ thuật.</b> Giáo viên vẫn nên kiểm tra chuyên môn, đáp án và mức độ trước khi duyệt.</div>';
-    openModal(`QC V36.1 • ${escHtml(id)}`,`${a.score}% • ${a.counts.critical} lỗi • ${a.counts.warning} cảnh báo`,`${list}<div class="math-help mt">V36.1 không dùng CAS để kết luận tính đúng sai toán học của mọi phương án; các cảnh báo “liên kết” và “thiếu dữ kiện” là heuristic hỗ trợ rà soát.</div>`,`<button class="btn btn-soft" onclick="closeModal();previewBankQuestion('${attr(id)}')">Xem câu</button><button class="btn btn-blue" onclick="closeModal();openQuestionEditor('${attr(id)}')">Sửa câu</button>`)
+    openModal(`QC  • ${escHtml(id)}`,`${a.score}% • ${a.counts.critical} lỗi • ${a.counts.warning} cảnh báo`,`${list}<div class="math-help mt"> không dùng CAS để kết luận tính đúng sai toán học của mọi phương án; các cảnh báo “liên kết” và “thiếu dữ kiện” là heuristic hỗ trợ rà soát.</div>`,`<button class="btn btn-soft" onclick="closeModal();previewBankQuestion('${attr(id)}')">Xem câu</button><button class="btn btn-blue" onclick="closeModal();openQuestionEditor('${attr(id)}')">Sửa câu</button>`)
   }
 
   function exportAudit(){
@@ -181,15 +181,15 @@
   }
 
   async function safeFixBank(){
-    if(typeof requireTeacher==='function'&&!requireTeacher('Sửa an toàn QC V36.1'))return;
+    if(typeof requireTeacher==='function'&&!requireTeacher('Sửa an toàn QC '))return;
     const r=scanBank({force:true,full:true}),criticalIds=new Set(r.rows.filter(x=>x.audit.counts.critical).map(x=>x.q.id));
     const needMeta=r.rows.filter(x=>x.audit.details.some(i=>i.code==='META_V36')).length,downgrade=(state?.questionBank||[]).filter(q=>criticalIds.has(q.id)&&q.reviewStatus==='reviewed').length;
     if(!needMeta&&!downgrade){window.v353Toast?.('Không có thay đổi an toàn cần áp dụng.');return}
-    if(!confirm(`V36.1 sẽ chỉ thực hiện các sửa an toàn:\n• Chuẩn hóa metadata V36 cho ${needMeta} câu nếu có thể.\n• Chuyển ${downgrade} câu có lỗi nghiêm trọng từ “Đã duyệt” về “Bản nháp”.\n\nKhông thay nội dung, đáp án hoặc lời giải. Tiếp tục?`))return;
+    if(!confirm(` sẽ chỉ thực hiện các sửa an toàn:\n• Chuẩn hóa metadata  cho ${needMeta} câu nếu có thể.\n• Chuyển ${downgrade} câu có lỗi nghiêm trọng từ “Đã duyệt” về “Bản nháp”.\n\nKhông thay nội dung, đáp án hoặc lời giải. Tiếp tục?`))return;
     if(typeof v21CreateRecoverySnapshot==='function'){try{await v21CreateRecoverySnapshot('v36.1-quality-safe-fix',false)}catch(_){}}
     let changed=0;
     state.questionBank=(state.questionBank||[]).map(q=>{let n=q;if(window.v360KnowledgeMap?.normalizedQuestion)n=window.v360KnowledgeMap.normalizedQuestion(n,n.formId||'');if(criticalIds.has(n.id)&&n.reviewStatus==='reviewed')n={...n,reviewStatus:'draft'};if(JSON.stringify(n)!==JSON.stringify(q))changed++;return n});
-    if(changed&&typeof save==='function')save({reason:'v36.1-quality-safe-fix'});auditCache={signature:'',full:false,report:null};renderQuestionBank?.(true);closeModal();window.v353Toast?.(`V36.1 đã áp dụng ${changed} thay đổi an toàn.`)
+    if(changed&&typeof save==='function')save({reason:'v36.1-quality-safe-fix'});auditCache={signature:'',full:false,report:null};renderQuestionBank?.(true);closeModal();window.v353Toast?.(` đã áp dụng ${changed} thay đổi an toàn.`)
   }
 
   function questionFromEditor(){
@@ -203,7 +203,7 @@
   }
   function renderLive(){
     const box=document.getElementById('v361LiveQuality');if(!box)return;const a=auditQuestion(questionFromEditor()),top=a.details.sort((x,y)=>sevRank[y.severity]-sevRank[x.severity]).slice(0,5);
-    box.className=`v361-live-quality ${a.status}`;box.innerHTML=`<div class="v361-live-head"><div><b>QC V36.1 • ${a.score}%</b><small>${a.counts.critical} lỗi • ${a.counts.warning} cảnh báo • kiểm tra ngay trên máy</small></div><span>${a.status==='good'?'✓ Sẵn sàng rà soát':a.status==='warn'?'Cần rà soát':'Cần sửa trước khi duyệt'}</span></div>${top.length?`<div class="v361-live-issues">${top.map(i=>`<span class="${i.severity}">${labels[i.severity]} • ${escHtml(i.title)}</span>`).join('')}</div>`:'<div class="v361-live-ok">Không phát hiện lỗi kỹ thuật. Vẫn cần giáo viên duyệt chuyên môn.</div>'}`;
+    box.className=`v361-live-quality ${a.status}`;box.innerHTML=`<div class="v361-live-head"><div><b>QC  • ${a.score}%</b><small>${a.counts.critical} lỗi • ${a.counts.warning} cảnh báo • kiểm tra ngay trên máy</small></div><span>${a.status==='good'?'✓ Sẵn sàng rà soát':a.status==='warn'?'Cần rà soát':'Cần sửa trước khi duyệt'}</span></div>${top.length?`<div class="v361-live-issues">${top.map(i=>`<span class="${i.severity}">${labels[i.severity]} • ${escHtml(i.title)}</span>`).join('')}</div>`:'<div class="v361-live-ok">Không phát hiện lỗi kỹ thuật. Vẫn cần giáo viên duyệt chuyên môn.</div>'}`;
   }
   function scheduleLive(){clearTimeout(liveTimer);liveTimer=setTimeout(renderLive,180)}
   function injectLiveEditor(){
@@ -218,7 +218,7 @@
     if(typeof window.openQuestionEditor==='function'&&!window.openQuestionEditor.__v361){const base=window.openQuestionEditor;const wrapped=function(id=''){const out=base(id);injectLiveEditor();return out};wrapped.__v361=true;window.openQuestionEditor=wrapped}
     if(typeof window.saveQuestionEditor==='function'&&!window.saveQuestionEditor.__v361){const base=window.saveQuestionEditor;const wrapped=function(editId=''){
       const draft=questionFromEditor(),a=auditQuestion(draft),review=document.getElementById('qeReviewStatus');
-      if(a.counts.critical&&review?.value==='reviewed'){review.value='draft';window.v353Toast?.(`QC V36.1: có ${a.counts.critical} lỗi kỹ thuật, câu được chuyển về Bản nháp.`,'warning',4200)}
+      if(a.counts.critical&&review?.value==='reviewed'){review.value='draft';window.v353Toast?.(`QC : có ${a.counts.critical} lỗi kỹ thuật, câu được chuyển về Bản nháp.`,'warning',4200)}
       const out=base(editId);auditCache={signature:'',full:false,report:null};setTimeout(()=>{renderQuestionBank?.(true);renderStrip()},0);return out
     };wrapped.__v361=true;window.saveQuestionEditor=wrapped}
   }
@@ -231,7 +231,7 @@
   }
   function decorateQualityButtons(){
     const tbody=document.getElementById('questionBankTable');if(!tbody)return;
-    tbody.querySelectorAll('tr').forEach(tr=>{const id=tr.querySelector('td:first-child b')?.textContent?.trim(),btn=tr.querySelector('.v29-quality');if(!id||!btn)return;const q=(state?.questionBank||[]).find(x=>x.id===id);if(!q)return;const a=auditQuestion(q);btn.textContent=`${a.score}%`;btn.classList.remove('good','warn','bad');btn.classList.add(a.status);btn.title=a.details.slice(0,5).map(i=>`${labels[i.severity]}: ${i.title}`).join(' • ')||'Đạt kiểm tra kỹ thuật V36.1';btn.setAttribute('onclick',`v361OpenQuestionAudit('${attr(id)}')`)});
+    tbody.querySelectorAll('tr').forEach(tr=>{const id=tr.querySelector('td:first-child b')?.textContent?.trim(),btn=tr.querySelector('.v29-quality');if(!id||!btn)return;const q=(state?.questionBank||[]).find(x=>x.id===id);if(!q)return;const a=auditQuestion(q);btn.textContent=`${a.score}%`;btn.classList.remove('good','warn','bad');btn.classList.add(a.status);btn.title=a.details.slice(0,5).map(i=>`${labels[i.severity]}: ${i.title}`).join('')||'Đạt kiểm tra kỹ thuật ';btn.setAttribute('onclick',`v361OpenQuestionAudit('${attr(id)}')`)});
   }
 
   function init(){
@@ -240,7 +240,7 @@
   }
 
   window.v361QualityEngine={build:BUILD,schema:SCHEMA,auditQuestion,scanBank,exportAudit,safeFixBank,questionFromEditor};
-  window.v361ScanBank=()=>{const r=scanBank({force:true,full:true});window.v353Toast?.(`V36.1: ${r.total} câu • ${r.counts.critical} lỗi • ${r.counts.warning} cần rà soát.`);return r};
+  window.v361ScanBank=()=>{const r=scanBank({force:true,full:true});window.v353Toast?.(`: ${r.total} câu • ${r.counts.critical} lỗi • ${r.counts.warning} cần rà soát.`);return r};
   window.v361OpenQualityCenter=openQualityCenter;
   window.v361OpenQuestionAudit=openQuestionAudit;
   window.v361ExportAudit=exportAudit;

@@ -1,9 +1,9 @@
 /* =========================================================
-   Math12 Hub V36.0 — Knowledge Map & Question Bank Engine
-   Foundation layer for V36.x:
+   Math12 Hub  — Knowledge Map & Question Bank Engine
+   Foundation layer for .x:
    Chapter → Lesson → Knowledge unit → Standard form → Question.
-   No new Firestore collection. Existing V29 question documents remain compatible.
-   V36 metadata is additive and can be normalized explicitly by the teacher.
+   No new Firestore collection. Existing  question documents remain compatible.
+    metadata is additive and can be normalized explicitly by the teacher.
    ========================================================= */
 (function(){
   'use strict';
@@ -100,18 +100,18 @@
   }
 
   async function normalizeBank(persist=true){
-    if(typeof requireTeacher==='function'&&!requireTeacher('Chuẩn hóa Knowledge Map V36'))return {changed:0};
+    if(typeof requireTeacher==='function'&&!requireTeacher('Chuẩn hóa Knowledge Map '))return {changed:0};
     const bank=Array.isArray(state?.questionBank)?state.questionBank:[];
     const before=analyzeBank();
-    if(!before.needs){window.v353Toast?.('Ngân hàng đã đạt metadata V36.0.');renderAll();return {changed:0}}
-    if(persist&&!confirm(`Chuẩn hóa ${before.needs}/${before.total} câu sang metadata V36.0?\n\nHệ thống chỉ bổ sung metadata, không thay nội dung câu hỏi/đáp án. Một điểm cứu hộ sẽ được tạo trước khi lưu nếu Data Safety đang sẵn sàng.`))return {changed:0,cancelled:true};
+    if(!before.needs){window.v353Toast?.('Ngân hàng đã đạt metadata .');renderAll();return {changed:0}}
+    if(persist&&!confirm(`Chuẩn hóa ${before.needs}/${before.total} câu sang metadata ?\n\nHệ thống chỉ bổ sung metadata, không thay nội dung câu hỏi/đáp án. Một điểm cứu hộ sẽ được tạo trước khi lưu nếu Data Safety đang sẵn sàng.`))return {changed:0,cancelled:true};
     if(persist&&typeof v21CreateRecoverySnapshot==='function'){try{await v21CreateRecoverySnapshot('v36-knowledge-map-normalize',false)}catch(_){}}
     let changed=0;
     state.questionBank=bank.map(q=>{const n=normalizedQuestion(q);if(JSON.stringify(q)!==JSON.stringify(n))changed++;return n});
     state._meta=state._meta||{};state._meta.questionBankSchema=QUESTION_BANK_SCHEMA;state._meta.knowledgeMapVersion=MAP_VERSION;state._meta.curriculumId=CURRICULUM_ID;state._meta.v36NormalizedAt=iso();
     if(persist&&changed&&typeof save==='function')save({reason:'v36-knowledge-map-normalize'});
     renderAll();
-    if(persist)window.v353Toast?.(`V36.0 đã chuẩn hóa ${changed} câu hỏi.`);
+    if(persist)window.v353Toast?.(` đã chuẩn hóa ${changed} câu hỏi.`);
     return {changed};
   }
 
@@ -124,7 +124,7 @@
       const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=String(v)};
       set('v360MetricChapters',m.counts.chapters);set('v360MetricLessons',m.counts.lessons);set('v360MetricKnowledge',m.counts.knowledge);set('v360MetricForms',m.counts.forms);
       set('v360MetricMetadata',a.total?`${Math.round(a.complete/a.total*100)}%`:'100%');set('v360MetricFormCoverage',m.counts.forms?`${Math.round(a.coveredForms/m.counts.forms*100)}%`:'0%');
-      const migration=document.getElementById('v360MigrationState');if(migration)migration.innerHTML=a.needs?`<span class="v360-status warn">${a.needs} câu cần chuẩn hóa</span><small>${a.complete}/${a.total} câu đã có metadata V36.0</small>`:`<span class="v360-status good">✓ Metadata đã đồng bộ</span><small>${a.complete}/${a.total} câu đạt cấu trúc V36.0</small>`;
+      const migration=document.getElementById('v360MigrationState');if(migration)migration.innerHTML=a.needs?`<span class="v360-status warn">${a.needs} câu cần chuẩn hóa</span><small>${a.complete}/${a.total} câu đã có metadata </small>`:`<span class="v360-status good">✓ Metadata đã đồng bộ</span><small>${a.complete}/${a.total} câu đạt cấu trúc </small>`;
       root.innerHTML=m.chapters.map(c=>{
         const qChapter=(state.questionBank||[]).filter(q=>Number(q.chapterId)===Number(c.id)).length;
         const chapterForms=c.lessons.flatMap(l=>l.forms),covered=chapterForms.filter(f=>(a.coverage[f.id]||0)>0).length;
@@ -171,7 +171,7 @@
   function injectFormEditor(id=''){
     const input=document.getElementById('qeForm');if(!input||document.getElementById('qeFormV36Editor'))return;
     const q=id?(state.questionBank||[]).find(x=>x.id===id):null,field=input.closest('.field');if(!field)return;
-    const select=document.createElement('select');select.id='qeFormV36Editor';select.setAttribute('aria-label','Dạng toán chuẩn V36');field.insertBefore(select,input);
+    const select=document.createElement('select');select.id='qeFormV36Editor';select.setAttribute('aria-label','Dạng toán chuẩn ');field.insertBefore(select,input);
     input.placeholder='Có thể nhập dạng riêng nếu chưa có trong Knowledge Map';input.classList.add('v360-custom-form-input');
     const hint=document.createElement('div');hint.className='math-help v360-editor-path';hint.id='v360EditorPath';field.appendChild(hint);
     const refresh=()=>{
@@ -181,7 +181,7 @@
       if(currentForm&&forms.some(f=>f.id===currentForm.id)){select.value=currentForm.id;if(!input.value)input.value=currentForm.title}
       renderEditorPath();
     };
-    const renderEditorPath=()=>{const k=getKnowledge(document.getElementById('qeKnowledge')?.value||''),f=getForm(select.value);hint.innerHTML=`<b>ID6 chính thức:</b> ${escHtml(k?.code||'Chưa chọn chuẩn')} → ${escHtml(f?.id||'Dạng tự nhập')}${f?` • ${escHtml(f.title)}`:''}`};
+    const renderEditorPath=()=>{const k=getKnowledge(document.getElementById('qeKnowledge')?.value||''),f=getForm(select.value);hint.innerHTML=`<b>ID6 chính thức:</b> ${escHtml(k?.code||'Chưa chọn chuẩn')} → ${escHtml(f?.id||'Dạng tự nhập')}${f?`${escHtml(f.title)}`:''}`};
     select.addEventListener('change',()=>{const f=getForm(select.value);if(f){input.value=f.title;const lev=document.getElementById('qeLevel');if(lev)lev.value=f.level||lev.value}renderEditorPath();document.getElementById('qeForm')?.dispatchEvent(new Event('input',{bubbles:true}))});
     ['qeLesson','qeKnowledge'].forEach(fid=>document.getElementById(fid)?.addEventListener('change',()=>setTimeout(refresh,0)));document.getElementById('qeLevel')?.addEventListener('change',renderEditorPath);
     refresh();

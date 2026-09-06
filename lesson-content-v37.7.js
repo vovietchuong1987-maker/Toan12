@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub V38.2.1 — Lesson Content Engine + Taxonomy Sync
+   Math12 Hub  — Lesson Content Engine + Taxonomy Sync
    - Align Chapter 1 to official ID6 lessons.
    - Upgrade lesson list/detail UI without changing bank/exam storage.
    ========================================================= */
@@ -117,7 +117,7 @@
     lessonCurriculum[id]={...current,...data};
   });
 
-  // Re-inject official forms after taxonomy V37.4.
+  // Re-inject official forms after taxonomy .
   if(window.ID6V374?.BY_APP_LESSON){
     Object.keys(curriculum).forEach(id=>{
       const forms=window.ID6V374.BY_APP_LESSON[id]||[];
@@ -134,7 +134,7 @@
   }
   function v377SourceBank(){return window.V383PracticeBank?.effectiveBank?.()||window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||(state.questionBank||[])}
   function v377LessonBank(id){
-    // V38.2.1: do not trust stale lessonId from pre-ID6 banks. The official ID6 pattern
+    // : do not trust stale lessonId from pre-ID6 banks. The official ID6 pattern
     // is authoritative for Chapter 1, so lesson cards/counts stay correct even before
     // a persisted migration finishes (for example during a Firebase hydrate race).
     return v377SourceBank().filter(q=>{
@@ -220,7 +220,7 @@
     const official=c.id===1?'<span class="v377-official-chip">✓ 5 bài chính thức ID6</span>':'';
     const allPractice=v377SourceBank(),firstPracticeChapter=chapters.find(ch=>allPractice.some(q=>Number(q.chapterId)===Number(ch.id)||(ch.lessons||[]).some(l=>l.id===q.lessonId)));
     const emptyPracticeNotice=!chapterBank&&allPractice.length?`<div class="notice" style="margin-top:12px"><b>Chương ${c.id} hiện chưa có câu luyện tập trong gói dữ liệu này.</b> Ngân hàng tự học đang có <b>${allPractice.length} câu</b>${firstPracticeChapter?` ở Chương ${firstPracticeChapter.id}`:''}.${firstPracticeChapter&&firstPracticeChapter.id!==c.id?` <button class="btn btn-soft" style="margin-left:8px" onclick="selectChapter(${firstPracticeChapter.id})">Mở chương có câu luyện</button>`:''}</div>`:'';
-    document.getElementById('lessonHeader').innerHTML=`<div class="v377-chapter-head"><div><div class="v377-kicker">NỘI DUNG BÀI HỌC • V38.3.1 • STUDENT PRACTICE HOTFIX</div><h3>Chương ${c.id}. ${esc(c.title)}</h3><p>${esc(c.desc)}</p></div><div class="v377-chapter-summary"><span><b>${c.lessons.length}</b><small>Bài học</small></span><span><b>${c.lessons.reduce((n,l)=>n+getLessonMeta(l.id).knowledge.length,0)}</b><small>Chuẩn kiến thức</small></span><span><b>${chapterBank}</b><small>Câu trong ngân hàng</small></span>${official}</div></div>${emptyPracticeNotice}`;
+    document.getElementById('lessonHeader').innerHTML=`<div class="v377-chapter-head"><div><div class="v377-kicker">NỘI DUNG BÀI HỌC• STUDENT PRACTICE HOTFIX</div><h3>Chương ${c.id}. ${esc(c.title)}</h3><p>${esc(c.desc)}</p></div><div class="v377-chapter-summary"><span><b>${c.lessons.length}</b><small>Bài học</small></span><span><b>${c.lessons.reduce((n,l)=>n+getLessonMeta(l.id).knowledge.length,0)}</b><small>Chuẩn kiến thức</small></span><span><b>${chapterBank}</b><small>Câu trong ngân hàng</small></span>${official}</div></div>${emptyPracticeNotice}`;
     const rows=c.lessons.filter(l=>{
       const m=getLessonMeta(l.id),text=[l.common,m.overview||'',...m.goals,...m.knowledge.map(k=>k.title),...m.forms.map(f=>f.title)].join(' ').toLowerCase();
       return text.includes(q);
@@ -257,7 +257,7 @@
     const bankBreakdown=`<div class="v377-bank-grid"><span><b>${bs.total}</b><small>Tổng câu</small></span><span><b>${bs.lv.NB||0}</b><small>Nhận biết</small></span><span><b>${bs.lv.TH||0}</b><small>Thông hiểu</small></span><span><b>${(bs.lv.VD||0)+(bs.lv.VDC||0)}</b><small>Vận dụng+</small></span><span><b>${bs.types.mcq||0}</b><small>MCQ</small></span><span><b>${bs.types.tf4||0}</b><small>Đúng/Sai 4 ý</small></span></div>`;
     document.getElementById('lessonDetail').innerHTML=`
       <div class="v377-back-row"><button class="link-btn" onclick="goPage('lessons')">← Danh sách bài học</button><div class="v377-breadcrumb">Chương ${item.chapter.id} / Bài ${ord.index} / ${activeLessonId}</div></div>
-      <section class="v377-hero"><div class="v377-hero-main"><div class="v377-kicker">BÀI ${ord.index}/${ord.total} • ${esc(m.id6Stem||activeLessonId)}</div><h2>${esc(item.common)}</h2><p>${esc(m.overview||item.chapter.desc)}</p><div class="v377-prereq-row">${prereq}</div><div class="v377-hero-actions"><button class="btn btn-primary" onclick="document.getElementById('lessonKnowledge').scrollIntoView({behavior:'smooth'})">Bắt đầu học</button><button class="btn btn-ghost" onclick="openLessonQuiz('${activeLessonId}')">Kiểm tra sau bài</button></div></div><div class="v377-progress-panel"><small>Tiến độ bài học</small><strong>${studyPct}%</strong><div class="progress"><span style="width:${studyPct}%"></span></div><p>${mastered.length}/${m.knowledge.length} kiến thức đã nắm${score!=null?` • ${score}/10 gần nhất`:''}</p></div></section>
+      <section class="v377-hero"><div class="v377-hero-main"><div class="v377-kicker">BÀI ${ord.index}/${ord.total} • ${esc(m.id6Stem||activeLessonId)}</div><h2>${esc(item.common)}</h2><p>${esc(m.overview||item.chapter.desc)}</p><div class="v377-prereq-row">${prereq}</div><div class="v377-hero-actions"><button class="btn btn-primary" onclick="document.getElementById('lessonKnowledge').scrollIntoView({behavior:'smooth'})">Bắt đầu học</button><button class="btn btn-ghost" onclick="openLessonQuiz('${activeLessonId}')">Kiểm tra sau bài</button></div></div><div class="v377-progress-panel"><small>Tiến độ bài học</small><strong>${studyPct}%</strong><div class="progress"><span style="width:${studyPct}%"></span></div><p>${mastered.length}/${m.knowledge.length} kiến thức đã nắm${score!=null?`${score}/10 gần nhất`:''}</p></div></section>
       ${classification}
       <div class="v377-anchor-nav"><a href="#v377Goals">Mục tiêu</a><a href="#lessonKnowledge">Kiến thức</a><a href="#v377Forms">Dạng ID6</a><a href="#v377Example">Ví dụ</a><a href="#v377Practice">Luyện tập</a><a href="#v377Mistakes">Lỗi thường gặp</a></div>
       <div class="study-layout mt"><main class="study-main">
