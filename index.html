@@ -6,18 +6,18 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
-<meta content="40.13.8" name="app-version"/>
-<meta content="40.13.8-one-to-one-figure-mapping" name="app-build"/>
+<meta content="40.14.0" name="app-version"/>
+<meta content="40.14.0-gemini-multi-key-pool" name="app-build"/>
 <meta content="modular-static-github-pages" name="app-architecture"/>
 <meta content="production" name="release-channel"/>
 <meta content="#172033" name="theme-color"/>
-<link href="manifest.webmanifest?v=40.13.3" rel="manifest"/>
+<link href="manifest.webmanifest?v=40.14.0" rel="manifest"/>
 <link href="assets/icons/icon-192.png?v=40.0" rel="icon" sizes="192x192" type="image/png"/>
 <link crossorigin="" href="https://www.gstatic.com" rel="preconnect"/>
 <script defer="" src="assets/js/mathjax-config.js?v=40.0"></script>
 <script defer="" src="assets/vendor/mathjax.js?v=40.0"></script>
-<link href="assets/css/app-v40.10.bundle.css?v=40.13.3" rel="stylesheet"/>
-<link href="assets/css/navigation-v40.12.css?v=40.13.3" rel="stylesheet"/>
+<link href="assets/css/app-v40.10.bundle.css?v=40.14.0" rel="stylesheet"/>
+<link href="assets/css/navigation-v40.12.css?v=40.14.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="v33-public-shell hidden" id="v33PublicReportShell"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập </small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -478,7 +478,19 @@
 <div><label>Mức suy luận</label><select id="v32AiThinking"><option value="low">Low • nhanh</option><option selected="" value="medium">Medium • cân bằng</option><option value="high">High • bài khó</option></select></div>
 <div><label>Lưu API key</label><select id="v32AiKeyMode"><option value="session">Chỉ phiên này</option><option value="device">Trên thiết bị này</option></select></div>
 </div>
-<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiSaveSettings()">Lưu cài đặt</button><button class="btn btn-soft" onclick="v32AiTestConnection()">Kiểm tra nhanh</button><button class="btn btn-soft" onclick="v40132GeminiDiagnostic()">🩺 Tự chẩn đoán Gemini</button><button class="btn btn-danger" onclick="v32AiClearKey()">Xóa API key</button><span class="v32-inline-status" id="v32AiTestResult"></span></div>
+<div class="online-actions mt"><button class="btn btn-blue" onclick="v32AiSaveSettings()">Lưu cài đặt</button><button class="btn btn-soft" onclick="v32AiTestConnection()">Kiểm tra nhanh</button><button class="btn btn-soft" onclick="v40132GeminiDiagnostic()">🩺 Tự chẩn đoán Gemini</button><button class="btn btn-danger" onclick="v32AiClearKey()">Xóa key đang dùng</button><span class="v32-inline-status" id="v32AiTestResult"></span></div>
+<div class="v40140-pool mt" id="v40140PoolPanel">
+  <div class="v40140-pool-head"><div><span class="v40140-kicker">GEMINI MULTI-KEY POOL</span><h4>Nhiều API key • tự chuyển khi lỗi/quota</h4><p>Mỗi key nên khai báo đúng <b>Nhóm Project</b>. Các key cùng project phải dùng cùng một tên nhóm để không luân phiên né cùng một quota.</p></div><span class="v40140-pool-state" id="v40140PoolState">ĐANG KHỞI TẠO</span></div>
+  <div class="v40140-add-grid">
+    <div><label>Tên API</label><input id="v40140KeyName" placeholder="Ví dụ: API chính"></div>
+    <div><label>Nhóm Project</label><input id="v40140ProjectGroup" placeholder="Ví dụ: Project 1" value="Project 1"></div>
+    <div><label>API key mới</label><input autocomplete="off" id="v40140NewKey" type="password" placeholder="Dán key Gemini"></div>
+    <div><label>Lưu key</label><select id="v40140KeyStorage"><option value="session">Chỉ phiên này</option><option value="device">Trên thiết bị này</option></select></div>
+  </div>
+  <div class="online-actions mt"><button class="btn btn-blue" onclick="v40140AddKeyFromUi()">＋ Thêm API vào Pool</button><button class="btn btn-soft" onclick="v40140TestAllKeys()">✓ Kiểm tra tất cả key</button><button class="btn btn-soft" onclick="v40140RotateNow()">↻ Chuyển key ngay</button><span class="v32-inline-status" id="v40140PoolActionStatus"></span></div>
+  <div class="v40140-summary" id="v40140PoolSummary"></div>
+  <div class="v40140-list" id="v40140PoolList"></div>
+</div>
 <div id="v40132DiagResult" class="mt"></div><div class="firebase-banner warn mt"><b>Lưu ý bảo mật:</b>Khóa API được lưu trên trình duyệt theo lựa chọn của thầy/cô. Khi triển khai quy mô lớn, nên dùng máy chủ trung gian để bảo vệ khóa và kiểm soát hạn mức tốt hơn.</div>
 </div>
 <div class="grid grid-2 mt v32-ai-workbench">
@@ -500,11 +512,12 @@
     <div><label>Mục tiêu tối đa</label><select id="v4013TargetCount"><option value="30">30 câu</option><option value="60" selected>60 câu</option><option value="120">120 câu</option><option value="250">250 câu</option></select></div>
     <div><label>Ngưỡng QC an toàn</label><select id="v4013QcThreshold"><option value="70">70%</option><option value="80" selected>80%</option><option value="90">90%</option></select></div>
     <div><label>Khi Gemini trả 429</label><select id="v40133RateMode"><option value="auto" selected>Tự chờ & tiếp tục</option><option value="pause">Dừng tại checkpoint</option></select></div>
+    <div><label>Nhịp Gemini / RPM</label><select id="v40139RpmPolicy" onchange="v40139SetPolicy(this.value)"><option value="auto" selected>Tự động an toàn (mặc định 4 RPM)</option><option value="3">Rất an toàn • 3 RPM</option><option value="4">An toàn • 4 RPM</option><option value="5">Sát giới hạn • 5 RPM</option><option value="off">Tắt điều tiết chủ động</option></select></div>
     <div><label>Ngưỡng ID6 tự động</label><select id="v40137Id6AutoThreshold" onchange="v40137ReclassifyAll()"><option value="85">85%</option><option value="90" selected>90%</option><option value="95">95%</option></select></div>
   </div>
   <div class="online-actions mt"><button class="btn btn-blue" id="v4013StartBtn" onclick="v4013StartPipeline(false)">▶ Chạy nhập hàng loạt</button><button class="btn btn-soft" id="v4013ResumeBtn" onclick="v4013StartPipeline(true)">↻ Tiếp tục checkpoint</button><button class="btn btn-danger" id="v4013StopBtn" onclick="v4013StopPipeline()">■ Dừng sau batch hiện tại</button><button class="btn btn-soft" onclick="v4013ResetPipeline()">Đặt lại tiến trình</button></div>
   <div class="v4013-progress mt"><div class="v4013-progress-bar"><i id="v4013ProgressFill"></i></div><div class="v4013-progress-text"><b id="v4013ProgressLabel">Chưa chạy</b><span id="v4013ProgressMeta">0 batch • 0 câu thêm • 0 câu trùng bỏ qua</span></div></div>
-  <div class="v40133-quota"><span id="v40133QuotaText">Request 60s gần nhất: chưa có dữ liệu.</span><b id="v40133RetryText"></b></div>
+  <div class="v40133-quota"><span id="v40133QuotaText">Request 60s gần nhất: chưa có dữ liệu.</span><b id="v40133RetryText"></b><span id="v40139SchedulerText">⏱ Smart RPM: đang khởi tạo…</span></div>
   <div class="v4013-pipeline-metrics"><span><b id="v4013MetricSafe">0</b><small>Đạt QC</small></span><span><b id="v4013MetricWarn">0</b><small>Cần xem</small></span><span><b id="v4013MetricDup">0</b><small>Nghi trùng</small></span><span><b id="v4013MetricErrors">0</b><small>Lỗi batch</small></span></div>
   <div class="v4013-checkpoint" id="v4013CheckpointText">Checkpoint chưa được tạo.</div>
 </div>

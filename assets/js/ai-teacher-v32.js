@@ -27,12 +27,62 @@ function v40133QuotaInfo(data={}){
   return {limit,metric}
 }
 function v40133RecordRateResult(response,data={},model=''){
-  const s=v40133RateState(),now=Date.now(),status=Number(response?.status)||0,qi=v40133QuotaInfo(data),retry=v40133RetrySeconds(response,data);s.events.push({at:now,status,ok:!!response?.ok,model:String(model||'')});if(qi.limit){s.knownLimit=qi.limit;s.knownLimitAt=now}if(qi.metric)s.lastMetric=qi.metric;if(status===429){s.last429At=now;s.lastRetryAfterSec=retry||s.lastRetryAfterSec}v40133RateSave(s)
+  const s=v40133RateState(),now=Date.now(),status=Number(response?.status)||0,qi=v40133QuotaInfo(data),retry=v40133RetrySeconds(response,data);s.events.push({at:now,status,ok:!!response?.ok,model:String(model||'')});if(qi.limit){s.knownLimit=qi.limit;s.knownLimitAt=now}if(qi.metric)s.lastMetric=qi.metric;if(status===429){s.last429At=now;s.lastRetryAfterSec=retry||s.lastRetryAfterSec}v40133RateSave(s);if(status===429)try{v40139LearnFrom429(response,data)}catch(_){}
 }
 function v40133RateSummary(){const s=v40133RateState(),now=Date.now(),recent60=s.events.filter(e=>now-e.at<60000),recentOk=recent60.filter(e=>e.ok).length,recent429=recent60.filter(e=>e.status===429).length;return {...s,recent60:recent60.length,recentOk,recent429}}
 function v40133RateLimitError(response,data={},fallback=''){
   const detail=String(data?.error?.message||fallback||'Đã chạm hạn mức/tốc độ Gemini.').slice(0,900),qi=v40133QuotaInfo(data),retry=v40133RetrySeconds(response,data),e=new Error(`Gemini 429: ${detail}`);e.status=429;e.code='GEMINI_RATE_LIMIT';e.retryAfterSec=retry;e.quotaLimit=qi.limit;e.quotaMetric=qi.metric;e.geminiData=data;return e
 }
+
+/* V40.13.9 — Smart RPM Scheduler (central Gemini request gate) */
+const V40139_SCHEDULER_KEY='math12hub.ai.v40.13.9.scheduler';
+const V40139_POLICY_KEY='math12hub.ai.v40.13.9.rpmPolicy';
+const V40139_WINDOW_MS=60_500;
+const V40139_HISTORY_MS=12*60*1000;
+function v40139SchedulerState(){
+  const x=v32SafeParse(localStorage.getItem(V40139_SCHEDULER_KEY)||'{}',{}),now=Date.now(),starts=Array.isArray(x.starts)?x.starts.map(Number).filter(v=>Number.isFinite(v)&&now-v<V40139_HISTORY_MS).slice(-160):[];
+  return {starts,learnedRpm:Math.max(0,Number(x.learnedRpm)||0),learnedAt:Number(x.learnedAt)||0,lastWaitMs:Math.max(0,Number(x.lastWaitMs)||0),lastReason:String(x.lastReason||''),updatedAt:Number(x.updatedAt)||0}
+}
+function v40139SchedulerSave(s={}){try{localStorage.setItem(V40139_SCHEDULER_KEY,JSON.stringify({...s,starts:(s.starts||[]).slice(-160),updatedAt:Date.now()}))}catch(_){}}
+function v40139Policy(){const el=document.getElementById('v40139RpmPolicy'),raw=String(el?.value||localStorage.getItem(V40139_POLICY_KEY)||'auto');return ['auto','3','4','5','off'].includes(raw)?raw:'auto'}
+function v40139SetPolicy(value='auto'){const v=['auto','3','4','5','off'].includes(String(value))?String(value):'auto';try{localStorage.setItem(V40139_POLICY_KEY,v)}catch(_){}const el=document.getElementById('v40139RpmPolicy');if(el&&el.value!==v)el.value=v;v40139RenderScheduler();return v}
+function v40139EffectiveRpm(){
+  const p=v40139Policy();if(p==='off')return 0;if(/^[345]$/.test(p))return Number(p);
+  const s=v40139SchedulerState();if(s.learnedRpm>0&&s.learnedRpm<5)return Math.max(1,s.learnedRpm-1);return 4
+}
+function v40139RpmFrom429(response,data={}){
+  if(Number(response?.status)!==429)return 0;const details=Array.isArray(data?.error?.details)?data.error.details:[],msg=String(data?.error?.message||'');let best=0,explicit=false;
+  for(const d of details){for(const v of (d?.violations||d?.quotaViolations||[])){const id=String(v?.quotaId||v?.quotaMetric||v?.metric||'').toLowerCase(),n=Number(v?.quotaValue||v?.limit)||0;if(/minute|per.?min|rpm/.test(id)&&n>0){best=n;explicit=true}}}
+  const m=msg.match(/limit:\s*([0-9]+)/i),retry=v40133RetrySeconds(response,data);if(!best&&m&&retry>0&&retry<=70){const n=Number(m[1])||0;if(n>0&&n<=10)best=n}
+  return explicit||best<=10?best:0
+}
+function v40139LearnFrom429(response,data={}){const rpm=v40139RpmFrom429(response,data);if(!rpm)return;const s=v40139SchedulerState();s.learnedRpm=rpm;s.learnedAt=Date.now();s.lastReason=`429 cho biết/ước lượng giới hạn ${rpm} RPM`;v40139SchedulerSave(s);v40139RenderScheduler()}
+function v40139WindowStarts(){const now=Date.now(),own=v40139SchedulerState().starts.filter(t=>now-t<V40139_WINDOW_MS);if(own.length)return own;try{return (v40133RateState().events||[]).map(e=>Number(e.at)||0).filter(t=>t&&now-t<V40139_WINDOW_MS)}catch(_){return own}}
+function v40139RecentStarts(){return v40139WindowStarts()}
+function v40139WaitPlan(rpm=v40139EffectiveRpm()){
+  if(!rpm)return {waitMs:0,rpm:0,recent:0,gapMs:0,windowMs:0};const now=Date.now(),starts=v40139WindowStarts().slice().sort((a,b)=>a-b),minGap=Math.ceil(60000/rpm)+700,last=starts[starts.length-1]||0;
+  const gapMs=last?Math.max(0,last+minGap-now):0;let windowMs=0;if(starts.length>=rpm){const blocker=starts[starts.length-rpm];windowMs=Math.max(0,blocker+V40139_WINDOW_MS-now)}
+  return {waitMs:Math.max(gapMs,windowMs),rpm,recent:starts.length,gapMs,windowMs,minGap}
+}
+function v40139Sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function v40139RenderScheduler(extra=''){
+  const el=document.getElementById('v40139SchedulerText');if(!el)return;const p=v40139Policy(),rpm=v40139EffectiveRpm(),s=v40139SchedulerState(),recent=v40139RecentStarts().length;
+  if(p==='off'){el.textContent='⏱ Smart RPM: tắt';return}el.textContent=extra||`⏱ Smart RPM: ${recent}/${rpm} request trong cửa sổ 60s${s.learnedRpm?` • server gần nhất ${s.learnedRpm} RPM`:''}`
+}
+async function v40139GateCore(meta={}){
+  const rpm=v40139EffectiveRpm();if(!rpm){v40139RenderScheduler();return {waitedMs:0,rpm:0}}
+  let totalWait=0;
+  while(true){
+    const plan=v40139WaitPlan(rpm);if(plan.waitMs<=0)break;
+    const until=Date.now()+plan.waitMs;while(Date.now()<until){if(window.v40139PipelineActive&&window.v40139StopRequested){const e=new Error('Pipeline đã dừng trong lúc chờ Smart RPM.');e.code='GEMINI_SCHEDULER_STOP';throw e}const remain=Math.max(1,Math.ceil((until-Date.now())/1000));v40139RenderScheduler(`⏱ Smart RPM • chờ ${remain}s để giữ ≤ ${rpm} RPM`);await v40139Sleep(Math.min(1000,Math.max(80,until-Date.now())))}totalWait+=plan.waitMs
+  }
+  const s=v40139SchedulerState(),now=Date.now();s.starts.push(now);s.starts=s.starts.filter(t=>now-t<V40139_HISTORY_MS).slice(-160);s.lastWaitMs=totalWait;s.lastReason=totalWait?`Điều tiết trước request ${meta?.attempt||''}`:'Không cần chờ';v40139SchedulerSave(s);v40139RenderScheduler();return {waitedMs:totalWait,rpm}
+}
+async function v40139BeforeRequest(meta={}){
+  if(navigator?.locks?.request){return navigator.locks.request('math12hub-gemini-rpm-v40139',{mode:'exclusive'},()=>v40139GateCore(meta))}
+  return v40139GateCore(meta)
+}
+window.v40139SetPolicy=v40139SetPolicy;window.v40139BeforeRequest=v40139BeforeRequest;window.v40139RenderScheduler=v40139RenderScheduler;
 let v32AiDrafts=[];
 let v32AiSelectedFile=null;
 let v32AiBusy=false;
@@ -103,7 +153,7 @@ function v40132AuthErrorMessage(key,response,data){
   const reason=v40132GeminiErrorReason(data),msg=String(data?.error?.message||'Không thể xác thực Gemini.').slice(0,360);if(response?.status===401||reason.includes('UNAUTHENTICATED')||reason.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')){const aq=String(key||'').startsWith('AQ.');return `Gemini 401: không xác thực được API key${aq?' dạng AQ':''}. ${reason?`Mã: ${reason}. `:''}${msg}`};return ''
 }
 async function v32GeminiGenerate(parts,schema,{timeoutMs=90000,systemInstruction=''}={}){
-  if(v32AiBusy)throw new Error('AI đang xử lý một yêu cầu khác.');const key=v32AiGetKey();if(!key)throw new Error('Chưa có Gemini API key. Hãy lưu API key trong Cài đặt AI .');const s=v32AiSettings(),model=s.model||V32_AI_DEFAULT_MODEL,url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+  if(v32AiBusy)throw new Error('AI đang xử lý một yêu cầu khác.');const key=v32AiGetKey();if(!key)throw new Error('Chưa có Gemini API key. Hãy lưu API key trong Cài đặt AI .');const s=v32AiSettings(),model=s.model||V32_AI_DEFAULT_MODEL,url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs+(v40139EffectiveRpm()?180000:0));
   v32AiBusy=true;v32RenderAiStatus();
   const cleanParts=(parts||[]).map(v32GeminiNormalizePart),systemText=String(systemInstruction||v32AiSystemInstruction()),base={contents:[{role:'user',parts:cleanParts}],systemInstruction:{parts:[{text:systemText}]}};
   const jsonSchema=v40132JsonSchema(schema),legacySchema=v40132LegacySchema(schema);
@@ -121,6 +171,7 @@ async function v32GeminiGenerate(parts,schema,{timeoutMs=90000,systemInstruction
       const a=attempts[i];let payload;
       if(a.minimal){const contract=systemText+v32GeminiJsonContract(schema),pp=[{text:contract},...cleanParts];payload={contents:[{role:'user',parts:pp}]}}
       else{payload=v32JsonClone(base);payload.generationConfig=a.generationConfig;if(a.contract)payload.systemInstruction.parts[0].text=systemText+v32GeminiJsonContract(schema)}
+      await v40139BeforeRequest({model,attempt:a.name,index:i+1,total:attempts.length});
       response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload),signal:controller.signal});data=await response.json().catch(()=>({}));used=a.name;v40133RecordRateResult(response,data,model);
       if(response.ok)break;lastMessage=String(data?.error?.message||'Không thể xử lý yêu cầu.');const auth=v40132AuthErrorMessage(key,response,data);if(auth)throw new Error(auth);if(response.status===429)throw v40133RateLimitError(response,data,lastMessage);
       if(!v32GeminiInvalidArgument(response,data))break;
@@ -190,7 +241,7 @@ async function v40132GeminiDiagnostic(){
 }
 async function v32AiTestConnection(){if(!requireTeacher('Kiểm tra AI'))return;v32AiSaveSettings(false);const box=document.getElementById('v32AiTestResult');if(box)box.textContent='Đang kiểm tra…';try{const schema={type:'object',properties:{ok:{type:'boolean'},note:{type:'string'}},required:['ok','note']},r=await v32GeminiGenerate([{text:'Trả JSON xác nhận kết nối. ok=true, note ngắn bằng tiếng Việt.'}],schema,{timeoutMs:30000});if(box)box.textContent=`✓ Kết nối ${r.model} thành công.`}catch(err){if(box)box.textContent=`✗ ${err.message||err}`}}
 function v32ClearDraftQueue(){if(!v32AiDrafts.length)return;if(!confirm(`Xóa ${v32AiDrafts.length} bản nháp AI đang chờ? Việc này không ảnh hưởng câu đã vào ngân hàng.`))return;v32AiDrafts=[];v32AiPersistDrafts();v32RenderAiDraftQueue();v32RenderAiMetrics()}
-function v32RenderAIAssistant(){if(!requireTeacher('Trợ lý AI'))return;v32AiLoadDrafts();const s=v32AiSettings();const model=document.getElementById('v32AiModel');if(model&&!model.matches(':focus'))model.value=s.model;const km=document.getElementById('v32AiKeyMode');if(km)km.value=s.keyMode;const th=document.getElementById('v32AiThinking');if(th)th.value=s.thinkingLevel;const lesson=document.getElementById('v32AiTargetLesson');if(lesson&&lesson.options.length<=1)lesson.innerHTML='<option value="">AI tự phân loại bài</option>'+chapters.flatMap(c=>c.lessons.map(l=>`<option value="${l.id}">${l.id} • ${esc(l.common)}</option>`)).join('');v32RenderAiStatus();v32RenderAiMetrics();v32RenderAiDraftQueue();v32RenderAiQuestionPicker();v32RenderAuditResult()}
+function v32RenderAIAssistant(){if(!requireTeacher('Trợ lý AI'))return;v32AiLoadDrafts();const s=v32AiSettings();const model=document.getElementById('v32AiModel');if(model&&!model.matches(':focus'))model.value=s.model;const km=document.getElementById('v32AiKeyMode');if(km)km.value=s.keyMode;const th=document.getElementById('v32AiThinking');if(th)th.value=s.thinkingLevel;const lesson=document.getElementById('v32AiTargetLesson');if(lesson&&lesson.options.length<=1)lesson.innerHTML='<option value="">AI tự phân loại bài</option>'+chapters.flatMap(c=>c.lessons.map(l=>`<option value="${l.id}">${l.id} • ${esc(l.common)}</option>`)).join('');const rp=document.getElementById('v40139RpmPolicy');if(rp)rp.value=v40139Policy();v32RenderAiStatus();v32RenderAiMetrics();v32RenderAiDraftQueue();v32RenderAiQuestionPicker();v32RenderAuditResult();v40139RenderScheduler()}
 
 // Question Bank Pro  remains the authoritative storage/editor.  only adds provenance badges to previews where useful.
 const v32OldPreviewBankQuestion=typeof previewBankQuestion==='function'?previewBankQuestion:null;
@@ -1007,4 +1058,164 @@ const baseRender=window.v32RenderAiDraftQueue;window.v32RenderAiDraftQueue=funct
 window.v40136ReassignAll=reassignAll;window.v40136OpenFigureReviewCenter=openReview;window.v40138ClearOneAuto=clearOneAuto;window.V40138FigureMapping={build:V40138_BUILD,reconcileAll,strictNeed,strictStatus,counts:strictCounts};
 setTimeout(()=>{const r=reconcileAll();if(r.removed||r.assigned){v32RenderAiDraftQueue?.();console.info(`[V40.13.8] migrated figures: removed=${r.removed}, assigned=${r.assigned}, ambiguous=${r.ambiguous}`)}updateSummary()},220);
 console.info('Math12 Hub V40.13.8 One-to-One Figure Mapping loaded');
+})();
+
+
+/* =========================================================
+   Math12 Hub V40.13.9 — Smart RPM Scheduler UI integration
+   ========================================================= */
+(function(){
+'use strict';
+const V40139_BUILD='40.13.9-smart-rpm-scheduler';
+window.v40139PipelineActive=false;window.v40139StopRequested=false;
+const baseStart=window.v4013StartPipeline;window.v4013StartPipeline=async function(){window.v40139PipelineActive=true;window.v40139StopRequested=false;try{return await baseStart.apply(this,arguments)}finally{window.v40139PipelineActive=false;v40139RenderScheduler?.()}};
+const baseStop=window.v4013StopPipeline;window.v4013StopPipeline=function(){window.v40139StopRequested=true;return baseStop?baseStop.apply(this,arguments):undefined};
+const baseRenderPipe=window.v4013RenderPipeline;window.v4013RenderPipeline=function(){const r=baseRenderPipe?baseRenderPipe.apply(this,arguments):undefined;v40139RenderScheduler?.();return r};
+function inject(){if(document.getElementById('v40139Styles'))return;const st=document.createElement('style');st.id='v40139Styles';st.textContent=`#v40139SchedulerText{display:block;margin-top:4px;font-size:12px;font-weight:800;color:#315b9c}.v40133-quota #v40139SchedulerText:empty{display:none}`;document.head.appendChild(st)}
+inject();setTimeout(()=>{const el=document.getElementById('v40139RpmPolicy');if(el)el.value=v40139Policy();v40139RenderScheduler?.()},120);
+window.V40139Scheduler={build:V40139_BUILD,policy:v40139Policy,effectiveRpm:v40139EffectiveRpm,state:v40139SchedulerState,plan:v40139WaitPlan,summary:()=>({policy:v40139Policy(),rpm:v40139EffectiveRpm(),recent:v40139RecentStarts().length,...v40139SchedulerState()})};
+console.info('Math12 Hub V40.13.9 Smart RPM Scheduler loaded');
+})();
+
+/* =========================================================
+   Math12 Hub V40.14.0 — Gemini Multi-Key Pool
+   - multi-key storage without putting secrets in app state / Firestore
+   - project-group aware failover
+   - 429 => cooldown whole project group, rotate to a different group
+   - 401/403 => block only the failing key, rotate to another key
+   - Smart RPM scheduler state is isolated per project group
+   ========================================================= */
+(function(){
+'use strict';
+const V40140_BUILD='40.14.0-gemini-multi-key-pool';
+const V40140_META_KEY='math12hub.ai.v40.14.pool.meta';
+const V40140_DEVICE_SECRET_KEY='math12hub.ai.v40.14.pool.deviceSecrets';
+const V40140_SESSION_SECRET_KEY='math12hub.ai.v40.14.pool.sessionSecrets';
+const V40140_ACTIVE_KEY='math12hub.ai.v40.14.pool.active';
+const V40140_SCHED_GROUP_KEY='math12hub.ai.v40.14.schedulerByGroup';
+const V40140_LEGACY_MIGRATION='math12hub.ai.v40.14.legacyMigrated';
+const V40140_MAX_KEYS=20;
+
+const v40140LegacyGetKey=v32AiGetKey;
+const v40140LegacySaveSettings=v32AiSaveSettings;
+const v40140LegacyClearKey=v32AiClearKey;
+const v40140BaseGenerate=v32GeminiGenerate;
+const v40140LegacySchedulerState=v40139SchedulerState;
+const v40140LegacyRenderStatus=v32RenderAiStatus;
+const v40140LegacyRenderAssistant=v32RenderAIAssistant;
+
+function v40140Safe(raw,fallback){try{return JSON.parse(raw)}catch(_){return fallback}}
+function v40140Now(){return new Date().toISOString()}
+function v40140Id(){return `K${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2,7).toUpperCase()}`}
+function v40140NormGroup(v=''){return String(v||'Project 1').trim().replace(/\s+/g,' ').toLowerCase()||'project 1'}
+function v40140DisplayGroup(v=''){return String(v||'Project 1').trim().replace(/\s+/g,' ')||'Project 1'}
+function v40140Mask(k=''){const s=String(k||'');return s?`${s.slice(0,5)}••••${s.slice(-4)}`:'không có secret'}
+function v40140Esc(s=''){return typeof esc==='function'?esc(String(s||'')):String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function v40140Attr(s=''){return typeof attrEsc==='function'?attrEsc(String(s||'')):v40140Esc(s).replace(/`/g,'&#96;')}
+function v40140LoadMeta(){const x=v40140Safe(localStorage.getItem(V40140_META_KEY)||'[]',[]);return Array.isArray(x)?x.slice(0,V40140_MAX_KEYS):[]}
+function v40140SaveMeta(rows=[]){try{localStorage.setItem(V40140_META_KEY,JSON.stringify((rows||[]).slice(0,V40140_MAX_KEYS)))}catch(_){}}
+function v40140LoadSecrets(storage='device'){const store=storage==='session'?sessionStorage:localStorage,key=storage==='session'?V40140_SESSION_SECRET_KEY:V40140_DEVICE_SECRET_KEY;return v40140Safe(store.getItem(key)||'{}',{})||{}}
+function v40140SaveSecrets(storage='device',obj={}){const store=storage==='session'?sessionStorage:localStorage,key=storage==='session'?V40140_SESSION_SECRET_KEY:V40140_DEVICE_SECRET_KEY;try{store.setItem(key,JSON.stringify(obj||{}))}catch(_){}}
+function v40140Secret(entryOrId){const rows=v40140LoadMeta(),e=typeof entryOrId==='string'?rows.find(x=>x.id===entryOrId):entryOrId;if(!e)return '';return String(v40140LoadSecrets(e.storage==='session'?'session':'device')[e.id]||'').trim()}
+function v40140SetSecret(id,key,storage='device'){const d=v40140LoadSecrets('device'),s=v40140LoadSecrets('session');delete d[id];delete s[id];if(storage==='session')s[id]=key;else d[id]=key;v40140SaveSecrets('device',d);v40140SaveSecrets('session',s)}
+function v40140DeleteSecret(id){const d=v40140LoadSecrets('device'),s=v40140LoadSecrets('session');delete d[id];delete s[id];v40140SaveSecrets('device',d);v40140SaveSecrets('session',s)}
+function v40140ActiveId(){return String(localStorage.getItem(V40140_ACTIVE_KEY)||'')}
+function v40140SetActiveId(id=''){try{id?localStorage.setItem(V40140_ACTIVE_KEY,id):localStorage.removeItem(V40140_ACTIVE_KEY)}catch(_){}v40140RenderPool();v40140RenderStatus()}
+function v40140Entry(id){return v40140LoadMeta().find(x=>x.id===id)||null}
+function v40140CooldownLeft(e){return Math.max(0,Math.ceil((Number(e?.cooldownUntil)||0-Date.now())/1000))}
+function v40140IsReady(e){return !!e&&e.enabled!==false&&!e.authBlocked&&!!v40140Secret(e)&&v40140CooldownLeft(e)<=0}
+function v40140ActiveEntry({allowBlocked=false}={}){const rows=v40140LoadMeta();let e=rows.find(x=>x.id===v40140ActiveId())||null;if(e&&v40140Secret(e)&&(allowBlocked||v40140IsReady(e)))return e;const ready=rows.find(v40140IsReady);if(ready){if(ready.id!==v40140ActiveId())try{localStorage.setItem(V40140_ACTIVE_KEY,ready.id)}catch(_){}return ready}if(allowBlocked){e=rows.find(x=>x.enabled!==false&&v40140Secret(x))||null;if(e)return e}return null}
+function v40140CurrentGroup(){return v40140DisplayGroup(v40140ActiveEntry({allowBlocked:true})?.group||'Project 1')}
+function v40140CurrentGroupKey(){return v40140NormGroup(v40140CurrentGroup())}
+function v40140FindDuplicateSecret(key=''){const rows=v40140LoadMeta();return rows.find(e=>v40140Secret(e)===String(key||'').trim())||null}
+function v40140AddKey({key='',name='',group='Project 1',storage='session',makeActive=true}={}){
+  key=String(key||'').trim();if(key.length<12)throw new Error('API key quá ngắn hoặc chưa hợp lệ.');let rows=v40140LoadMeta();const dup=v40140FindDuplicateSecret(key);if(dup){dup.enabled=true;dup.authBlocked=false;dup.updatedAt=v40140Now();dup.storage=storage==='device'?'device':'session';if(name)dup.name=String(name).trim();if(group)dup.group=v40140DisplayGroup(group);v40140SetSecret(dup.id,key,dup.storage);v40140SaveMeta(rows);if(makeActive)v40140SetActiveId(dup.id);return dup}
+  if(rows.length>=V40140_MAX_KEYS)throw new Error(`Pool tối đa ${V40140_MAX_KEYS} API key.`);const id=v40140Id(),e={id,name:String(name||`API ${rows.length+1}`).trim(),group:v40140DisplayGroup(group),storage:storage==='device'?'device':'session',enabled:true,authBlocked:false,status:'ready',cooldownUntil:0,lastStatusText:'Chưa kiểm tra',createdAt:v40140Now(),updatedAt:v40140Now(),lastUsedAt:'',lastOkAt:'',failures:0};rows.push(e);v40140SaveMeta(rows);v40140SetSecret(id,key,e.storage);if(makeActive||rows.length===1)v40140SetActiveId(id);return e
+}
+function v40140UpdateEntry(id,patch={}){const rows=v40140LoadMeta(),i=rows.findIndex(x=>x.id===id);if(i<0)return null;rows[i]={...rows[i],...patch,updatedAt:v40140Now()};v40140SaveMeta(rows);return rows[i]}
+function v40140RemoveKey(id){const rows=v40140LoadMeta(),e=rows.find(x=>x.id===id);if(!e)return;v40140DeleteSecret(id);const next=rows.filter(x=>x.id!==id);v40140SaveMeta(next);if(v40140ActiveId()===id){const n=next.find(v40140IsReady)||next.find(x=>x.enabled!==false&&v40140Secret(x));v40140SetActiveId(n?.id||'')}v40140RenderPool();v40140RenderStatus()}
+function v40140GroupRows(group){const g=v40140NormGroup(group);return v40140LoadMeta().filter(x=>v40140NormGroup(x.group)===g)}
+function v40140MarkGroupCooldown(group,seconds=60,reason='429'){const until=Date.now()+Math.max(1,Number(seconds)||60)*1000,rows=v40140LoadMeta(),g=v40140NormGroup(group);rows.forEach(e=>{if(v40140NormGroup(e.group)===g){e.cooldownUntil=Math.max(Number(e.cooldownUntil)||0,until);e.status='cooldown';e.lastStatusText=`${reason} • chờ ${Math.max(1,Math.ceil((e.cooldownUntil-Date.now())/1000))}s`;e.failures=(Number(e.failures)||0)+1;e.updatedAt=v40140Now()}});v40140SaveMeta(rows);v40140RenderPool()}
+function v40140MarkAuthError(id,msg='401/403'){v40140UpdateEntry(id,{authBlocked:true,status:'auth-error',lastStatusText:String(msg).slice(0,180),failures:(Number(v40140Entry(id)?.failures)||0)+1});v40140RenderPool()}
+function v40140MarkSuccess(id){const e=v40140Entry(id);if(!e)return;v40140UpdateEntry(id,{authBlocked:false,status:v40140CooldownLeft(e)>0?'cooldown':'ready',lastStatusText:'✓ Hoạt động',lastOkAt:v40140Now(),lastUsedAt:v40140Now()});v40140RenderPool()}
+function v40140SelectReady({excludeIds=new Set(),excludeGroup=''}={}){const rows=v40140LoadMeta(),eg=v40140NormGroup(excludeGroup||'');const current=v40140ActiveId();const sorted=rows.slice().sort((a,b)=>(a.id===current?-2:0)-(b.id===current?-2:0)||String(a.lastUsedAt||'').localeCompare(String(b.lastUsedAt||'')));return sorted.find(e=>v40140IsReady(e)&&!excludeIds.has(e.id)&&(!excludeGroup||v40140NormGroup(e.group)!==eg))||null}
+function v40140EarliestCooldown(){return v40140LoadMeta().filter(e=>e.enabled!==false&&!e.authBlocked&&v40140Secret(e)&&v40140CooldownLeft(e)>0).sort((a,b)=>(Number(a.cooldownUntil)||0)-(Number(b.cooldownUntil)||0))[0]||null}
+function v40140RateError(seconds=60,msg='Tất cả Project đang cooldown.'){const e=new Error(`Gemini 429: ${msg}`);e.status=429;e.code='GEMINI_RATE_LIMIT';e.retryAfterSec=Math.max(1,Number(seconds)||60);return e}
+function v40140EnsureLegacyMigration(){
+  if(localStorage.getItem(V40140_LEGACY_MIGRATION)==='1'&&v40140LoadMeta().length)return;const key=String(v40140LegacyGetKey?.()||'').trim();if(key){try{const s=v32AiSettings(),e=v40140AddKey({key,name:'API hiện tại',group:'Project 1',storage:s.keyMode==='device'?'device':'session',makeActive:!v40140LoadMeta().length});if(e)v40140UpdateEntry(e.id,{lastStatusText:'Đã chuyển từ cấu hình cũ'})}catch(_){}}try{localStorage.setItem(V40140_LEGACY_MIGRATION,'1')}catch(_){}
+}
+
+/* Replace key getter so every existing Gemini feature transparently uses the active pool key. */
+v32AiGetKey=function(){v40140EnsureLegacyMigration();const e=v40140ActiveEntry({allowBlocked:true});return e?v40140Secret(e):String(v40140LegacyGetKey?.()||'').trim()};
+v32AiKeyMasked=function(){const e=v40140ActiveEntry({allowBlocked:true});return e?`${e.name||'API'} • ${v40140Mask(v40140Secret(e))}`:(v32AiGetKey()?v40140Mask(v32AiGetKey()):'Chưa cấu hình')};
+
+/* Legacy quick-save remains compatible, but a newly pasted key is also imported into the pool. */
+v32AiSaveSettings=function(show=true){const typed=String(document.getElementById('v32AiKey')?.value||'').trim(),mode=document.getElementById('v32AiKeyMode')?.value==='device'?'device':'session',active=v40140ActiveEntry({allowBlocked:true});const out=v40140LegacySaveSettings(show);if(typed){try{v40140AddKey({key:typed,name:`API nhanh ${v40140LoadMeta().length+1}`,group:active?.group||'Project 1',storage:mode,makeActive:true});v40140RenderPool();v40140RenderStatus()}catch(err){console.warn('Multi-Key quick import',err)}}return out};
+v32AiClearKey=function(){if(!requireTeacher('Xóa API key'))return;v40140EnsureLegacyMigration();const e=v40140ActiveEntry({allowBlocked:true});if(!e)return v40140LegacyClearKey?.();if(!confirm(`Xóa “${e.name||'API'}” khỏi Multi-Key Pool?`))return;v40140RemoveKey(e.id);examToast?.('Đã xóa key đang dùng khỏi Multi-Key Pool.')};
+
+/* Group-aware Smart RPM scheduler: every project group gets its own 60-second window. */
+function v40140SchedulerStore(){return v40140Safe(localStorage.getItem(V40140_SCHED_GROUP_KEY)||'{}',{})||{}}
+function v40140SchedulerGroupState(){const group=v40140CurrentGroupKey(),store=v40140SchedulerStore(),now=Date.now();let x=store[group];if(!x){if(!store.__legacyGroup){const legacy=v40140LegacySchedulerState?.()||{};x={starts:Array.isArray(legacy.starts)?legacy.starts:[],learnedRpm:Number(legacy.learnedRpm)||0,learnedAt:Number(legacy.learnedAt)||0,lastWaitMs:Number(legacy.lastWaitMs)||0,lastReason:String(legacy.lastReason||'')};store.__legacyGroup=group}else{x={starts:[],learnedRpm:0,learnedAt:0,lastWaitMs:0,lastReason:''}}store[group]=x;try{localStorage.setItem(V40140_SCHED_GROUP_KEY,JSON.stringify(store))}catch(_){}}const starts=Array.isArray(x.starts)?x.starts.map(Number).filter(v=>Number.isFinite(v)&&now-v<V40139_HISTORY_MS).slice(-160):[];return {starts,learnedRpm:Math.max(0,Number(x.learnedRpm)||0),learnedAt:Number(x.learnedAt)||0,lastWaitMs:Math.max(0,Number(x.lastWaitMs)||0),lastReason:String(x.lastReason||''),updatedAt:Number(x.updatedAt)||0}}
+v40139SchedulerState=function(){return v40140SchedulerGroupState()};
+v40139SchedulerSave=function(s={}){const group=v40140CurrentGroupKey(),store=v40140SchedulerStore();store[group]={...s,starts:(s.starts||[]).slice(-160),updatedAt:Date.now()};try{localStorage.setItem(V40140_SCHED_GROUP_KEY,JSON.stringify(store))}catch(_){}};
+v40139WindowStarts=function(){const now=Date.now();return v40139SchedulerState().starts.filter(t=>now-t<V40139_WINDOW_MS)};
+v40139RecentStarts=function(){return v40139WindowStarts()};
+v40139RenderScheduler=function(extra=''){const el=document.getElementById('v40139SchedulerText');if(!el)return;const p=v40139Policy(),rpm=v40139EffectiveRpm(),s=v40139SchedulerState(),recent=v40139RecentStarts().length,g=v40140CurrentGroup();if(p==='off'){el.textContent=`⏱ Smart RPM: tắt • ${g}`;return}el.textContent=extra||`⏱ Smart RPM • ${g}: ${recent}/${rpm} request trong 60s${s.learnedRpm?` • server gần nhất ${s.learnedRpm} RPM`:''}`};
+v40139BeforeRequest=async function(meta={}){const group=v40140CurrentGroupKey().replace(/[^a-z0-9_-]+/g,'-').slice(0,60);if(navigator?.locks?.request)return navigator.locks.request(`math12hub-gemini-rpm-v40140-${group}`,{mode:'exclusive'},()=>v40139GateCore(meta));return v40139GateCore(meta)};
+window.v40139BeforeRequest=v40139BeforeRequest;window.v40139RenderScheduler=v40139RenderScheduler;
+
+/* Failover wrapper around the existing robust Gemini transport. */
+function v40140IsAuthError(err){return Number(err?.status)===401||Number(err?.status)===403||/Gemini\s+(401|403)|UNAUTHENTICATED|ACCESS_TOKEN_TYPE_UNSUPPORTED|API[_ ]?KEY|permission denied|forbidden/i.test(String(err?.message||''))}
+function v40140IsRateError(err){return Number(err?.status)===429||err?.code==='GEMINI_RATE_LIMIT'||/\b429\b|quota|resource.?exhausted|rate.?limit/i.test(String(err?.message||''))}
+v32GeminiGenerate=async function(parts,schema,opts={}){
+  v40140EnsureLegacyMigration();let rows=v40140LoadMeta();if(!rows.length)return v40140BaseGenerate(parts,schema,opts);
+  const usedIds=new Set(),usedGroups=new Set();let lastErr=null;
+  for(let hop=0;hop<Math.max(1,rows.length+1);hop++){
+    let entry=v40140SelectReady({excludeIds:usedIds});
+    if(!entry){const cool=v40140EarliestCooldown();if(cool){const sec=v40140CooldownLeft(cool);throw v40140RateError(sec,`Project “${cool.group}” đang cooldown và chưa có Project khác sẵn sàng.`)}if(lastErr)throw lastErr;throw new Error('Không còn API key sẵn sàng trong Multi-Key Pool. Hãy kiểm tra trạng thái key.')}
+    v40140SetActiveId(entry.id);usedIds.add(entry.id);const group=v40140NormGroup(entry.group);usedGroups.add(group);v40140UpdateEntry(entry.id,{lastUsedAt:v40140Now(),status:'active',lastStatusText:'Đang dùng'});v40140RenderPool();
+    try{const result=await v40140BaseGenerate(parts,schema,opts);v40140MarkSuccess(entry.id);return {...result,keyPool:{id:entry.id,name:entry.name,group:entry.group}}}
+    catch(err){lastErr=err;if(v40140IsRateError(err)){const sec=Math.max(1,Number(err?.retryAfterSec)||60);v40140MarkGroupCooldown(entry.group,sec,'429 quota/rate limit');const next=v40140SelectReady({excludeIds:usedIds,excludeGroup:entry.group});if(next){v40140SetActiveId(next.id);v40140SetActionStatus(`↻ ${entry.name} gặp 429 → chuyển sang ${next.name} (${next.group}).`,'warn');continue}throw err}
+      if(v40140IsAuthError(err)){v40140MarkAuthError(entry.id,String(err?.message||'Lỗi xác thực'));const next=v40140SelectReady({excludeIds:usedIds});if(next){v40140SetActiveId(next.id);v40140SetActionStatus(`↻ ${entry.name} lỗi xác thực → chuyển sang ${next.name}.`,'warn');continue}throw err}
+      throw err
+    }
+  }
+  throw lastErr||new Error('Multi-Key Pool không tìm được API khả dụng.')
+};
+
+function v40140SetActionStatus(text='',kind=''){const e=document.getElementById('v40140PoolActionStatus');if(e){e.className=`v32-inline-status ${kind||''}`;e.textContent=text}}
+function v40140StatusOf(e){if(e.enabled===false)return {cls:'off',label:'TẮT'};if(!v40140Secret(e))return {cls:'missing',label:'MẤT SECRET'};if(e.authBlocked)return {cls:'bad',label:'LỖI XÁC THỰC'};const sec=v40140CooldownLeft(e);if(sec>0)return {cls:'cool',label:`COOLDOWN ${sec}s`};if(e.id===v40140ActiveId())return {cls:'active',label:'ĐANG DÙNG'};return {cls:'ready',label:'SẴN SÀNG'}}
+function v40140RenderPool(){const list=document.getElementById('v40140PoolList'),sum=document.getElementById('v40140PoolSummary'),stateEl=document.getElementById('v40140PoolState');if(!list&&!sum&&!stateEl)return;v40140EnsureLegacyMigration();const rows=v40140LoadMeta(),active=v40140ActiveEntry({allowBlocked:true}),ready=rows.filter(v40140IsReady).length,groups=new Set(rows.map(x=>v40140NormGroup(x.group))).size,cooling=rows.filter(x=>v40140CooldownLeft(x)>0).length,bad=rows.filter(x=>x.authBlocked||!v40140Secret(x)).length;if(stateEl){stateEl.className=`v40140-pool-state ${ready?'ready':'warn'}`;stateEl.textContent=rows.length?`${ready}/${rows.length} SẴN SÀNG`:'CHƯA CÓ KEY'}if(sum)sum.innerHTML=`<span><b>${rows.length}</b><small>API key</small></span><span><b>${groups}</b><small>nhóm Project</small></span><span><b>${ready}</b><small>sẵn sàng</small></span><span><b>${cooling}</b><small>cooldown</small></span><span><b>${bad}</b><small>cần xử lý</small></span>${active?`<span class="wide"><b>${v40140Esc(active.name)}</b><small>đang chọn • ${v40140Esc(active.group)}</small></span>`:''}${rows.length>1&&groups===1?`<span class="wide"><b>⚠ 1 Project</b><small>Nhiều key vẫn dùng chung quota; 429 sẽ không luân phiên giữa chúng.</small></span>`:''}`;
+  if(!list)return;if(!rows.length){list.innerHTML='<div class="online-empty">Chưa có API key trong Pool. Dán key ở ô phía trên và bấm “Thêm API vào Pool”.</div>';return}
+  list.innerHTML=rows.map(e=>{const st=v40140StatusOf(e),secret=v40140Secret(e),sec=v40140CooldownLeft(e);return `<div class="v40140-key-card ${st.cls}"><div class="v40140-key-main"><div><div class="v40140-key-title"><b>${v40140Esc(e.name||'API')}</b><span class="v40140-status ${st.cls}">${v40140Esc(st.label)}</span></div><small>${v40140Esc(e.group||'Project 1')} • ${v40140Esc(v40140Mask(secret))} • ${e.storage==='device'?'lưu thiết bị':'chỉ phiên'}</small><small>${v40140Esc(e.lastStatusText||'Chưa kiểm tra')}${sec?` • còn ${sec}s`:''}${e.lastOkAt?` • OK ${new Date(e.lastOkAt).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}`:''}</small></div><div class="v40140-key-actions"><button class="btn btn-soft" onclick="v40140UseKey('${v40140Attr(e.id)}')">Dùng</button><button class="btn btn-soft" onclick="v40140TestKey('${v40140Attr(e.id)}')">Test</button><button class="btn btn-soft" onclick="v40140EditKey('${v40140Attr(e.id)}')">Sửa</button><button class="btn btn-soft" onclick="v40140ToggleKey('${v40140Attr(e.id)}')">${e.enabled===false?'Bật':'Tắt'}</button><button class="btn btn-danger" onclick="v40140DeleteKey('${v40140Attr(e.id)}')">Xóa</button></div></div></div>`}).join('')
+}
+function v40140RenderStatus(){v40140LegacyRenderStatus?.();const badge=document.getElementById('v32AiConnection'),usage=document.getElementById('v32AiUsageText'),rows=v40140LoadMeta(),e=v40140ActiveEntry({allowBlocked:true});if(badge&&rows.length){const ready=rows.filter(v40140IsReady).length;badge.className=`v32-connection ${ready?'ready':'missing'}`;badge.textContent=ready?`● Pool ${ready}/${rows.length} key sẵn sàng`:`○ Pool chưa có key sẵn sàng`}if(usage&&e)usage.textContent+=` • ${e.name} / ${e.group}`;v40139RenderScheduler?.()}
+
+function v40140AddKeyFromUi(){if(!requireTeacher('Thêm Gemini API key'))return;const key=String(document.getElementById('v40140NewKey')?.value||'').trim(),name=String(document.getElementById('v40140KeyName')?.value||'').trim(),group=String(document.getElementById('v40140ProjectGroup')?.value||'Project 1').trim(),storage=document.getElementById('v40140KeyStorage')?.value==='device'?'device':'session';try{const e=v40140AddKey({key,name:name||`API ${v40140LoadMeta().length+1}`,group,storage,makeActive:true});const inp=document.getElementById('v40140NewKey');if(inp)inp.value='';v40140SetActionStatus(`✓ Đã thêm ${e.name} vào ${e.group}.`,'ok');v40140RenderPool();v40140RenderStatus()}catch(err){v40140SetActionStatus(`✗ ${err?.message||err}`,'warn')}}
+function v40140UseKey(id){const e=v40140Entry(id);if(!e)return;if(!v40140Secret(e))return alert('Key này không còn secret trong phiên/thiết bị. Hãy xóa và thêm lại.');v40140SetActiveId(id);v40140SetActionStatus(`Đang dùng ${e.name} • ${e.group}.`,'ok')}
+function v40140ToggleKey(id){const e=v40140Entry(id);if(!e)return;v40140UpdateEntry(id,{enabled:e.enabled===false,status:e.enabled===false?'ready':'disabled',lastStatusText:e.enabled===false?'Đã bật lại':'Đã tắt thủ công'});if(v40140ActiveId()===id&&e.enabled!==false){const n=v40140SelectReady({excludeIds:new Set([id])});if(n)v40140SetActiveId(n.id)}v40140RenderPool();v40140RenderStatus()}
+function v40140DeleteKey(id){const e=v40140Entry(id);if(!e)return;if(!confirm(`Xóa “${e.name}” khỏi Pool?`))return;v40140RemoveKey(id);v40140SetActionStatus(`Đã xóa ${e.name}.`,'')}
+function v40140EditKey(id){const e=v40140Entry(id);if(!e)return;const name=prompt('Tên API:',e.name||'API');if(name===null)return;const group=prompt('Nhóm Project (các key cùng Google project phải nhập cùng tên nhóm):',e.group||'Project 1');if(group===null)return;v40140UpdateEntry(id,{name:String(name||e.name).trim(),group:v40140DisplayGroup(group||e.group),authBlocked:false,lastStatusText:'Đã cập nhật thông tin'});v40140RenderPool();v40140RenderStatus()}
+function v40140RotateNow(){v40140EnsureLegacyMigration();const cur=v40140ActiveEntry({allowBlocked:true}),next=v40140SelectReady({excludeIds:new Set(cur?[cur.id]:[]),excludeGroup:''});if(!next)return v40140SetActionStatus('Không có key sẵn sàng khác để chuyển.','warn');v40140SetActiveId(next.id);v40140SetActionStatus(`↻ Đã chuyển sang ${next.name} • ${next.group}.`,'ok')}
+async function v40140TestKey(id,{quiet=false}={}){const e=v40140Entry(id),key=v40140Secret(e);if(!e||!key){if(!quiet)v40140SetActionStatus('Key không còn secret.','warn');return false}if(!quiet)v40140SetActionStatus(`Đang test ${e.name}…`,'');const c=new AbortController(),t=setTimeout(()=>c.abort(),20000);try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1',{headers:{'x-goog-api-key':key},signal:c.signal});if(r.ok){v40140UpdateEntry(id,{authBlocked:false,status:v40140CooldownLeft(e)>0?'cooldown':'ready',lastStatusText:'✓ Key xác thực hợp lệ',lastOkAt:v40140Now()});if(!quiet)v40140SetActionStatus(`✓ ${e.name} xác thực hợp lệ.`,'ok');return true}const data=await r.json().catch(()=>({})),msg=String(data?.error?.message||`HTTP ${r.status}`).slice(0,180);if(r.status===401||r.status===403){v40140MarkAuthError(id,msg)}else if(r.status===429){v40140MarkGroupCooldown(e.group,Math.max(1,v40133RetrySeconds(r,data)||60),'429 khi test')}else v40140UpdateEntry(id,{status:'error',lastStatusText:`HTTP ${r.status}: ${msg}`});if(!quiet)v40140SetActionStatus(`✗ ${e.name}: ${msg}`,'warn');return false}catch(err){v40140UpdateEntry(id,{status:'network',lastStatusText:err?.name==='AbortError'?'Test quá thời gian':'Lỗi mạng khi test'});if(!quiet)v40140SetActionStatus(`✗ ${e.name}: ${err?.name==='AbortError'?'quá thời gian':'lỗi mạng'}.`,'warn');return false}finally{clearTimeout(t);v40140RenderPool();v40140RenderStatus()}}
+async function v40140TestAllKeys(){if(!requireTeacher('Kiểm tra Gemini API Pool'))return;const rows=v40140LoadMeta().filter(e=>e.enabled!==false&&v40140Secret(e));if(!rows.length)return v40140SetActionStatus('Chưa có key để test.','warn');let ok=0;for(let i=0;i<rows.length;i++){v40140SetActionStatus(`Đang test ${i+1}/${rows.length}: ${rows[i].name}…`,'');if(await v40140TestKey(rows[i].id,{quiet:true}))ok++;await new Promise(r=>setTimeout(r,250))}v40140SetActionStatus(`✓ Test xong: ${ok}/${rows.length} key xác thực được.` ,ok===rows.length?'ok':'warn');v40140RenderPool();v40140RenderStatus()}
+
+v32RenderAiStatus=v40140RenderStatus;
+v32RenderAIAssistant=function(){const r=v40140LegacyRenderAssistant?.();v40140EnsureLegacyMigration();v40140RenderPool();v40140RenderStatus();return r};
+
+function v40140InjectStyles(){if(document.getElementById('v40140Styles'))return;const st=document.createElement('style');st.id='v40140Styles';st.textContent=`
+.v40140-pool{border:1px solid rgba(61,98,183,.18);border-radius:18px;padding:14px;background:linear-gradient(180deg,#fbfdff,#f6f9ff)}
+.v40140-pool-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.v40140-pool-head h4{margin:3px 0 4px}.v40140-pool-head p{margin:0;color:#65718a;line-height:1.5}.v40140-kicker{font-size:11px;font-weight:900;letter-spacing:.12em;color:#4168bd}
+.v40140-pool-state{white-space:nowrap;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;background:#eef2f8;color:#5a6475}.v40140-pool-state.ready{background:#e9f8ef;color:#14713a}.v40140-pool-state.warn{background:#fff3df;color:#9a5a00}
+.v40140-add-grid{display:grid;grid-template-columns:1fr 1fr 1.8fr 1fr;gap:10px;margin-top:12px}.v40140-add-grid label{display:block;font-size:12px;font-weight:800;margin-bottom:5px;color:#4a556d}.v40140-add-grid input,.v40140-add-grid select{width:100%}
+.v40140-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.v40140-summary span{display:grid;gap:2px;min-width:92px;padding:8px 10px;border-radius:12px;background:#fff;border:1px solid rgba(15,23,42,.07)}.v40140-summary b{font-size:15px}.v40140-summary small{font-size:10px;color:#778197}.v40140-summary .wide{min-width:180px}
+.v40140-list{display:grid;gap:8px;margin-top:10px}.v40140-key-card{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:14px;padding:10px}.v40140-key-card.active{border-color:#7ba2f7;box-shadow:0 0 0 2px rgba(77,120,220,.08)}.v40140-key-card.cool{border-color:#e7b85f;background:#fffdf8}.v40140-key-card.bad,.v40140-key-card.missing{border-color:#ef9b9b;background:#fffafa}.v40140-key-card.off{opacity:.62}
+.v40140-key-main{display:flex;align-items:center;justify-content:space-between;gap:12px}.v40140-key-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.v40140-key-main small{display:block;color:#707b91;margin-top:3px}.v40140-key-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.v40140-key-actions .btn{padding:6px 9px;font-size:11px}.v40140-status{font-size:10px;font-weight:900;padding:3px 7px;border-radius:999px;background:#eef2f7;color:#5b6575}.v40140-status.ready{background:#eaf8ef;color:#15733d}.v40140-status.active{background:#e7efff;color:#315db4}.v40140-status.cool{background:#fff0d7;color:#995b00}.v40140-status.bad,.v40140-status.missing{background:#ffe8e8;color:#a22b2b}
+@media(max-width:900px){.v40140-add-grid{grid-template-columns:1fr 1fr}.v40140-key-main{align-items:flex-start;flex-direction:column}.v40140-key-actions{justify-content:flex-start}}@media(max-width:600px){.v40140-add-grid{grid-template-columns:1fr}.v40140-pool-head{flex-direction:column}}
+`;document.head.appendChild(st)}
+
+Object.assign(window,{v40140AddKeyFromUi,v40140UseKey,v40140ToggleKey,v40140DeleteKey,v40140EditKey,v40140RotateNow,v40140TestKey,v40140TestAllKeys,v40140RenderPool});
+window.V40140MultiKey={build:V40140_BUILD,entries:v40140LoadMeta,active:()=>v40140ActiveEntry({allowBlocked:true}),ready:()=>v40140LoadMeta().filter(v40140IsReady),group:v40140CurrentGroup,rotate:v40140RotateNow};
+v40140InjectStyles();v40140EnsureLegacyMigration();setInterval(()=>{if(document.getElementById('v40140PoolPanel')){v40140RenderPool();v40139RenderScheduler?.()}},1000);setTimeout(()=>{v40140RenderPool();v40140RenderStatus()},120);
+console.info('Math12 Hub V40.14.0 Gemini Multi-Key Pool loaded');
 })();

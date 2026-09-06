@@ -1,5 +1,5 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260906-v40.13.8-one-to-one-figure-mapping';
+const CACHE_REV='20260906-v40.14.0-gemini-multi-key-pool';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
