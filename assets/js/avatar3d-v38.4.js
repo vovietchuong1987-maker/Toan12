@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-premium-renderer-core-v40.15.0';
+const BUILD='avatar-premium-renderer-core-v40.15.1-body-sneaker';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -275,13 +275,13 @@ function buildTorso(a,g,mTop,mAccent,mSkin){
   const mWhite=mat('garment-white','#F8FAFC',.88),baseHex=mTop.albedoColor?.toHexString?.()||'#EAF2FF';
   const mLight=mat('garment-light',toneHex(baseHex,1.12,.025),.80),mDark=mat('garment-shadow',toneHex(baseHex,.72),.84);
   const garment=makeNode('garment-layers',grp);parts.garment=garment;
-  const torso=capsule('torso',1.48,.43,{x:0,y:1.55,z:0},mTop,garment);torso.scaling.set(a.gender==='female'?.98:1.07,1,.78);parts.body=torso;
-  const chest=sphere('soft-chest',.88,{x:0,y:1.94,z:0},mTop,{x:a.gender==='female'?1.00:1.10,y:.42,z:.76},garment);parts.chest=chest;
-  sphere('soft-waist',.74,{x:0,y:.91,z:.01},mTop,{x:a.gender==='female'?.98:1.05,y:.32,z:.76},garment);
+  const torso=capsule('torso',1.48,.405,{x:0,y:1.55,z:0},mTop,garment);torso.scaling.set(a.gender==='female'?.96:1.00,1,.76);parts.body=torso;
+  const chest=sphere('soft-chest',.84,{x:0,y:1.94,z:0},mTop,{x:a.gender==='female'?.98:1.04,y:.40,z:.74},garment);parts.chest=chest;
+  sphere('soft-waist',.70,{x:0,y:.91,z:.01},mTop,{x:a.gender==='female'?.96:1.00,y:.31,z:.73},garment);
   const neck=capsule('neck',.30,.135,{x:0,y:2.32,z:0},mSkin,grp);neck.scaling.z=.92;
   const hem=torus('garment-hem',.72,.035,{x:0,y:.88,z:.01},style==='robe'?mAccent:mDark,garment);hem.scaling.z=.78;
   if(isUniform){
-    for(const x of [-.31,.31])sphere('uniform-shoulder-'+x,.46,{x,y:1.95,z:-.01},mWhite,{x:.72,y:.46,z:.68},garment);
+    for(const x of [-.295,.295])sphere('uniform-shoulder-'+x,.43,{x,y:1.95,z:-.01},mWhite,{x:.68,y:.44,z:.65},garment);
     for(const x of [-.365,.365]){const panel=capsule('uniform-side-panel-'+x,.86,.037,{x,y:1.42,z:-.285},mAccent,garment);panel.rotation.z=x<0?-.035:.035}
     const colL=box('uniform-collar-l',{x:.25,y:.19,z:.045},{x:-.115,y:2.07,z:-.346},mWhite,garment);colL.rotation.z=.52;
     const colR=box('uniform-collar-r',{x:.25,y:.19,z:.045},{x:.115,y:2.07,z:-.346},mWhite,garment);colR.rotation.z=-.52;
@@ -333,19 +333,19 @@ function buildTorso(a,g,mTop,mAccent,mSkin){
   return {style,isUniform,grp};
 }
 function buildArm(side,mTop,mAccent,mSkin,style){
-  const sx=side==='L'?-1:1;const arm=makeNode('armGroup'+side);arm.position.set(sx*.455,1.94,0);parts[side==='L'?'leftArm':'rightArm']=arm;
+  const sx=side==='L'?-1:1;const arm=makeNode('armGroup'+side);arm.position.set(sx*.425,1.94,0);parts[side==='L'?'leftArm':'rightArm']=arm;
   const uniform=['shirt','uniform','school','classic',''].includes(style),longSleeve=['hoodie','jacket','blazer','varsity','sweater','robe','cape-top'].includes(style);
   const sleeveMat=uniform?mat('uniform-sleeve-'+side,'#F8FAFC',.90):mTop;
   const sleeveLen=longSleeve?.52:.40;
-  sphere('shoulder'+side,.32,{x:sx*.012,y:-.02,z:0},sleeveMat,{x:.88,y:.92,z:.86},arm);
-  const upper=capsule('upperArm'+side,sleeveLen,.145,{x:sx*.065,y:-.25,z:0},sleeveMat,arm);upper.rotation.z=sx*-.11;
-  sphere('elbow'+side,.245,{x:sx*.115,y:-.52,z:0},longSleeve?sleeveMat:mSkin,{x:.95,y:1,z:.92},arm);
-  const fore=capsule('forearm'+side,.56,.115,{x:sx*.13,y:-.77,z:0},longSleeve?sleeveMat:mSkin,arm);fore.rotation.z=sx*-.025;
-  const cuffY=longSleeve?-1.01:-.46,cuff=torus('sleeve-cuff'+side,.245,.028,{x:sx*(longSleeve?.14:.11),y:cuffY,z:0},mAccent,arm);cuff.scaling.z=.88;
-  sphere('wrist'+side,.18,{x:sx*.14,y:-1.045,z:0},mSkin,{x:.92,y:1,z:.90},arm);
-  sphere('hand'+side,.25,{x:sx*.145,y:-1.17,z:-.015},mSkin,{x:.82,y:1.08,z:.72},arm);
-  sphere('thumb'+side,.11,{x:sx*.245,y:-1.15,z:-.075},mSkin,{x:.72,y:1,z:.75},arm,16);
-  arm.rotation.z=sx*.065;return arm;
+  sphere('shoulder'+side,.285,{x:sx*.010,y:-.02,z:0},sleeveMat,{x:.84,y:.90,z:.83},arm);
+  const upper=capsule('upperArm'+side,sleeveLen,.125,{x:sx*.055,y:-.25,z:0},sleeveMat,arm);upper.rotation.z=sx*-.095;
+  sphere('elbow'+side,.218,{x:sx*.100,y:-.52,z:0},longSleeve?sleeveMat:mSkin,{x:.93,y:1,z:.90},arm);
+  const fore=capsule('forearm'+side,.56,.102,{x:sx*.115,y:-.77,z:0},longSleeve?sleeveMat:mSkin,arm);fore.rotation.z=sx*-.020;
+  const cuffY=longSleeve?-1.01:-.46,cuff=torus('sleeve-cuff'+side,.218,.025,{x:sx*(longSleeve?.125:.10),y:cuffY,z:0},mAccent,arm);cuff.scaling.z=.86;
+  sphere('wrist'+side,.158,{x:sx*.125,y:-1.045,z:0},mSkin,{x:.90,y:1,z:.88},arm);
+  sphere('hand'+side,.215,{x:sx*.130,y:-1.17,z:-.015},mSkin,{x:.80,y:1.05,z:.70},arm);
+  sphere('thumb'+side,.094,{x:sx*.212,y:-1.15,z:-.068},mSkin,{x:.70,y:.98,z:.72},arm,16);
+  arm.rotation.z=sx*.050;return arm;
 }
 function buildBottom(a,g,mBottom,mAccent){
   const style=normalizeStyle(g.bottom?.bottomStyle||g.bottom?.style||(a.gender==='female'?'skirt':'trousers'));
@@ -377,38 +377,55 @@ function buildLegs(bottomStyle,mBottom,mShoe,mAccent,g){
   const bottomHex=mBottom.albedoColor?.toHexString?.()||'#27364E',pantSeam=mat('pant-seam',toneHex(bottomHex,.66),.86);
   const shoeHex=mShoe.albedoColor?.toHexString?.()||'#263248',shoeLight=mat('shoe-light',toneHex(shoeHex,1.28,.055),.52),shoeDark=mat('shoe-dark',toneHex(shoeHex,.62),.62),sole=mat('shoe-sole','#F7F8FB',.76);
   const shoeStyle=normalizeStyle(g.shoes?.shoeStyle||g.shoes?.style||'school');
-  sphere('pelvis',.82,{x:0,y:.78,z:.02},mBottom,{x:1.04,y:.43,z:.76},root);
-  for(const [idx,x] of [-.22,.22].entries()){
+  sphere('pelvis',.77,{x:0,y:.78,z:.02},mBottom,{x:1.01,y:.41,z:.74},root);
+  for(const [idx,x] of [-.205,.205].entries()){
     const side=idx?'R':'L';
     // v40.15: real hip + knee transform pivots.  The visual geometry remains
     // procedural, but poses can now bend at the anatomical joints instead of
     // rotating a whole leg mesh around its centre.
     const hip=makeNode('hipPivot'+side);hip.position.set(x,.78,0);parts['leg'+side]=hip;
-    const thigh=capsule('thigh'+side,.67,.18,{x:0,y:-.30,z:0},legMat,hip);thigh.scaling.z=.98;
+    const thigh=capsule('thigh'+side,.67,.165,{x:0,y:-.30,z:0},legMat,hip);thigh.scaling.z=.96;
     if(!short)capsule('pant-thigh-crease'+side,.48,.009,{x:0,y:-.30,z:-.145},pantSeam,hip);
     const knee=makeNode('kneePivot'+side,hip);knee.position.set(0,-.65,-.005);parts['knee'+side]=knee;
-    sphere('knee'+side,.285,{x:0,y:0,z:0},legMat,{x:.96,y:1,z:.92},knee);
-    const calf=capsule('calf'+side,.64,.15,{x:0,y:-.29,z:.02},legMat,knee);calf.scaling.set(.96,1,.94);
+    sphere('knee'+side,.255,{x:0,y:0,z:0},legMat,{x:.94,y:1,z:.90},knee);
+    const calf=capsule('calf'+side,.64,.138,{x:0,y:-.29,z:.02},legMat,knee);calf.scaling.set(.94,1,.92);
     if(!short)capsule('pant-calf-crease'+side,.50,.008,{x:0,y:-.28,z:-.13},pantSeam,knee);
     if(bottomStyle==='jogger'){const cuff=torus('jogger-cuff'+side,.29,.035,{x:0,y:-.56,z:.02},mAccent,knee);cuff.scaling.z=.94}
+    // v40.15.1 Steps 1+2: lower-profile footwear.  The old spherical foot/toe
+    // silhouette read like a paw.  Keep every wardrobe shoeStyle compatible,
+    // but build the shoe from a slim heel/upper/toe + flat sole stack.
+    const shoeBase=(prefix,upperMat=mShoe,accentMat=shoeLight,depth=.62)=>{
+      const heel=sphere(prefix+'-heel'+side,.33,{x:0,y:-.665,z:.015},upperMat,{x:.92,y:.54,z:.72},knee,20);
+      const upper=sphere(prefix+'-upper'+side,.37,{x:0,y:-.665,z:-.205},upperMat,{x:.94,y:.43,z:1.25},knee,22);
+      const toe=sphere(prefix+'-toe'+side,.29,{x:0,y:-.675,z:-.445},accentMat,{x:1.03,y:.37,z:.82},knee,20);
+      const mid=box(prefix+'-midsole'+side,{x:.35,y:.055,z:depth},{x:0,y:-.755,z:-.225},sole,knee);
+      const out=box(prefix+'-outsole'+side,{x:.36,y:.040,z:depth+.025},{x:0,y:-.802,z:-.225},shoeDark,knee);
+      [heel,upper,toe,mid,out].forEach(m=>{m.isPickable=false});
+      return {heel,upper,toe,mid,out};
+    };
     if(shoeStyle==='boot'){
-      capsule('boot-shaft'+side,.48,.185,{x:0,y:-.49,z:.025},mShoe,knee).scaling.z=.94;
-      sphere('boot-foot'+side,.48,{x:0,y:-.66,z:-.125},mShoe,{x:.96,y:.55,z:1.42},knee);
-      sphere('boot-toe'+side,.38,{x:0,y:-.66,z:-.395},shoeLight,{x:1.02,y:.54,z:.82},knee);
-      sphere('boot-sole'+side,.47,{x:0,y:-.775,z:-.155},shoeDark,{x:1.00,y:.17,z:1.48},knee);
+      capsule('boot-shaft'+side,.43,.155,{x:0,y:-.49,z:.025},mShoe,knee).scaling.z=.90;
+      shoeBase('boot',mShoe,shoeLight,.60);
+      box('boot-cap'+side,{x:.34,y:.045,z:.16},{x:0,y:-.66,z:-.43},shoeLight,knee);
     }else if(shoeStyle==='hightop'){
-      sphere('hightop-collar'+side,.40,{x:0,y:-.52,z:.005},mShoe,{x:.94,y:.84,z:.94},knee);
-      sphere('hightop-foot'+side,.46,{x:0,y:-.66,z:-.135},mShoe,{x:.96,y:.54,z:1.44},knee);
-      sphere('hightop-sole'+side,.47,{x:0,y:-.775,z:-.155},sole,{x:1.00,y:.18,z:1.49},knee);
-      for(let k=0;k<3;k++)box('hightop-lace-'+side+'-'+k,{x:.22,y:.018,z:.025},{x:0,y:-.53-k*.045,z:-.40},shoeLight,knee);
+      const collar=sphere('hightop-collar'+side,.33,{x:0,y:-.525,z:.015},mShoe,{x:.90,y:.78,z:.88},knee,20);
+      shoeBase('hightop',mShoe,shoeLight,.62);
+      const tongue=box('hightop-tongue'+side,{x:.19,y:.20,z:.030},{x:0,y:-.58,z:-.435},shoeLight,knee);tongue.rotation.x=-.12;
+      for(let k=0;k<3;k++)box('hightop-lace-'+side+'-'+k,{x:.18-k*.010,y:.014,z:.020},{x:0,y:-.555-k*.040,z:-.458},mAccent,knee);
+      collar.isPickable=false;
     }else{
-      const runner=shoeStyle==='runner';
-      sphere('shoe'+side,.46,{x:0,y:-.66,z:-.135},mShoe,{x:runner?1.00:.96,y:runner?.50:.55,z:runner?1.54:1.44},knee);
-      sphere('toe'+side,.37,{x:0,y:-.66,z:runner?-.425:-.395},runner?shoeLight:mShoe,{x:1.04,y:.56,z:.84},knee);
-      sphere('sole'+side,.47,{x:0,y:-.775,z:-.165},sole,{x:1.00,y:.18,z:runner?1.58:1.49},knee);
-      if(shoeStyle==='school')box('school-strap'+side,{x:.28,y:.030,z:.10},{x:0,y:-.58,z:-.325},shoeLight,knee);
-      else for(let k=0;k<3;k++)box('lace-'+side+'-'+k,{x:.22-k*.018,y:.018,z:.025},{x:0,y:-.56-k*.035,z:-.40},shoeStyle==='sneaker'?mAccent:shoeDark,knee);
-      if(runner){const stripe=box('runner-stripe'+side,{x:.26,y:.035,z:.035},{x:0,y:-.65,z:-.455},mAccent,knee);stripe.rotation.z=idx?-.28:.28}
+      const runner=shoeStyle==='runner',school=shoeStyle==='school';
+      shoeBase(runner?'runner':school?'school':'sneaker',mShoe,runner?shoeLight:mShoe,runner?.66:.61);
+      const tongue=box('shoe-tongue'+side,{x:.18,y:.13,z:.025},{x:0,y:-.605,z:-.425},shoeLight,knee);tongue.rotation.x=-.12;
+      if(school){
+        const strap=box('school-strap'+side,{x:.27,y:.025,z:.075},{x:0,y:-.615,z:-.335},shoeLight,knee);strap.rotation.x=-.08;
+      }else{
+        for(let k=0;k<3;k++)box('lace-'+side+'-'+k,{x:.18-k*.012,y:.013,z:.020},{x:0,y:-.595-k*.032,z:-.455},shoeStyle==='sneaker'?mAccent:shoeDark,knee);
+      }
+      if(runner){
+        const stripe=box('runner-stripe'+side,{x:.24,y:.028,z:.032},{x:idx?.145:-.145,y:-.675,z:-.325},mAccent,knee);stripe.rotation.y=idx?-.34:.34;
+        box('runner-heel-tab'+side,{x:.12,y:.10,z:.022},{x:0,y:-.61,z:.120},mAccent,knee);
+      }
     }
   }
 }
