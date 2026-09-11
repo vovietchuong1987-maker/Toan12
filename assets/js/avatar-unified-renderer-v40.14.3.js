@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.15.1-unified-avatar-body-sneaker-renderer',VERSION=40151;
+const BUILD='40.15.2-unified-avatar-clean-garment-renderer',VERSION=40152;
 const instances=new Set();
 function core(){return window.v384Avatar3D||window.v392Avatar3D||null}
 function available(){return typeof core()?.createAvatarModel==='function'}

@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-premium-renderer-core-v40.15.1-body-sneaker';
+const BUILD='avatar-premium-renderer-core-v40.15.2-clean-garment';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -281,32 +281,34 @@ function buildTorso(a,g,mTop,mAccent,mSkin){
   const neck=capsule('neck',.30,.135,{x:0,y:2.32,z:0},mSkin,grp);neck.scaling.z=.92;
   const hem=torus('garment-hem',.72,.035,{x:0,y:.88,z:.01},style==='robe'?mAccent:mDark,garment);hem.scaling.z=.78;
   if(isUniform){
-    for(const x of [-.295,.295])sphere('uniform-shoulder-'+x,.43,{x,y:1.95,z:-.01},mWhite,{x:.68,y:.44,z:.65},garment);
-    for(const x of [-.365,.365]){const panel=capsule('uniform-side-panel-'+x,.86,.037,{x,y:1.42,z:-.285},mAccent,garment);panel.rotation.z=x<0?-.035:.035}
-    const colL=box('uniform-collar-l',{x:.25,y:.19,z:.045},{x:-.115,y:2.07,z:-.346},mWhite,garment);colL.rotation.z=.52;
-    const colR=box('uniform-collar-r',{x:.25,y:.19,z:.045},{x:.115,y:2.07,z:-.346},mWhite,garment);colR.rotation.z=-.52;
-    capsule('uniform-placket',.50,.015,{x:0,y:1.79,z:-.365},mAccent,garment);
-    for(let i=0;i<3;i++)sphere('uniform-button-'+i,.038,{x:0,y:1.91-i*.16,z:-.384},mAccent,{x:1,y:1,z:.25},garment,14);
-    for(const x of [-.225,.225]){
-      box('uniform-pocket-'+x,{x:.22,y:.16,z:.035},{x,y:1.16,z:-.345},mLight,garment);
-      box('uniform-pocket-trim-'+x,{x:.23,y:.025,z:.044},{x,y:1.24,z:-.365},mAccent,garment);
-    }
-    buildPhiLogo(garment,mAccent,{x:.27,y:1.69,z:-.374},.90);
+    // v40.15.2 Step 3 — Clean garment language.
+    // Keep the recognizable school collar + Math12 mark, but remove the old
+    // double side panels, twin waist pockets and extra trim that made the shirt noisy.
+    for(const x of [-.295,.295])sphere('uniform-shoulder-'+x,.42,{x,y:1.95,z:-.01},mWhite,{x:.66,y:.42,z:.63},garment);
+    const colL=box('uniform-collar-l',{x:.245,y:.18,z:.040},{x:-.112,y:2.07,z:-.344},mWhite,garment);colL.rotation.z=.52;
+    const colR=box('uniform-collar-r',{x:.245,y:.18,z:.040},{x:.112,y:2.07,z:-.344},mWhite,garment);colR.rotation.z=-.52;
+    capsule('uniform-placket',.36,.011,{x:0,y:1.86,z:-.363},mDark,garment);
+    for(let i=0;i<2;i++)sphere('uniform-button-'+i,.030,{x:0,y:1.94-i*.145,z:-.380},mAccent,{x:1,y:1,z:.22},garment,12);
+    buildPhiLogo(garment,mAccent,{x:.27,y:1.69,z:-.374},.86);
   }else if(style==='hoodie'){
-    const hood=torus('hood',.72,.105,{x:0,y:2.04,z:.12},mDark,garment);hood.rotation.x=Math.PI/2;hood.scaling.y=.92;
-    for(const x of [-.075,.075]){capsule('hood-lace-'+x,.38,.011,{x,y:1.79,z:-.365},mAccent,garment);sphere('hood-lace-tip-'+x,.045,{x,y:1.59,z:-.374},mAccent,{x:.75,y:1,z:.55},garment,14)}
-    sphere('hoodie-pocket',.57,{x:0,y:1.12,z:-.335},mDark,{x:1.08,y:.34,z:.16},garment);
-    const pocketTop=box('hoodie-pocket-top',{x:.52,y:.022,z:.035},{x:0,y:1.23,z:-.382},mAccent,garment);pocketTop.rotation.z=0;
-    buildPhiLogo(garment,mAccent,{x:.25,y:1.70,z:-.372},.86);
+    const hood=torus('hood',.71,.095,{x:0,y:2.04,z:.12},mDark,garment);hood.rotation.x=Math.PI/2;hood.scaling.y=.92;
+    // Short, low-contrast drawcords: enough to read as a hoodie without looking strapped-on.
+    for(const x of [-.065,.065])capsule('hood-lace-'+x,.20,.008,{x,y:1.88,z:-.362},mDark,garment);
+    sphere('hoodie-pocket',.54,{x:0,y:1.12,z:-.334},mDark,{x:1.04,y:.30,z:.13},garment);
+    buildPhiLogo(garment,mAccent,{x:.25,y:1.70,z:-.372},.82);
   }else if(style==='jacket'||style==='blazer'||style==='varsity'){
-    box('jacket-left',{x:.37,y:1.10,z:.055},{x:-.205,y:1.48,z:-.346},style==='blazer'?mDark:mTop,garment);
-    box('jacket-right',{x:.37,y:1.10,z:.055},{x:.205,y:1.48,z:-.346},mTop,garment);
-    const lapelL=box('lapel-l',{x:.25,y:.48,z:.045},{x:-.12,y:1.91,z:-.385},mLight,garment);lapelL.rotation.z=-.38;
-    const lapelR=box('lapel-r',{x:.25,y:.48,z:.045},{x:.12,y:1.91,z:-.385},mLight,garment);lapelR.rotation.z=.38;
-    box('jacket-line',{x:.035,y:.98,z:.060},{x:0,y:1.42,z:-.390},mAccent,garment);
-    for(let i=0;i<3;i++)sphere('jacket-button-'+i,.046,{x:.075,y:1.68-i*.22,z:-.425},mAccent,{x:1,y:1,z:.22},garment,14);
-    for(const x of [-.25,.25])box('jacket-pocket-'+x,{x:.20,y:.032,z:.045},{x,y:1.18,z:-.395},mAccent,garment);
-    buildPhiLogo(garment,mAccent,{x:.275,y:1.73,z:-.420},.70);
+    // One clean front seam instead of zipper + 3 buttons + 2 accent pockets.
+    box('jacket-left',{x:.37,y:1.10,z:.052},{x:-.202,y:1.48,z:-.345},style==='blazer'?mDark:mTop,garment);
+    box('jacket-right',{x:.37,y:1.10,z:.052},{x:.202,y:1.48,z:-.345},mTop,garment);
+    if(style==='blazer'){
+      const lapelL=box('lapel-l',{x:.22,y:.43,z:.038},{x:-.115,y:1.91,z:-.382},mLight,garment);lapelL.rotation.z=-.38;
+      const lapelR=box('lapel-r',{x:.22,y:.43,z:.038},{x:.115,y:1.91,z:-.382},mLight,garment);lapelR.rotation.z=.38;
+      for(let i=0;i<2;i++)sphere('jacket-button-'+i,.033,{x:.065,y:1.60-i*.20,z:-.410},mDark,{x:1,y:1,z:.22},garment,12);
+    }else{
+      const collar=torus('jacket-collar',.49,.040,{x:0,y:2.06,z:-.07},mDark,garment);collar.rotation.x=Math.PI/2;
+    }
+    box('jacket-line',{x:.020,y:.88,z:.038},{x:0,y:1.46,z:-.382},mDark,garment);
+    buildPhiLogo(garment,mAccent,{x:.275,y:1.73,z:-.408},.68);
   }else if(style==='robe'||style==='cape-top'){
     const robe=cyl('robe',1.50,.82,1.17,{x:0,y:1.30,z:.09},mTop,garment,36);robe.scaling.z=.80;
     const collar=torus('robe-collar',.61,.075,{x:0,y:2.00,z:-.20},mAccent,garment);collar.rotation.x=Math.PI/2;
@@ -314,21 +316,21 @@ function buildTorso(a,g,mTop,mAccent,mSkin){
     box('robe-sash',{x:.82,y:.09,z:.055},{x:0,y:.92,z:-.352},mAccent,garment);
     buildPhiLogo(garment,mAccent,{x:0,y:1.58,z:-.425},.96);
   }else if(style==='polo'){
-    const col1=box('polo-collar-l',{x:.25,y:.20,z:.045},{x:-.12,y:2.04,z:-.352},mAccent,garment);col1.rotation.z=.50;
-    const col2=box('polo-collar-r',{x:.25,y:.20,z:.045},{x:.12,y:2.04,z:-.352},mAccent,garment);col2.rotation.z=-.50;
-    capsule('polo-placket',.34,.014,{x:0,y:1.88,z:-.372},mDark,garment);
-    for(let i=0;i<2;i++)sphere('polo-button-'+i,.034,{x:0,y:1.98-i*.13,z:-.391},mAccent,{x:1,y:1,z:.22},garment,14);
-    buildPhiLogo(garment,mAccent,{x:.275,y:1.67,z:-.373},.78);
+    const col1=box('polo-collar-l',{x:.24,y:.19,z:.040},{x:-.115,y:2.04,z:-.350},mAccent,garment);col1.rotation.z=.50;
+    const col2=box('polo-collar-r',{x:.24,y:.19,z:.040},{x:.115,y:2.04,z:-.350},mAccent,garment);col2.rotation.z=-.50;
+    capsule('polo-placket',.27,.011,{x:0,y:1.91,z:-.370},mDark,garment);
+    sphere('polo-button',.030,{x:0,y:1.98,z:-.389},mAccent,{x:1,y:1,z:.22},garment,12);
+    buildPhiLogo(garment,mAccent,{x:.275,y:1.67,z:-.373},.75);
   }else if(style==='jersey'||style==='sport'){
-    for(const x of [-.33,.33])capsule('sport-stripe-'+x,1.02,.032,{x,y:1.46,z:-.315},mAccent,garment);
-    const neckRing=torus('sport-neck',.49,.040,{x:0,y:2.07,z:-.08},mAccent,garment);neckRing.rotation.x=Math.PI/2;
-    box('sport-chest-band',{x:.58,y:.055,z:.045},{x:0,y:1.55,z:-.375},mLight,garment);
-    buildPhiLogo(garment,mAccent,{x:0,y:1.77,z:-.392},1.02);
+    const neckRing=torus('sport-neck',.49,.036,{x:0,y:2.07,z:-.08},mAccent,garment);neckRing.rotation.x=Math.PI/2;
+    // Single restrained chest band replaces two long vertical racing stripes.
+    box('sport-chest-band',{x:.62,y:.042,z:.038},{x:0,y:1.55,z:-.372},mLight,garment);
+    buildPhiLogo(garment,mAccent,{x:0,y:1.77,z:-.390},.96);
   }else if(style==='sweater'){
-    const neckRing=torus('sweater-neck',.52,.060,{x:0,y:2.07,z:-.07},mAccent,garment);neckRing.rotation.x=Math.PI/2;
-    const rib=torus('sweater-rib',.72,.050,{x:0,y:.91,z:.01},mAccent,garment);rib.scaling.z=.78;
-    for(const x of [-.22,0,.22])capsule('sweater-knit-'+x,.72,.010,{x,y:1.40,z:-.365},mLight,garment);
-    buildPhiLogo(garment,mAccent,{x:.27,y:1.70,z:-.378},.82);
+    const neckRing=torus('sweater-neck',.52,.052,{x:0,y:2.07,z:-.07},mAccent,garment);neckRing.rotation.x=Math.PI/2;
+    const rib=torus('sweater-rib',.72,.042,{x:0,y:.91,z:.01},mDark,garment);rib.scaling.z=.78;
+    // Flat knit body: texture is implied by material/shading rather than decorative cords.
+    buildPhiLogo(garment,mAccent,{x:.27,y:1.70,z:-.378},.78);
   }
   return {style,isUniform,grp};
 }
@@ -341,7 +343,9 @@ function buildArm(side,mTop,mAccent,mSkin,style){
   const upper=capsule('upperArm'+side,sleeveLen,.125,{x:sx*.055,y:-.25,z:0},sleeveMat,arm);upper.rotation.z=sx*-.095;
   sphere('elbow'+side,.218,{x:sx*.100,y:-.52,z:0},longSleeve?sleeveMat:mSkin,{x:.93,y:1,z:.90},arm);
   const fore=capsule('forearm'+side,.56,.102,{x:sx*.115,y:-.77,z:0},longSleeve?sleeveMat:mSkin,arm);fore.rotation.z=sx*-.020;
-  const cuffY=longSleeve?-1.01:-.46,cuff=torus('sleeve-cuff'+side,.218,.025,{x:sx*(longSleeve?.125:.10),y:cuffY,z:0},mAccent,arm);cuff.scaling.z=.86;
+  // v40.15.2: cuffs follow the garment instead of adding another accent ring on every top.
+  const cuffY=longSleeve?-1.01:-.46,cuffMat=(style==='robe'||style==='cape-top'||style==='sport'||style==='jersey')?mAccent:sleeveMat;
+  const cuff=torus('sleeve-cuff'+side,.208,.018,{x:sx*(longSleeve?.125:.10),y:cuffY,z:0},cuffMat,arm);cuff.scaling.z=.86;
   sphere('wrist'+side,.158,{x:sx*.125,y:-1.045,z:0},mSkin,{x:.90,y:1,z:.88},arm);
   sphere('hand'+side,.215,{x:sx*.130,y:-1.17,z:-.015},mSkin,{x:.80,y:1.05,z:.70},arm);
   sphere('thumb'+side,.094,{x:sx*.212,y:-1.15,z:-.068},mSkin,{x:.70,y:.98,z:.72},arm,16);
