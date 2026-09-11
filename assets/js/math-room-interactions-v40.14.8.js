@@ -7,7 +7,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.9-interactive-room-presence';
+const BUILD='40.15.0-interactive-room-premium';
 let scene=null, api=null, stage=null, homeCam=null, currentKind='', boundMeshes=[], raf=0, roomDataListener=null;
 const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c));
 const pct=v=>v==null?'—':`${Math.round(Number(v)*100)}%`;
@@ -54,7 +54,7 @@ function ensurePanel(){
   panel=document.createElement('section');panel.className='v40148-interaction-panel';panel.setAttribute('aria-live','polite');panel.innerHTML='<button class="v40148-close" type="button" aria-label="Đóng">×</button><div data-v40148-content></div>';s.appendChild(panel);panel.querySelector('.v40148-close').addEventListener('click',close);return panel;
 }
 function renderPanel(kind){const p=ensurePanel(),d=data();if(!p)return;const action=actionFor(kind);p.querySelector('[data-v40148-content]').innerHTML=`<div class="v40148-kicker">${iconFor(kind)} INTERACTIVE ROOM</div><h3>${titleFor(kind)}</h3>${bodyFor(kind,d)}<div class="v40148-actions">${kind==='chair'?'<button type="button" data-room-action="study">📖 Quay lại bàn học</button>':''}${action?`<button type="button" class="primary" data-room-page="${action.page}">${esc(action.label)}</button>`:''}</div>`;p.classList.add('show');p.querySelectorAll('[data-room-page]').forEach(b=>b.onclick=()=>{close(false);try{window.goPage?.(b.dataset.roomPage)}catch(_){}});p.querySelector('[data-room-action="study"]')?.addEventListener('click',()=>{window.Math12RoomPresence?.go?.('study',{source:'panel'});close()})}
-function poseFor(kind){if(kind==='window')return 'window';if(kind==='chair')return 'relax';if(kind==='notebook'||kind==='board'||kind==='bookshelf')return 'study';return 'focus'}
+function poseFor(kind){if(kind==='window')return 'window';if(kind==='chair')return 'seated-relax';if(kind==='notebook'||kind==='board'||kind==='bookshelf')return 'study';return 'focus'}
 function motionFor(kind){return ({notebook:'think',bookshelf:'nod',trophy:'smallCelebrate',board:'think',window:'headTilt',chair:'headTilt',avatar:'wave'})[kind]||'nod'}
 function cameraFor(kind){if(kind!=='avatar')return CAMERAS[kind];const r=api?.getAvatarRoot?.();if(!r?.position)return CAMERAS.avatar;return {...CAMERAS.avatar,target:[r.position.x,r.position.y+1.07,r.position.z-.22]}}
 function open(kind){const cameraSpec=cameraFor(kind);if(!cameraSpec)return false;currentKind=kind;moveCamera(cameraSpec);try{if(window.Math12RoomPresence?.goForInteraction)window.Math12RoomPresence.goForInteraction(kind,{gesture:motionFor(kind)});else{api?.setAvatarPose?.(poseFor(kind));setTimeout(()=>api?.playAvatarMotion?.(motionFor(kind)),120)}}catch(_){}renderPanel(kind);hideTip();try{window.Math12Events?.emit?.('room:interaction-opened',{kind,build:BUILD})}catch(_){}return true}

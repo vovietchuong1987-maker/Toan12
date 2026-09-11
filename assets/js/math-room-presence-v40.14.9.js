@@ -7,13 +7,13 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.9-room-presence';
+const BUILD='40.15.0-room-presence-premium';
 let scene=null,api=null,stage=null,current='study',moving=false,timer=0;
 const reduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches||!!window.Math12Platform?.perf?.lowPower?.()}catch(_){return false}};
 const LOCATIONS={
   study:{label:'Bàn học',icon:'📖',pose:'study',x:-1.20,y:.38,z:.13,rotationY:0,duration:820},
   window:{label:'Cửa sổ',icon:'🌤',pose:'window',x:-3.05,y:.38,z:.55,rotationY:Math.PI/2,duration:980},
-  relax:{label:'Thư giãn',icon:'☕',pose:'relax',x:.90,y:.38,z:-.55,rotationY:0,duration:900}
+  relax:{label:'Thư giãn',icon:'☕',pose:'seated-relax',x:.90,y:.03,z:.05,rotationY:0,duration:930}
 };
 const INTERACTION_LOCATION={notebook:'study',bookshelf:'study',trophy:'study',board:'study',avatar:'study',window:'window',chair:'relax'};
 function activeStage(){return document.querySelector('#page-room.active .v390-stage')||stage}

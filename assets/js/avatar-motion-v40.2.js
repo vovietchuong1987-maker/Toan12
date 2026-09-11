@@ -8,7 +8,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.9-avatar-motion-presence-bridge',VERSION=40149;
+const BUILD='40.15.0-avatar-motion-premium',VERSION=40150;
 const controllers=new Map();
 const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -22,9 +22,9 @@ function nodeState(node){
 }
 function setNode(node,b){if(!node||!b)return;node.position?.set?.(b.px,b.py,b.pz);node.rotation?.set?.(b.rx,b.ry,b.rz);node.scaling?.set?.(b.sx,b.sy,b.sz)}
 function mix(a,b,t){if(!a)return b;if(!b)return a;const m=(x,y)=>x+(y-x)*t;return {px:m(a.px,b.px),py:m(a.py,b.py),pz:m(a.pz,b.pz),rx:m(a.rx,b.rx),ry:m(a.ry,b.ry),rz:m(a.rz,b.rz),sx:m(a.sx,b.sx),sy:m(a.sy,b.sy),sz:m(a.sz,b.sz)}}
-function capture(c){const p=c.parts||{};return {root:nodeState(c.root),head:nodeState(p.head),leftArm:nodeState(p.leftArm),rightArm:nodeState(p.rightArm),legL:nodeState(p.legL),legR:nodeState(p.legR),body:nodeState(p.body),chest:nodeState(p.chest),eyes:(p.eyes||[]).map(nodeState),gaze:(p.gaze||[]).map(nodeState)}}
-function applySnapshot(c,s){if(!c||!s)return;const p=c.parts||{};setNode(c.root,s.root);setNode(p.head,s.head);setNode(p.leftArm,s.leftArm);setNode(p.rightArm,s.rightArm);setNode(p.legL,s.legL);setNode(p.legR,s.legR);setNode(p.body,s.body);setNode(p.chest,s.chest);(p.eyes||[]).forEach((n,i)=>setNode(n,s.eyes?.[i]));(p.gaze||[]).forEach((n,i)=>setNode(n,s.gaze?.[i]))}
-function mixSnapshot(a,b,t){return {root:mix(a.root,b.root,t),head:mix(a.head,b.head,t),leftArm:mix(a.leftArm,b.leftArm,t),rightArm:mix(a.rightArm,b.rightArm,t),legL:mix(a.legL,b.legL,t),legR:mix(a.legR,b.legR,t),body:mix(a.body,b.body,t),chest:mix(a.chest,b.chest,t),eyes:(a.eyes||[]).map((x,i)=>mix(x,b.eyes?.[i],t)),gaze:(a.gaze||[]).map((x,i)=>mix(x,b.gaze?.[i],t))}}
+function capture(c){const p=c.parts||{};return {root:nodeState(c.root),head:nodeState(p.head),leftArm:nodeState(p.leftArm),rightArm:nodeState(p.rightArm),legL:nodeState(p.legL),legR:nodeState(p.legR),kneeL:nodeState(p.kneeL),kneeR:nodeState(p.kneeR),body:nodeState(p.body),chest:nodeState(p.chest),eyes:(p.eyes||[]).map(nodeState),gaze:(p.gaze||[]).map(nodeState)}}
+function applySnapshot(c,s){if(!c||!s)return;const p=c.parts||{};setNode(c.root,s.root);setNode(p.head,s.head);setNode(p.leftArm,s.leftArm);setNode(p.rightArm,s.rightArm);setNode(p.legL,s.legL);setNode(p.legR,s.legR);setNode(p.kneeL,s.kneeL);setNode(p.kneeR,s.kneeR);setNode(p.body,s.body);setNode(p.chest,s.chest);(p.eyes||[]).forEach((n,i)=>setNode(n,s.eyes?.[i]));(p.gaze||[]).forEach((n,i)=>setNode(n,s.gaze?.[i]))}
+function mixSnapshot(a,b,t){return {root:mix(a.root,b.root,t),head:mix(a.head,b.head,t),leftArm:mix(a.leftArm,b.leftArm,t),rightArm:mix(a.rightArm,b.rightArm,t),legL:mix(a.legL,b.legL,t),legR:mix(a.legR,b.legR,t),kneeL:mix(a.kneeL,b.kneeL,t),kneeR:mix(a.kneeR,b.kneeR,t),body:mix(a.body,b.body,t),chest:mix(a.chest,b.chest,t),eyes:(a.eyes||[]).map((x,i)=>mix(x,b.eyes?.[i],t)),gaze:(a.gaze||[]).map((x,i)=>mix(x,b.gaze?.[i],t))}}
 function currentBase(c,ms){
   const tr=c.poseTransition;if(!tr)return c.base;
   const p=clamp((ms-tr.start)/(tr.until-tr.start||1));const t=smooth(p);const base=mixSnapshot(tr.from,tr.to,t);
@@ -57,9 +57,9 @@ function blinkAmount(ms,c){
   return Math.max(one,two);
 }
 function actionOffsets(c,ms){
-  const a=c.action;if(!a||ms>=a.until){if(a)c.action=null;return {kind:'idle',root:{},head:{},leftArm:{},rightArm:{},legL:{},legR:{}}}
+  const a=c.action;if(!a||ms>=a.until){if(a)c.action=null;return {kind:'idle',root:{},head:{},leftArm:{},rightArm:{},legL:{},legR:{},kneeL:{},kneeR:{}}}
   const p=clamp((ms-a.start)/(a.until-a.start||1)),s=Math.sin(Math.PI*p),pulse=Math.sin(Math.PI*p*2),rapid=Math.sin(Math.PI*p*6);
-  const z={kind:a.kind,root:{},head:{},leftArm:{},rightArm:{},legL:{},legR:{}};
+  const z={kind:a.kind,root:{},head:{},leftArm:{},rightArm:{},legL:{},legR:{},kneeL:{},kneeR:{}};
   switch(a.kind){
     case 'equip':case 'preview':
       z.root.ry=s*(a.kind==='preview'?.10:.20);z.root.py=s*.022;z.root.scale=s*.018;z.head.rz=-s*.028;break;
@@ -96,6 +96,8 @@ function tick(c){
   if(p.rightArm&&base.rightArm){addRot(p.rightArm,base.rightArm,{rx:off.rightArm.rx||0,ry:off.rightArm.ry||0,rz:-(slow?0:Math.sin(t*1.31)*.018)+(off.rightArm.rz||0)})}
   if(p.legL&&base.legL)addRot(p.legL,base.legL,{rx:off.legL.rx||0,rz:off.legL.rz||0});
   if(p.legR&&base.legR)addRot(p.legR,base.legR,{rx:off.legR.rx||0,rz:off.legR.rz||0});
+  if(p.kneeL&&base.kneeL)addRot(p.kneeL,base.kneeL,{rx:off.kneeL?.rx||0,rz:off.kneeL?.rz||0});
+  if(p.kneeR&&base.kneeR)addRot(p.kneeR,base.kneeR,{rx:off.kneeR?.rx||0,rz:off.kneeR?.rz||0});
 }
 function detach(context='all'){
   const names=context==='all'?[...controllers.keys()]:[String(context)];

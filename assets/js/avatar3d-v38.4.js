@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-motion2-renderer-core-v40.14.6';
+const BUILD='avatar-premium-renderer-core-v40.15.0';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -380,29 +380,35 @@ function buildLegs(bottomStyle,mBottom,mShoe,mAccent,g){
   sphere('pelvis',.82,{x:0,y:.78,z:.02},mBottom,{x:1.04,y:.43,z:.76},root);
   for(const [idx,x] of [-.22,.22].entries()){
     const side=idx?'R':'L';
-    const thigh=capsule('thigh'+side,.67,.18,{x,y:.48,z:0},legMat);parts['leg'+side]=thigh;
-    sphere('knee'+side,.285,{x,y:.13,z:-.005},legMat,{x:.96,y:1,z:.92});
-    const calf=capsule('calf'+side,.64,.15,{x,y:-.16,z:.015},legMat);calf.scaling.set(.96,1,.94);
-    if(!short)capsule('pant-crease'+side,.73,.009,{x,y:.09,z:-.145},pantSeam);
-    if(bottomStyle==='jogger'){const cuff=torus('jogger-cuff'+side,.29,.035,{x,y:-.43,z:.015},mAccent);cuff.scaling.z=.94}
+    // v40.15: real hip + knee transform pivots.  The visual geometry remains
+    // procedural, but poses can now bend at the anatomical joints instead of
+    // rotating a whole leg mesh around its centre.
+    const hip=makeNode('hipPivot'+side);hip.position.set(x,.78,0);parts['leg'+side]=hip;
+    const thigh=capsule('thigh'+side,.67,.18,{x:0,y:-.30,z:0},legMat,hip);thigh.scaling.z=.98;
+    if(!short)capsule('pant-thigh-crease'+side,.48,.009,{x:0,y:-.30,z:-.145},pantSeam,hip);
+    const knee=makeNode('kneePivot'+side,hip);knee.position.set(0,-.65,-.005);parts['knee'+side]=knee;
+    sphere('knee'+side,.285,{x:0,y:0,z:0},legMat,{x:.96,y:1,z:.92},knee);
+    const calf=capsule('calf'+side,.64,.15,{x:0,y:-.29,z:.02},legMat,knee);calf.scaling.set(.96,1,.94);
+    if(!short)capsule('pant-calf-crease'+side,.50,.008,{x:0,y:-.28,z:-.13},pantSeam,knee);
+    if(bottomStyle==='jogger'){const cuff=torus('jogger-cuff'+side,.29,.035,{x:0,y:-.56,z:.02},mAccent,knee);cuff.scaling.z=.94}
     if(shoeStyle==='boot'){
-      capsule('boot-shaft'+side,.48,.185,{x,y:-.36,z:.02},mShoe).scaling.z=.94;
-      sphere('boot-foot'+side,.48,{x,y:-.53,z:-.13},mShoe,{x:.96,y:.55,z:1.42});
-      sphere('boot-toe'+side,.38,{x,y:-.53,z:-.40},shoeLight,{x:1.02,y:.54,z:.82});
-      sphere('boot-sole'+side,.47,{x,y:-.645,z:-.16},shoeDark,{x:1.00,y:.17,z:1.48});
+      capsule('boot-shaft'+side,.48,.185,{x:0,y:-.49,z:.025},mShoe,knee).scaling.z=.94;
+      sphere('boot-foot'+side,.48,{x:0,y:-.66,z:-.125},mShoe,{x:.96,y:.55,z:1.42},knee);
+      sphere('boot-toe'+side,.38,{x:0,y:-.66,z:-.395},shoeLight,{x:1.02,y:.54,z:.82},knee);
+      sphere('boot-sole'+side,.47,{x:0,y:-.775,z:-.155},shoeDark,{x:1.00,y:.17,z:1.48},knee);
     }else if(shoeStyle==='hightop'){
-      sphere('hightop-collar'+side,.40,{x,y:-.39,z:.00},mShoe,{x:.94,y:.84,z:.94});
-      sphere('hightop-foot'+side,.46,{x,y:-.53,z:-.14},mShoe,{x:.96,y:.54,z:1.44});
-      sphere('hightop-sole'+side,.47,{x,y:-.645,z:-.16},sole,{x:1.00,y:.18,z:1.49});
-      for(let k=0;k<3;k++)box('hightop-lace-'+side+'-'+k,{x:.22,y:.018,z:.025},{x,y:-.40-k*.045,z:-.405},shoeLight);
+      sphere('hightop-collar'+side,.40,{x:0,y:-.52,z:.005},mShoe,{x:.94,y:.84,z:.94},knee);
+      sphere('hightop-foot'+side,.46,{x:0,y:-.66,z:-.135},mShoe,{x:.96,y:.54,z:1.44},knee);
+      sphere('hightop-sole'+side,.47,{x:0,y:-.775,z:-.155},sole,{x:1.00,y:.18,z:1.49},knee);
+      for(let k=0;k<3;k++)box('hightop-lace-'+side+'-'+k,{x:.22,y:.018,z:.025},{x:0,y:-.53-k*.045,z:-.40},shoeLight,knee);
     }else{
       const runner=shoeStyle==='runner';
-      sphere('shoe'+side,.46,{x,y:-.53,z:-.14},mShoe,{x:runner?1.00:.96,y:runner?.50:.55,z:runner?1.54:1.44});
-      sphere('toe'+side,.37,{x,y:-.53,z:runner?-.43:-.40},runner?shoeLight:mShoe,{x:1.04,y:.56,z:.84});
-      sphere('sole'+side,.47,{x,y:-.645,z:-.17},sole,{x:1.00,y:.18,z:runner?1.58:1.49});
-      if(shoeStyle==='school')box('school-strap'+side,{x:.28,y:.030,z:.10},{x,y:-.45,z:-.33},shoeLight);
-      else for(let k=0;k<3;k++)box('lace-'+side+'-'+k,{x:.22-k*.018,y:.018,z:.025},{x,y:-.43-k*.035,z:-.405},shoeStyle==='sneaker'?mAccent:shoeDark);
-      if(runner){const stripe=box('runner-stripe'+side,{x:.26,y:.035,z:.035},{x,y:-.52,z:-.46},mAccent);stripe.rotation.z=idx?-.28:.28}
+      sphere('shoe'+side,.46,{x:0,y:-.66,z:-.135},mShoe,{x:runner?1.00:.96,y:runner?.50:.55,z:runner?1.54:1.44},knee);
+      sphere('toe'+side,.37,{x:0,y:-.66,z:runner?-.425:-.395},runner?shoeLight:mShoe,{x:1.04,y:.56,z:.84},knee);
+      sphere('sole'+side,.47,{x:0,y:-.775,z:-.165},sole,{x:1.00,y:.18,z:runner?1.58:1.49},knee);
+      if(shoeStyle==='school')box('school-strap'+side,{x:.28,y:.030,z:.10},{x:0,y:-.58,z:-.325},shoeLight,knee);
+      else for(let k=0;k<3;k++)box('lace-'+side+'-'+k,{x:.22-k*.018,y:.018,z:.025},{x:0,y:-.56-k*.035,z:-.40},shoeStyle==='sneaker'?mAccent:shoeDark,knee);
+      if(runner){const stripe=box('runner-stripe'+side,{x:.26,y:.035,z:.035},{x:0,y:-.65,z:-.455},mAccent,knee);stripe.rotation.z=idx?-.28:.28}
     }
   }
 }
@@ -500,6 +506,8 @@ function applyFactoryPose(model,pose='stand'){
   if(p.rightArm){p.rightArm.rotation.x=0;p.rightArm.rotation.y=0;p.rightArm.rotation.z=.065}
   if(p.legL){p.legL.rotation.x=0;p.legL.rotation.y=0;p.legL.rotation.z=0}
   if(p.legR){p.legR.rotation.x=0;p.legR.rotation.y=0;p.legR.rotation.z=0}
+  if(p.kneeL){p.kneeL.rotation.x=0;p.kneeL.rotation.y=0;p.kneeL.rotation.z=0}
+  if(p.kneeR){p.kneeR.rotation.x=0;p.kneeR.rotation.y=0;p.kneeR.rotation.z=0}
   const key=normalizeStyle(pose,'stand');
   if(key==='study'||key==='desk'||key==='sit-study'){
     if(p.head){p.head.rotation.x=.070;p.head.rotation.y=-.018}
@@ -511,6 +519,14 @@ function applyFactoryPose(model,pose='stand'){
     if(p.head)p.head.rotation.x=.042;
     if(p.leftArm)p.leftArm.rotation.x=-.08;
     if(p.rightArm)p.rightArm.rotation.x=-.08;
+  }else if(key==='seated'||key==='seated-relax'||key==='chair'){
+    if(p.head){p.head.rotation.x=-.020;p.head.rotation.y=.028;p.head.rotation.z=.025}
+    if(p.leftArm){p.leftArm.rotation.x=-.10;p.leftArm.rotation.z=-.20}
+    if(p.rightArm){p.rightArm.rotation.x=-.10;p.rightArm.rotation.z=.20}
+    if(p.legL){p.legL.rotation.x=1.17;p.legL.rotation.z=-.035}
+    if(p.legR){p.legR.rotation.x=1.17;p.legR.rotation.z=.035}
+    if(p.kneeL)p.kneeL.rotation.x=-1.14;
+    if(p.kneeR)p.kneeR.rotation.x=-1.14;
   }else if(key==='relax'){
     if(p.head){p.head.rotation.x=-.025;p.head.rotation.y=.025;p.head.rotation.z=.030}
     if(p.leftArm){p.leftArm.rotation.x=.055;p.leftArm.rotation.z=-.17}

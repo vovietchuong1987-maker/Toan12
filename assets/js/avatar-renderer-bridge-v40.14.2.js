@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.6-avatar-renderer-compat-motion2',VERSION=40146;
+const BUILD='40.15.0-avatar-renderer-premium-bridge',VERSION=40150;
 let unregister=null;
 function registerStudio(){
   const bridge=window.AvatarRendererBridge,studio=window.v384Avatar3D;

@@ -5,7 +5,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.6-unified-avatar-motion2-ready-renderer',VERSION=40146;
+const BUILD='40.15.0-unified-avatar-premium-renderer',VERSION=40150;
 const instances=new Set();
 function core(){return window.v384Avatar3D||window.v392Avatar3D||null}
 function available(){return typeof core()?.createAvatarModel==='function'}
