@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-premium-renderer-core-v40.15.2-clean-garment';
+const BUILD='avatar-premium-renderer-core-v40.15.4-math12-signature';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -161,16 +161,32 @@ function buildFace(a,mSkin,mEye,mIris,mWhite,mAccent,parent=root){
 function buildHair(a,hairMat,parent=root,headItem=null){
   const style=normalizeStyle(a.hair||'short'),group=makeNode('hair-group',parent),hatSafe=!!headItem;
   const baseHex=hairMat.albedoColor?.toHexString?.()||'#263248';
-  const shadowMat=mat('hair-shadow',toneHex(baseHex,.68),.68),highlightMat=mat('hair-highlight',toneHex(baseHex,1.24,.025),.46);
+  const shadowMat=mat('hair-shadow',toneHex(baseHex,.68),.68),highlightMat=mat('hair-highlight',toneHex(baseHex,1.16,.018),.43);
+  const sheenMat=transparentMat('hair-sheen',toneHex(baseHex,1.18,.026),.20);
   const modules={back:makeNode('hairBack',group),base:makeNode('hairBase',group),side:makeNode('hairSides',group),top:makeNode('hairTop',group),front:makeNode('hairFront',group),detail:makeNode('hairHighlights',group)};
-  parts.hair=group;parts.hairModules=modules;group.metadata={style,hatSafe,layered:true};
+  parts.hair=group;parts.hairModules=modules;group.metadata={style,hatSafe,layered:true,naturalHairV40153:true};
   const blob=(name,x,y,z,sx,sy,sz,material=hairMat,parentNode=modules.front)=>sphere(name,.40,{x,y,z},material,{x:sx,y:sy,z:sz},parentNode);
   const strand=(name,x,y,z,len=.35,width=.085,angle=0,material=hairMat,parentNode=modules.front)=>{const s=capsule(name,len,width,{x,y,z},material,parentNode);s.rotation.z=angle;s.scaling.z=.72;return s};
+  // v40.15.3: tapered locks replace the old uniformly thick "plastic rods" in
+  // the visible fringe.  The wider root + narrower tip reads more like hair.
+  const taper=(name,x,y,z,len=.30,width=.075,angle=0,material=hairMat,parentNode=modules.front)=>{const s=cyl(name,len,width*1.55,width*.48,{x,y,z},material,parentNode,16);s.rotation.z=angle;s.scaling.z=.72;return s};
   const curl=(name,x,y,z,size=.24,material=hairMat,parentNode=modules.side)=>sphere(name,size,{x,y,z},material,{x:1,y:.92,z:.86},parentNode,18);
-  // Keep the cap on the upper skull and slightly in front of the skin. The old
-  // deep rear cap was hidden inside the head, leaving a bald forehead.
-  const cap=(y=3.30,sy=.32,z=-.03)=>sphere('hair-cap',1.32,{x:0,y,z},hairMat,{x:1.01,y:hatSafe?Math.min(sy,.27):sy,z:.96},modules.base);
-  const softPart=(x,y,len,angle,parentNode=modules.front)=>strand('hair-part-'+x+'-'+y,x,y,-.552,len,.020,angle,highlightMat,parentNode);
+  const lowPower=isLowPower();
+  // Keep the cap on the upper skull and slightly in front of the skin.  Step 4
+  // adds only a small amount of crown lift so the hairstyle is no longer flat.
+  const cap=(y=3.32,sy=.35,z=-.02)=>sphere('hair-cap',1.32,{x:0,y,z},hairMat,{x:1.01,y:hatSafe?Math.min(sy,.27):sy,z:.96},modules.base);
+  const softPart=(x,y,len,angle,parentNode=modules.front)=>strand('hair-part-'+x+'-'+y,x,y,-.552,len,.016,angle,sheenMat,parentNode);
+  const crownLift=()=>{
+    if(hatSafe||lowPower||['crew','buzz','curly','curls','mohawk','spiky','spike','undercut','fade','messy','wavy','bun','topbun'].includes(style))return;
+    blob('crown-air-left',-.25,3.40,-.005,.80,.48,.70,hairMat,modules.top);
+    blob('crown-air-center',.01,3.44,-.015,.92,.55,.74,hairMat,modules.top);
+    blob('crown-air-right',.27,3.38,.005,.76,.44,.68,hairMat,modules.top);
+  };
+  const faceWisps=()=>{
+    if(lowPower||['crew','buzz','undercut','fade'].includes(style))return;
+    taper('face-wisp-left',-.43,2.98,-.505,.30,.052,.16,shadowMat,modules.front);
+    taper('face-wisp-right',.43,2.98,-.505,.30,.052,-.16,shadowMat,modules.front);
+  };
 
   if(['crew','buzz'].includes(style)){
     sphere('crew-cap',1.29,{x:0,y:3.27,z:-.025},hairMat,{x:1.00,y:hatSafe?.25:.30,z:.96},modules.base);
@@ -178,12 +194,12 @@ function buildHair(a,hairMat,parent=root,headItem=null){
   }else if(!['undercut','fade'].includes(style))cap();
 
   if(['side','sidesweep'].includes(style)){
-    strand('side-sweep-a',-.15,3.19,-.548,.38,.105,-.64,hairMat);
-    strand('side-sweep-b',.18,3.16,-.550,.31,.095,-.47,hairMat);
+    taper('side-sweep-a',-.15,3.19,-.548,.38,.105,-.64,hairMat);
+    taper('side-sweep-b',.18,3.16,-.550,.31,.095,-.47,hairMat);
     strand('side-temple',.49,2.89,-.39,.37,.11,-.05,shadowMat,modules.side);
     softPart(-.18,3.205,.29,-.60);
   }else if(style==='layered'){
-    for(const [i,x] of [-.38,-.20,0,.20,.38].entries())strand('layered-front-'+i,x,3.16+(i%2)*.025,-.55,.23+(i%3)*.025,.075,(i-2)*-.14,hairMat);
+    for(const [i,x] of [-.38,-.20,0,.20,.38].entries())taper('layered-front-'+i,x,3.16+(i%2)*.025,-.55,.23+(i%3)*.025,.075,(i-2)*-.14,hairMat);
     for(const x of [-.51,.51])strand('layered-side-'+x,x,2.76,-.22,.62,.145,x<0?.08:-.08,shadowMat,modules.side);
     softPart(-.12,3.20,.25,-.18);
   }else if(['spiky','spike','mohawk'].includes(style)){
@@ -194,11 +210,11 @@ function buildHair(a,hairMat,parent=root,headItem=null){
   }else if(['bob','roundbob'].includes(style)){
     sphere('bob-back',1.30,{x:0,y:2.72,z:.20},shadowMat,{x:1.035,y:1.02,z:.82},modules.back);
     for(const x of [-.52,.52]){strand('bob-side-'+x,x,2.63,-.16,.78,.175,x<0?.035:-.035,hairMat,modules.side);curl('bob-tip-'+x,x,2.27,-.15,.30,hairMat,modules.side)}
-    for(const [i,x] of [-.29,-.10,.10,.29].entries())strand('bob-fringe-'+i,x,3.15,-.55,.22,.072,(i-1.5)*-.12,hairMat);
+    for(const [i,x] of [-.29,-.10,.10,.29].entries())taper('bob-fringe-'+i,x,3.15,-.55,.22,.072,(i-1.5)*-.12,hairMat);
     softPart(-.16,3.17,.22,-.16);
   }else if(['pony','ponytail','highpony'].includes(style)){
-    strand('pony-sweep-a',-.15,3.19,-.55,.34,.098,-.56,hairMat);
-    strand('pony-sweep-b',.18,3.16,-.55,.28,.088,-.42,hairMat);
+    taper('pony-sweep-a',-.15,3.19,-.55,.34,.098,-.56,hairMat);
+    taper('pony-sweep-b',.18,3.16,-.55,.28,.088,-.42,hairMat);
     const tieY=hatSafe?2.92:3.08;curl('pony-tie',.02,tieY,.65,.20,highlightMat,modules.back);
     strand('pony-upper',.10,tieY-.22,.66,.56,.19,-.18,hairMat,modules.back);
     strand('pony-lower',.20,tieY-.64,.60,.56,.17,-.27,shadowMat,modules.back);
@@ -216,7 +232,7 @@ function buildHair(a,hairMat,parent=root,headItem=null){
       }
       strand('long-highlight-'+x,x+(x<0?.035:-.035),2.29,-.255,.74,.025,x<0?.02:-.02,highlightMat,modules.detail);
     }
-    for(const [i,x] of [-.28,-.09,.10,.29].entries())strand('long-fringe-'+i,x,3.15,-.55,.22,.072,(i-1.5)*-.10,hairMat);
+    for(const [i,x] of [-.28,-.09,.10,.29].entries())taper('long-fringe-'+i,x,3.15,-.55,.22,.072,(i-1.5)*-.10,hairMat);
   }else if(['curly','curls'].includes(style)){
     const curls=[[-.43,3.24],[-.22,3.36],[0,3.39],[.22,3.36],[.43,3.24],[-.52,3.05],[.52,3.05],[-.55,2.82],[.55,2.82],[-.39,2.94],[-.13,3.04],[.14,3.04],[.39,2.94]];
     for(const [i,p] of curls.entries())if(!hatSafe||p[1]<3.18)curl('curl-'+i,p[0],p[1],p[1]<3.10?-.43:-.12,.27,i%4===0?highlightMat:hairMat,p[1]<3.10?modules.front:modules.top);
@@ -231,7 +247,7 @@ function buildHair(a,hairMat,parent=root,headItem=null){
       strand('twin-lower-'+i,x+(i?.07:-.07),2.14,.13,.54,.15,i?.20:-.20,shadowMat,modules.side);
       curl('twin-tip-'+i,x+(i?.13:-.13),1.87,.10,.29,hairMat,modules.side);
     }
-    for(const [i,x] of [-.27,-.09,.09,.27].entries())strand('twin-fringe-'+i,x,3.15,-.55,.22,.070,(i-1.5)*-.10,hairMat);
+    for(const [i,x] of [-.27,-.09,.09,.27].entries())taper('twin-fringe-'+i,x,3.15,-.55,.22,.070,(i-1.5)*-.10,hairMat);
   }else if(['bun','topbun'].includes(style)){
     const bunY=hatSafe?2.78:3.48,bunZ=hatSafe?.61:.18;
     sphere('bun-shadow',.62,{x:0,y:bunY,z:bunZ+.025},shadowMat,{x:1,y:.88,z:1},modules.back);
@@ -243,29 +259,68 @@ function buildHair(a,hairMat,parent=root,headItem=null){
       for(let k=0;k<6;k++)curl('braid-'+j+'-'+k,x+(j?.025:-.025)*k,2.62-k*.18,.01,.245-k*.012,k%2?shadowMat:hairMat,modules.side);
       curl('braid-tie-'+j,x+(j?.13:-.13),1.55,.01,.14,highlightMat,modules.side);
     }
-    for(const [i,x] of [-.27,-.09,.09,.27].entries())strand('braid-fringe-'+i,x,3.15,-.55,.22,.070,(i-1.5)*-.11,hairMat);
+    for(const [i,x] of [-.27,-.09,.09,.27].entries())taper('braid-fringe-'+i,x,3.15,-.55,.22,.070,(i-1.5)*-.11,hairMat);
   }else if(['messy','wavy'].includes(style)){
-    for(const [i,x] of [-.39,-.24,-.08,.09,.25,.39].entries())strand('messy-front-'+i,x,3.16+(i%2)*.028,-.54,.23+(i%3)*.025,.072,(i-2.5)*-.18,i===1||i===4?highlightMat:hairMat);
+    for(const [i,x] of [-.39,-.24,-.08,.09,.25,.39].entries())taper('messy-front-'+i,x,3.16+(i%2)*.028,-.54,.23+(i%3)*.025,.072,(i-2.5)*-.18,i===1||i===4?highlightMat:hairMat);
     if(!hatSafe)for(const [i,x] of [-.30,-.10,.12,.31].entries())blob('messy-volume-'+i,x,3.28+(i%2)*.06,-.04,.72,.52,.68,i===2?highlightMat:hairMat,modules.top);
     for(const x of [-.50,.50])strand('wavy-side-'+x,x,2.77,-.20,.55,.13,x<0?.12:-.12,shadowMat,modules.side);
   }else if(!['crew','buzz'].includes(style)){
-    blob('classic-fringe-left',-.21,3.13,-.565,.92,.33,.30,hairMat,modules.front);
-    blob('classic-fringe-right',.18,3.14,-.565,.86,.31,.30,hairMat,modules.front);
-    strand('classic-part',-.015,3.19,-.575,.19,.052,-.08,highlightMat,modules.detail);
-    for(const x of [-.50,.50])blob('classic-temple-'+x,x,3.00,-.34,.52,.82,.52,shadowMat,modules.side);
+    blob('classic-fringe-left',-.21,3.15,-.555,.90,.31,.29,hairMat,modules.front);
+    blob('classic-fringe-right',.18,3.16,-.555,.84,.30,.29,hairMat,modules.front);
+    taper('classic-lock-left',-.27,3.08,-.575,.25,.060,.20,hairMat,modules.front);
+    taper('classic-lock-center',-.02,3.11,-.584,.23,.054,-.04,hairMat,modules.front);
+    taper('classic-lock-right',.23,3.09,-.575,.24,.058,-.18,hairMat,modules.front);
+    strand('classic-part',-.015,3.21,-.575,.20,.018,-.08,sheenMat,modules.detail);
+    for(const x of [-.50,.50])blob('classic-temple-'+x,x,3.00,-.34,.50,.80,.50,shadowMat,modules.side);
   }
 
+  // v40.15.3 Step 4 — Natural Hair Polish.
+  // A light crown layer breaks the flat helmet silhouette, while two tiny face
+  // wisps soften the transition around the cheeks.  Both are skipped on low-
+  // power devices (and where hats/fades would conflict) to protect mobile FPS.
+  crownLift();
+  faceWisps();
   if(!hatSafe&&!['crew','buzz','curly','curls'].includes(style)){
-    softPart(-.22,3.20,.20,-.16,modules.detail);softPart(.03,3.23,.18,.03,modules.detail);softPart(.24,3.18,.17,.16,modules.detail);
+    softPart(-.22,3.22,.21,-.16,modules.detail);softPart(.03,3.25,.19,.03,modules.detail);softPart(.24,3.20,.18,.16,modules.detail);
+    if(!lowPower){
+      strand('soft-sheen-left',-.15,3.31,-.506,.20,.012,-.22,sheenMat,modules.detail);
+      strand('soft-sheen-right',.16,3.30,-.500,.18,.011,.20,sheenMat,modules.detail);
+    }
   }
   return group;
 }
 
-function buildPhiLogo(parent,mAccent,pos={x:.27,y:1.67,z:-.365},scale=.92){
-  const logo=makeNode('math-phi-logo',parent);logo.position.set(pos.x,pos.y,pos.z);logo.scaling.set(scale,scale,scale);
-  const ring=torus('phi-ring',.18,.024,{x:0,y:0,z:0},mAccent,logo);ring.rotation.x=Math.PI/2;
-  capsule('phi-stem',.235,.014,{x:0,y:0,z:-.014},mAccent,logo);
+function buildMath12Signature(parent,mAccent,pos={x:.27,y:1.67,z:-.365},scale=.92){
+  // v40.15.4 Step 5 — Math12 Signature System.
+  // A tiny fixed-brand crest makes the avatar recognizable even when students
+  // completely change outfit colors. Geometry only: no texture/font/network cost.
+  const logo=makeNode('math12-signature-crest',parent);logo.position.set(pos.x,pos.y,pos.z);logo.scaling.set(scale,scale,scale);
+  const navy=mat('math12-brand-navy','#172033',.58,.06),indigo=mat('math12-brand-indigo','#7B92FF',.46,.04),mint=mat('math12-brand-mint','#51D4B4',.48,.03),white=mat('math12-brand-white','#F8FAFC',.82,0);
+  const plate=cyl('math12-crest-plate',.028,.29,.29,{x:0,y:0,z:.002},navy,logo,28);plate.rotation.x=Math.PI/2;
+  const orbit=torus('math12-orbit',.205,.015,{x:0,y:0,z:-.026},mint,logo);orbit.rotation.x=Math.PI/2;orbit.scaling.y=.78;
+  // Stylised sigma/∑, matching the Math12 Hub navigation mark.
+  box('math12-sigma-top',{x:.112,y:.020,z:.018},{x:-.014,y:.052,z:-.043},white,logo);
+  const diag=box('math12-sigma-diag',{x:.128,y:.020,z:.018},{x:-.006,y:0,z:-.044},white,logo);diag.rotation.z=-.58;
+  box('math12-sigma-bottom',{x:.112,y:.020,z:.018},{x:-.014,y:-.052,z:-.043},white,logo);
+  sphere('math12-orbit-node',.034,{x:.090,y:.060,z:-.046},indigo,{x:1,y:1,z:.45},logo,12);
+  const accent=box('math12-accent-tick',{x:.040,y:.013,z:.014},{x:.070,y:-.067,z:-.044},mAccent,logo);accent.rotation.z=.18;
+  logo.metadata={brand:'Math12 Hub',signature:'sum-orbit',version:'40.15.4'};
+  parts.identity=logo;
   return logo;
+}
+function buildPhiLogo(parent,mAccent,pos={x:.27,y:1.67,z:-.365},scale=.92){return buildMath12Signature(parent,mAccent,pos,scale)}
+
+function buildMath12SleeveTag(arm,side,style){
+  // One small left-sleeve tab is enough to create a recurring brand cue without
+  // re-introducing the decorative clutter removed in Step 3.
+  if(side!=='L'||['robe','cape-top'].includes(style))return null;
+  const grp=makeNode('math12-sleeve-signature',arm);
+  const navy=mat('math12-sleeve-navy','#172033',.72,0),mint=mat('math12-sleeve-mint','#51D4B4',.60,.01),indigo=mat('math12-sleeve-indigo','#7B92FF',.58,.01);
+  const base=box('math12-sleeve-tag-base',{x:.070,y:.125,z:.022},{x:-.150,y:-.255,z:-.115},navy,grp);base.rotation.z=-.03;
+  box('math12-sleeve-tag-mint',{x:.055,y:.025,z:.010},{x:-.150,y:-.225,z:-.128},mint,grp);
+  box('math12-sleeve-tag-indigo',{x:.055,y:.025,z:.010},{x:-.150,y:-.285,z:-.128},indigo,grp);
+  grp.metadata={brand:'Math12 Hub',signature:'sleeve-tab',version:'40.15.4'};
+  return grp;
 }
 
 function buildTorso(a,g,mTop,mAccent,mSkin){
@@ -349,6 +404,7 @@ function buildArm(side,mTop,mAccent,mSkin,style){
   sphere('wrist'+side,.158,{x:sx*.125,y:-1.045,z:0},mSkin,{x:.90,y:1,z:.88},arm);
   sphere('hand'+side,.215,{x:sx*.130,y:-1.17,z:-.015},mSkin,{x:.80,y:1.05,z:.70},arm);
   sphere('thumb'+side,.094,{x:sx*.212,y:-1.15,z:-.068},mSkin,{x:.70,y:.98,z:.72},arm,16);
+  buildMath12SleeveTag(arm,side,style);
   arm.rotation.z=sx*.050;return arm;
 }
 function buildBottom(a,g,mBottom,mAccent){
@@ -514,6 +570,7 @@ function buildAvatarCore(){
   buildHeadgear(g,headRig);buildGlasses(g,headRig);
   if(g.back)buildBack(g);else buildBack({back:{backStyle:'backpack',color:g.accent||'#416B48',accent:'#294B33'}});
   buildHandTool(g);
+  root.metadata={...(root.metadata||{}),brandIdentity:'math12-signature-v1',brandIdentityVersion:'40.15.4'};
   try{root.getChildMeshes().forEach(x=>{x.receiveShadows=true;x.isPickable=false})}catch(_){ }
   return {root,parts,appearance:a,garment:g};
 }
@@ -615,7 +672,7 @@ function createScene(){
   });return scene;
 }
 function destroy(){if(rafMount)cancelAnimationFrame(rafMount);rafMount=0;try{scene?.dispose()}catch(_){}try{engine?.dispose()}catch(_){}scene=null;engine=null;root=null;canvas=null;parts={}}
-function controls(shell){shell.insertAdjacentHTML('beforeend',`<div class="v384-avatar3d-badge">3D • ALIVE</div><div class="v392-quality-chip"></div><div class="v384-avatar3d-controls"><button type="button" data-act="left" title="Xoay trái">↶</button><button type="button" data-act="reset" title="Góc nhìn mặc định">◎</button><button type="button" data-act="celebrate" title="Ăn mừng">✦</button><button type="button" data-act="right" title="Xoay phải">↷</button></div>`);shell.querySelector('[data-act="left"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha-=.35};shell.querySelector('[data-act="right"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha+=.35};shell.querySelector('[data-act="reset"]').onclick=()=>{const c=scene?.activeCamera;if(c){c.alpha=-Math.PI/2.10;c.beta=Math.PI/2.30;c.radius=6.35}};shell.querySelector('[data-act="celebrate"]').onclick=()=>{if(window.AvatarMotion?.celebrate)return window.AvatarMotion.celebrate();celebrateUntil=performance.now()+1800}}
+function controls(shell){shell.insertAdjacentHTML('beforeend',`<div class="v384-avatar3d-badge">∑ MATH12 • LIVE</div><div class="v392-quality-chip"></div><div class="v384-avatar3d-controls"><button type="button" data-act="left" title="Xoay trái">↶</button><button type="button" data-act="reset" title="Góc nhìn mặc định">◎</button><button type="button" data-act="celebrate" title="Ăn mừng">✦</button><button type="button" data-act="right" title="Xoay phải">↷</button></div>`);shell.querySelector('[data-act="left"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha-=.35};shell.querySelector('[data-act="right"]').onclick=()=>{if(scene?.activeCamera)scene.activeCamera.alpha+=.35};shell.querySelector('[data-act="reset"]').onclick=()=>{const c=scene?.activeCamera;if(c){c.alpha=-Math.PI/2.10;c.beta=Math.PI/2.30;c.radius=6.35}};shell.querySelector('[data-act="celebrate"]').onclick=()=>{if(window.AvatarMotion?.celebrate)return window.AvatarMotion.celebrate();celebrateUntil=performance.now()+1800}}
 async function mount(){
   const stage=document.querySelector('#page-avatar.active .avatar-preview-stage')||document.querySelector('#page-avatar .avatar-preview-stage');if(!stage)return;
   if(stage.querySelector('.v384-avatar3d-shell'))return;
