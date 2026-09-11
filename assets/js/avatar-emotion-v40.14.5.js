@@ -1,5 +1,5 @@
 /* =========================================================
-   Math12 Hub — Avatar Emotion Engine + Motion 2.0 integration v40.14.6
+   Math12 Hub — Avatar Emotion Engine + Expressive Face Polish v40.15.5
    - Context-aware facial expressions for learning feedback.
    - Works across Studio + Math Room through AvatarRendererBridge.
    - Local/session only: emotions do not alter the saved avatar identity.
@@ -7,8 +7,8 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.6-avatar-emotion-motion2-integration',VERSION=40146;
-const STORE_KEY='math12hub-avatar-emotion-v40145';
+const BUILD='40.15.5-avatar-expressive-face-polish',VERSION=40155;
+const STORE_KEY='math12hub-avatar-emotion-v40155';
 const baseByParts=new WeakMap();
 let current='neutral',currentUntil=0,resetTimer=0,lastReactionAt=0,lastMastered=null,installed=false;
 
@@ -19,13 +19,48 @@ const copy=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return x}};
 const safeNum=(x,d=0)=>Number.isFinite(Number(x))?Number(x):d;
 
 const EXPRESSIONS={
-  neutral:{brow:[0,0],mouth:{sx:1,sy:1,dy:0,rz:0},lid:{dy:0,rz:[0,0]},iris:{sx:1,sy:1,dy:0}},
-  focus:{brow:[.075,-.075],mouth:{sx:.96,sy:.30,dy:.002,rz:0},lid:{dy:-.006,rz:[.018,-.018]},iris:{sx:.98,sy:.98,dy:-.004}},
-  happy:{brow:[-.025,.025],mouth:{sx:1.06,sy:1.15,dy:-.003,rz:0},lid:{dy:-.010,rz:[-.012,.012]},iris:{sx:1.01,sy:.98,dy:.001}},
-  confident:{brow:[.035,-.015],mouth:{sx:1.07,sy:.92,dy:-.001,rz:-.018},lid:{dy:-.004,rz:[.006,-.006]},iris:{sx:1,sy:1,dy:-.002}},
-  thinking:{brow:[-.085,.055],mouth:{sx:.92,sy:.38,dy:.006,rz:.025},lid:{dy:.002,rz:[-.012,.018]},iris:{sx:.98,sy:1.02,dy:.004}},
-  disappointed:{brow:[-.105,.105],mouth:{sx:.92,sy:.24,dy:.012,rz:0},lid:{dy:.007,rz:[-.015,.015]},iris:{sx:.97,sy:.97,dy:.005}},
-  proud:{brow:[-.035,.035],mouth:{sx:1.11,sy:1.24,dy:-.006,rz:-.012},lid:{dy:-.012,rz:[-.010,.010]},iris:{sx:1.02,sy:.97,dy:-.002}}
+  neutral:{
+    brow:[{rz:0,dy:0},{rz:0,dy:0}],
+    mouth:{sx:1,sy:1,dy:0,rz:0},
+    lid:{dy:0,rz:[0,0]},iris:{sx:1,sy:1,dy:0},
+    cheek:{sx:1,sy:1,dy:0},lower:{dy:0,sy:1,rz:[0,0]}
+  },
+  focus:{
+    brow:[{rz:.055,dy:-.006},{rz:-.055,dy:-.006}],
+    mouth:{sx:.97,sy:.55,dy:.002,rz:0},
+    lid:{dy:-.004,rz:[.014,-.014]},iris:{sx:.985,sy:.985,dy:-.003},
+    cheek:{sx:.96,sy:.90,dy:.002},lower:{dy:.001,sy:.94,rz:[.006,-.006]}
+  },
+  happy:{
+    brow:[{rz:-.020,dy:.004},{rz:.020,dy:.004}],
+    mouth:{sx:1.08,sy:1.16,dy:-.004,rz:0},
+    lid:{dy:-.008,rz:[-.010,.010]},iris:{sx:1.01,sy:.99,dy:.001},
+    cheek:{sx:1.08,sy:1.05,dy:-.003},lower:{dy:.006,sy:1.03,rz:[-.004,.004]}
+  },
+  confident:{
+    brow:[{rz:.028,dy:.004},{rz:-.010,dy:0}],
+    mouth:{sx:1.06,sy:.96,dy:-.002,rz:-.014},
+    lid:{dy:-.004,rz:[.004,-.004]},iris:{sx:1,sy:1,dy:-.002},
+    cheek:{sx:1.04,sy:1.01,dy:-.001},lower:{dy:.003,sy:1,rz:[0,0]}
+  },
+  thinking:{
+    brow:[{rz:-.070,dy:.010},{rz:.040,dy:-.002}],
+    mouth:{sx:.94,sy:.62,dy:.005,rz:.018},
+    lid:{dy:.001,rz:[-.010,.014]},iris:{sx:.985,sy:1.015,dy:.003},
+    cheek:{sx:.98,sy:.94,dy:.001},lower:{dy:-.001,sy:.96,rz:[-.004,.006]}
+  },
+  disappointed:{
+    brow:[{rz:-.080,dy:-.002},{rz:.080,dy:-.002}],
+    mouth:{sx:.96,sy:.60,dy:.007,rz:0},
+    lid:{dy:.005,rz:[-.012,.012]},iris:{sx:.98,sy:.98,dy:.004},
+    cheek:{sx:.96,sy:.91,dy:.003},lower:{dy:.001,sy:.94,rz:[-.006,.006]}
+  },
+  proud:{
+    brow:[{rz:-.025,dy:.006},{rz:.025,dy:.006}],
+    mouth:{sx:1.10,sy:1.18,dy:-.005,rz:-.009},
+    lid:{dy:-.010,rz:[-.008,.008]},iris:{sx:1.015,sy:.98,dy:-.002},
+    cheek:{sx:1.11,sy:1.07,dy:-.004},lower:{dy:.007,sy:1.04,rz:[-.004,.004]}
+  }
 };
 
 const META={
@@ -46,7 +81,9 @@ function capture(parts){
     eyebrows:(parts.eyebrows||[]).map(nodeState),
     mouth:nodeState(parts.mouth),
     eyelids:(parts.eyelids||[]).map(nodeState),
-    irises:(parts.irises||[]).map(nodeState)
+    irises:(parts.irises||[]).map(nodeState),
+    cheeks:(parts.cheeks||[]).map(nodeState),
+    lowerLids:(parts.lowerLids||[]).map(nodeState)
   };
   baseByParts.set(parts,b);return b;
 }
@@ -63,14 +100,22 @@ function applyToParts(parts,emotion='neutral',{animate=true}={}){
   const b=capture(parts);if(!b)return false;
   const e=EXPRESSIONS[emotion]||EXPRESSIONS.neutral;
   const nodes=[];
-  (parts.eyebrows||[]).forEach((n,i)=>{const base=b.eyebrows[i];if(base)nodes.push([n,nodeState(n),targetState(base,{rz:e.brow[i]||0})])});
+  (parts.eyebrows||[]).forEach((n,i)=>{
+    const base=b.eyebrows[i],mod=e.brow?.[i]||{};
+    if(base)nodes.push([n,nodeState(n),targetState(base,{dy:mod.dy||0,rz:mod.rz||0})]);
+  });
   if(parts.mouth&&b.mouth)nodes.push([parts.mouth,nodeState(parts.mouth),targetState(b.mouth,e.mouth)]);
   (parts.eyelids||[]).forEach((n,i)=>{const base=b.eyelids[i];if(base)nodes.push([n,nodeState(n),targetState(base,{dy:e.lid.dy||0,rz:e.lid.rz?.[i]||0})])});
-  (parts.irises||[]).forEach((n,i)=>{const base=b.irises[i];if(base)nodes.push([n,nodeState(n),targetState(base,e.iris)])});
-  const duration=(reduced()||animate===false)?0:220,start=performance.now();
+  (parts.irises||[]).forEach((n,i)=>{const base=b.irises[i];if(base)nodes.push([n,nodeState(n),targetState(base,e.iris)]);
+  });
+  (parts.cheeks||[]).forEach((n,i)=>{const base=b.cheeks[i];if(base)nodes.push([n,nodeState(n),targetState(base,e.cheek||{})])});
+  (parts.lowerLids||[]).forEach((n,i)=>{
+    const base=b.lowerLids[i];if(base)nodes.push([n,nodeState(n),targetState(base,{dy:e.lower?.dy||0,sy:e.lower?.sy??1,rz:e.lower?.rz?.[i]||0})]);
+  });
+  const duration=(reduced()||animate===false)?0:260,start=performance.now();
   if(!duration){nodes.forEach(([n,,to])=>tweenNode(n,to,to,1));return true}
-  const token=Symbol('emotion');parts.__v40145EmotionToken=token;
-  const step=ts=>{if(parts.__v40145EmotionToken!==token)return;const t=easeOutCubic((ts-start)/duration);nodes.forEach(([n,from,to])=>tweenNode(n,from,to,t));if(t<1)requestAnimationFrame(step)};
+  const token=Symbol('emotion');parts.__v40155EmotionToken=token;
+  const step=ts=>{if(parts.__v40155EmotionToken!==token)return;const t=easeOutCubic((ts-start)/duration);nodes.forEach(([n,from,to])=>tweenNode(n,from,to,t));if(t<1)requestAnimationFrame(step)};
   requestAnimationFrame(step);return true;
 }
 
@@ -146,7 +191,7 @@ function attachEvents(){
   window.addEventListener('math12hub:avatar-renderer-ready',()=>setTimeout(()=>applyAll(current,{animate:false}),40));
 }
 function restoreSession(){try{const x=JSON.parse(sessionStorage.getItem(STORE_KEY)||'null');if(x&&EXPRESSIONS[x.emotion]&&Number(x.until)>now()){current=x.emotion;currentUntil=Number(x.until);const left=currentUntil-now();resetTimer=setTimeout(()=>set('neutral',{duration:0,reason:'session-expired',silent:true}),left)}}catch(_){}}
-function install(){if(installed)return;installed=true;restoreSession();lastMastered=masteredCount();attachEvents();setTimeout(()=>applyAll(current,{animate:false}),350);document.documentElement.dataset.avatarEmotionBuild=BUILD}
+function install(){if(installed)return;installed=true;restoreSession();lastMastered=masteredCount();attachEvents();setTimeout(()=>applyAll(current,{animate:false}),350);document.documentElement.dataset.avatarEmotionBuild=BUILD;document.documentElement.dataset.avatarFacePolish='expressive-face-v1'}
 
 window.AvatarEmotion={build:BUILD,version:VERSION,managed:true,expressions:Object.keys(EXPRESSIONS),meta:META,set,react,applyToParts,applyAll,attemptMetrics,chooseReaction,status:()=>({build:BUILD,version:VERSION,current,until:currentUntil,renderers:rendererParts().map(x=>x.name),reduced:reduced()})};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();

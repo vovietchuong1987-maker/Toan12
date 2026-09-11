@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-premium-renderer-core-v40.15.4-math12-signature';
+const BUILD='avatar-premium-renderer-core-v40.15.5-expressive-face-polish';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -110,52 +110,87 @@ function buildFace(a,mSkin,mEye,mIris,mWhite,mAccent,parent=root){
   const expression=normalizeStyle(a.face||'smile');
   const eyeProfile=eyeStyleProfile(a.eyeStyle||a.eyes||'classic');
   const browProfile=browStyleProfile(a.browStyle||'natural');
+
+  // v40.15.5 — expressive face polish:
+  // keep the same saved Face 2.0 choices, but render them with softer eye framing,
+  // subtler cheeks and a more readable lower-lid / mouth silhouette.
+  face.metadata={facePolish:'expressive-face-v1',version:'40.15.5'};
+
   const innerEar=mat('inner-ear','#C98270',.88);
   for(const [i,x] of [-.655,.655].entries()){
     sphere('ear-'+i,.30,{x,y:2.79,z:-.005},mSkin,{x:.60,y:1,z:.72},face);
     sphere('ear-fold-'+i,.135,{x:x+(i?-.006:.006),y:2.79,z:-.105},innerEar,{x:.48,y:.78,z:.22},face,18);
   }
-  const cheekMat=transparentMat('cheek','#E98B87',.12);
-  sphere('cheekL',.18,{x:-.36,y:2.59,z:-.654},cheekMat,{x:1.42,y:.52,z:.10},face);
-  sphere('cheekR',.18,{x:.36,y:2.59,z:-.654},cheekMat,{x:1.42,y:.52,z:.10},face);
 
-  const socketMat=transparentMat('eye-socket','#6A483F',.065),lidMat=mat('eyelid-line','#3A2D2B',.80);
-  parts.eyes=[];parts.gaze=[];parts.irises=[];parts.eyelids=[];
-  for(const [i,x] of [-.235,.235].entries()){
-    sphere('eye-socket-'+i,.285,{x,y:2.835,z:-.647},socketMat,{x:eyeProfile.sx*1.10,y:eyeProfile.sy*1.02,z:.10},face);
-    const eye=makeNode('eye-group-'+i,face);eye.position.set(x,2.835,-.650);eye.metadata={baseScaleY:1,side:i?'R':'L',eyeStyle:a.eyeStyle||a.eyes||'classic'};
-    sphere('eye-white-'+i,.252,{x:0,y:0,z:0},mWhite,{x:eyeProfile.sx,y:eyeProfile.sy,z:.14},eye);
+  const cheekMat=transparentMat('cheek','#E98B87',.095);
+  parts.cheeks=[];
+  for(const [i,x] of [-.36,.36].entries()){
+    const cheek=makeNode('cheek-pivot-'+i,face);cheek.position.set(x,2.59,-.654);
+    sphere('cheek-'+i,.18,{x:0,y:0,z:0},cheekMat,{x:1.34,y:.46,z:.09},cheek,18);
+    cheek.metadata={side:i?'R':'L',baseSoftness:.095};parts.cheeks.push(cheek);
+  }
+
+  const socketMat=transparentMat('eye-socket','#6A483F',.050);
+  const lidMat=mat('eyelid-line','#3A2D2B',.84);
+  const lowerLidMat=transparentMat('lower-lid-line','#8B5E55',.19);
+  parts.eyes=[];parts.gaze=[];parts.irises=[];parts.eyelids=[];parts.lowerLids=[];
+  for(const [i,x] of [-.232,.232].entries()){
+    sphere('eye-socket-'+i,.282,{x,y:2.835,z:-.647},socketMat,{x:eyeProfile.sx*1.08,y:eyeProfile.sy*.99,z:.095},face);
+    const eye=makeNode('eye-group-'+i,face);eye.position.set(x,2.835,-.650);
+    eye.metadata={baseScaleY:1,side:i?'R':'L',eyeStyle:a.eyeStyle||a.eyes||'classic'};
+    sphere('eye-white-'+i,.250,{x:0,y:0,z:0},mWhite,{x:eyeProfile.sx*.99,y:eyeProfile.sy*.99,z:.14},eye);
+
     const gaze=makeNode('eye-gaze-'+i,eye);parts.gaze.push(gaze);
-    const iris=sphere('iris-'+i,eyeProfile.iris,{x:0,y:-.006,z:-.034},mIris,{x:.90,y:1,z:.12},gaze);parts.irises.push(iris);
-    sphere('pupil-'+i,eyeProfile.pupil,{x:0,y:-.007,z:-.050},mEye,{x:.86,y:1,z:.10},gaze);
-    const hi=mat('eye-highlight-'+i,'#ffffff',.12,0,'#ffffff');
-    sphere('eye-hi-main-'+i,.034,{x:-.023,y:.031,z:-.061},hi,{x:1,y:1,z:.07},gaze,18);
-    if(a.eyeStyle!=='sharp')sphere('eye-hi-soft-'+i,.015,{x:.020,y:-.020,z:-.062},hi,{x:1,y:1,z:.07},gaze,14);
-    const lid=capsule('upper-lid-'+i,eyeProfile.lid,.012,{x:0,y:.112,z:-.009},lidMat,eye);lid.rotation.z=Math.PI/2+(i?-eyeProfile.tilt:eyeProfile.tilt);parts.eyelids.push(lid);
+    const iris=sphere('iris-'+i,eyeProfile.iris,{x:0,y:-.008,z:-.034},mIris,{x:.90,y:1,z:.12},gaze);parts.irises.push(iris);
+    const rimMat=transparentMat('iris-rim-'+i,'#15141A',.24);
+    torus('iris-rim-mesh-'+i,eyeProfile.iris*1.66,.010,{x:0,y:-.008,z:-.049},rimMat,gaze).rotation.x=Math.PI/2;
+    sphere('pupil-'+i,eyeProfile.pupil,{x:0,y:-.008,z:-.052},mEye,{x:.84,y:1,z:.10},gaze);
+
+    const hi=mat('eye-highlight-'+i,'#ffffff',.10,0,'#ffffff');
+    sphere('eye-hi-main-'+i,.032,{x:-.024,y:.032,z:-.063},hi,{x:1,y:1,z:.07},gaze,18);
+    if(a.eyeStyle!=='sharp')sphere('eye-hi-soft-'+i,.013,{x:.021,y:-.019,z:-.064},hi,{x:1,y:1,z:.07},gaze,14);
+
+    const lid=capsule('upper-lid-'+i,eyeProfile.lid,.0115,{x:0,y:.111,z:-.010},lidMat,eye);
+    lid.rotation.z=Math.PI/2+(i?-eyeProfile.tilt:eyeProfile.tilt);parts.eyelids.push(lid);
+
+    const lowerPivot=makeNode('lower-lid-pivot-'+i,eye);
+    lowerPivot.position.set(0,-.112,-.010);
+    const lower=capsule('lower-lid-'+i,eyeProfile.lid*.68,.0065,{x:0,y:0,z:0},lowerLidMat,lowerPivot);
+    lower.rotation.z=Math.PI/2+(i?eyeProfile.tilt*.28:-eyeProfile.tilt*.28);
+    lowerPivot.metadata={side:i?'R':'L'};parts.lowerLids.push(lowerPivot);
+
     if(a.gender==='female'){
-      const lash=capsule('lash-'+i,.075,.010,{x:i?.112:-.112,y:.088,z:-.012},lidMat,eye);lash.rotation.z=Math.PI/2+(i?-.32:.32);
+      const lash=capsule('lash-'+i,.070,.0095,{x:i?.110:-.110,y:.088,z:-.012},lidMat,eye);
+      lash.rotation.z=Math.PI/2+(i?-.30:.30);
     }
     parts.eyes.push(eye);
   }
 
-  const brow=mat('brow','#382B2A',.84);parts.eyebrows=[];
+  const brow=mat('brow','#382B2A',.86);parts.eyebrows=[];
   const focus=expression==='focus',confident=expression==='confident';
-  for(const [i,x] of [-.235,.235].entries()){
+  for(const [i,x] of [-.232,.232].entries()){
     const pivot=makeNode('brow-pivot-'+i,face);pivot.position.set(x,browProfile.y,-.650);
-    const tilt=focus?(i?-.18:.18):confident?(i?-.04:.15):(i?-browProfile.baseTilt:browProfile.baseTilt);
-    const b=capsule('brow-'+i,browProfile.len,browProfile.r,{x:0,y:confident&&i===0?.020:0,z:0},brow,pivot);b.rotation.z=Math.PI/2+tilt;
+    const tilt=focus?(i?-.15:.15):confident?(i?-.035:.12):(i?-browProfile.baseTilt:browProfile.baseTilt);
+    const b=capsule('brow-'+i,browProfile.len*.97,browProfile.r*.92,{x:0,y:confident&&i===0?.016:0,z:0},brow,pivot);
+    b.rotation.z=Math.PI/2+tilt;
     pivot.metadata={baseTilt:tilt,side:i?'R':'L',browStyle:a.browStyle||'natural'};parts.eyebrows.push(pivot);
   }
 
-  const noseShadow=transparentMat('nose-shadow','#9A5F4D',.14);
-  sphere('nose-shadow',.078,{x:.012,y:2.668,z:-.671},noseShadow,{x:.72,y:.88,z:.34},face,18);
-  sphere('nose',.064,{x:-.006,y:2.682,z:-.680},mSkin,{x:.64,y:.82,z:.28},face,18);
+  const noseShadow=transparentMat('nose-shadow','#9A5F4D',.105);
+  sphere('nose-shadow',.074,{x:.010,y:2.668,z:-.671},noseShadow,{x:.68,y:.82,z:.30},face,18);
+  sphere('nose',.058,{x:-.005,y:2.681,z:-.680},mSkin,{x:.62,y:.78,z:.26},face,18);
 
-  const mouthMat=mat('mouth','#854B49',.76),lipLight=transparentMat('lip-light','#F3A5A0',.24);
-  const mouth=makeNode('mouth-group',face),mouthOrigin={x:0,y:2.520,z:-.680};mouth.position.set(mouthOrigin.x,mouthOrigin.y,mouthOrigin.z);parts.mouth=mouth;mouth.metadata={mouthStyle:a.mouthStyle||'soft-smile',baseY:mouthOrigin.y};
+  const mouthMat=mat('mouth','#7E4748',.78);
+  const lipLight=transparentMat('lip-light','#F3A5A0',.18);
+  const mouth=makeNode('mouth-group',face),mouthOrigin={x:0,y:2.520,z:-.680};
+  mouth.position.set(mouthOrigin.x,mouthOrigin.y,mouthOrigin.z);parts.mouth=mouth;
+  mouth.metadata={mouthStyle:a.mouthStyle||'soft-smile',baseY:mouthOrigin.y,facePolish:'40.15.5'};
   const points=mouthPoints(a.mouthStyle||'soft-smile',expression).map(p=>({x:p.x-mouthOrigin.x,y:p.y-mouthOrigin.y,z:p.z-mouthOrigin.z}));
-  tube('mouth',points,.014+(a.mouthStyle==='confident'?.002:0),mouthMat,mouth);
-  if((a.mouthStyle||'soft-smile')==='soft-smile'&&expression!=='focus')sphere('smile-light',.075,{x:0,y:2.491-mouthOrigin.y,z:-.690-mouthOrigin.z},lipLight,{x:1.35,y:.17,z:.09},mouth,16);
+  tube('mouth',points,.0125+(a.mouthStyle==='confident'?.0015:0),mouthMat,mouth);
+  sphere('lower-lip-sheen',.070,{x:0,y:-.020,z:-.011},lipLight,{x:1.16,y:.13,z:.08},mouth,16);
+  if((a.mouthStyle||'soft-smile')==='soft-smile'&&expression!=='focus'){
+    sphere('smile-light',.068,{x:0,y:2.493-mouthOrigin.y,z:-.690-mouthOrigin.z},lipLight,{x:1.24,y:.14,z:.08},mouth,16);
+  }
 }
 
 function buildHair(a,hairMat,parent=root,headItem=null){
@@ -570,7 +605,7 @@ function buildAvatarCore(){
   buildHeadgear(g,headRig);buildGlasses(g,headRig);
   if(g.back)buildBack(g);else buildBack({back:{backStyle:'backpack',color:g.accent||'#416B48',accent:'#294B33'}});
   buildHandTool(g);
-  root.metadata={...(root.metadata||{}),brandIdentity:'math12-signature-v1',brandIdentityVersion:'40.15.4'};
+  root.metadata={...(root.metadata||{}),brandIdentity:'math12-signature-v1',brandIdentityVersion:'40.15.4',facePolish:'expressive-face-v1',facePolishVersion:'40.15.5'};
   try{root.getChildMeshes().forEach(x=>{x.receiveShadows=true;x.isPickable=false})}catch(_){ }
   return {root,parts,appearance:a,garment:g};
 }
