@@ -7,13 +7,13 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.15.0-room-presence-premium';
+const BUILD='40.15.7-room-presence-animation-polish';
 let scene=null,api=null,stage=null,current='study',moving=false,timer=0;
 const reduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches||!!window.Math12Platform?.perf?.lowPower?.()}catch(_){return false}};
 const LOCATIONS={
-  study:{label:'Bàn học',icon:'📖',pose:'study',x:-1.20,y:.38,z:.13,rotationY:0,duration:820},
-  window:{label:'Cửa sổ',icon:'🌤',pose:'window',x:-3.05,y:.38,z:.55,rotationY:Math.PI/2,duration:980},
-  relax:{label:'Thư giãn',icon:'☕',pose:'seated-relax',x:.90,y:.03,z:.05,rotationY:0,duration:930}
+  study:{label:'Bàn học',icon:'📖',pose:'study',x:-1.20,y:.38,z:.13,rotationY:0,duration:900},
+  window:{label:'Cửa sổ',icon:'🌤',pose:'window',x:-3.05,y:.38,z:.55,rotationY:Math.PI/2,duration:1080},
+  relax:{label:'Thư giãn',icon:'☕',pose:'seated-relax',x:.90,y:.03,z:.05,rotationY:0,duration:1020}
 };
 const INTERACTION_LOCATION={notebook:'study',bookshelf:'study',trophy:'study',board:'study',avatar:'study',window:'window',chair:'relax'};
 function activeStage(){return document.querySelector('#page-room.active .v390-stage')||stage}
@@ -41,11 +41,11 @@ function go(name='study',options={}){
   const same=current===name&&!moving,dur=reduced()?0:Math.max(0,Number(options.duration??loc.duration));
   if(same){try{api?.setAvatarPose?.(loc.pose);if(options.gesture)api?.playAvatarMotion?.(options.gesture)}catch(_){}setButtons();return true}
   current=name;moving=dur>0;setButtons();emit('room:presence-moving',{location:name,duration:dur,source:options.source||'api'});
-  try{api?.setAvatarPose?.('focus')}catch(_){}
+  try{window.AvatarMotion?.setPose?.('focus',{context:'room',duration:260,style:'anticipation'})??api?.setAvatarPose?.('focus')}catch(_){}
   const m=motion();
   if(m?.moveRoot){
-    if(dur>0)m.play?.('walk',dur,{context:'room'});
-    m.moveRoot(loc,{context:'room',duration:dur});
+    if(dur>0)m.play?.('walk',dur,{context:'room',transitionMs:120});
+    m.moveRoot(loc,{context:'room',duration:dur,style:'travel'});
   }else{
     rm.position.set(loc.x,loc.y,loc.z);rm.rotation.y=loc.rotationY;
   }

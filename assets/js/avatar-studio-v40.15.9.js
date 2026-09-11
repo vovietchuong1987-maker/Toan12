@@ -1,0 +1,215 @@
+/* =========================================================
+   Math12 Hub — Avatar Studio
+   Step 8: professional customization, preview, ownership and saved looks.
+   ========================================================= */
+(function(){
+'use strict';
+const BUILD='40.16.0-avatar-studio-production',SCHEMA=800,PAGE_SIZE=12;
+const FACE2={
+ faceShape:[['soft','Mềm mại','◯'],['round','Tròn','●'],['oval','Trái xoan','⬭'],['angular','Góc cạnh','◇']],
+ eyeStyle:[['classic','Cổ điển','◉'],['almond','Hạnh nhân','◒'],['bright','Sáng','✦'],['soft','Dịu','◡'],['sharp','Sắc nét','⌁']],
+ browStyle:[['natural','Tự nhiên','⌒'],['straight','Ngang','━'],['soft','Mềm','﹀'],['bold','Đậm','▬'],['arc','Cong','⌢']],
+ mouthStyle:[['soft-smile','Cười nhẹ','⌣'],['natural','Tự nhiên','—'],['calm','Điềm tĩnh','﹀'],['confident','Tự tin','⌣'],['small','Nhẹ nhàng','˘']],
+ irisColor:[['#5A3C2C','Nâu ấm','●'],['#3E5C76','Xanh slate','●'],['#4E6B50','Xanh rêu','●'],['#6B4E71','Tím khói','●'],['#3C4658','Xám đậm','●']]
+};
+const tabs=[
+ {id:'profile',label:'Khuôn mặt',icon:'☺'}, {id:'hair',label:'Tóc',icon:'💇'}, {id:'top',label:'Áo',icon:'👕'},
+ {id:'bottom',label:'Quần/Váy',icon:'👖'}, {id:'shoes',label:'Giày',icon:'👟'},
+ {id:'accessories',label:'Phụ kiện',icon:'🎓'}, {id:'effects',label:'Hiệu ứng',icon:'✨'}
+];
+let activeTab='profile',filter='all',searchText='',pageNo=1,previewKey='',viewMap=new Map(),cloudTimer=0;
+const uid=()=>firebaseUser?.uid||'local',now=()=>new Date().toISOString();
+const h=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return x}};
+function blank(){return {schemaVersion:SCHEMA,ownerUid:uid(),looks:[],updatedAt:''}}
+function bucket(){state.avatarStudioV800ByUser=state.avatarStudioV800ByUser&&typeof state.avatarStudioV800ByUser==='object'?state.avatarStudioV800ByUser:{};return state.avatarStudioV800ByUser}
+function profile(){const r=bucket()[uid()]||blank();return {...blank(),...r,ownerUid:uid(),looks:Array.isArray(r.looks)?r.looks.slice(-6):[]}}
+function persist(p,{cloud=true}={}){
+  p={...p,schemaVersion:SCHEMA,ownerUid:uid(),looks:(p.looks||[]).slice(-6),updatedAt:now()};bucket()[uid()]=p;
+  try{window.save?.({sync:false,reason:'avatar-studio-step8'})}catch(_){ }
+  clearTimeout(cloudTimer);if(cloud&&firebaseUser&&firebaseDb&&!firebaseAccountLocked)cloudTimer=setTimeout(()=>firebaseDb.collection('users').doc(firebaseUser.uid).set({avatarStudioV800:p,updatedAt:firebaseServerTimestamp()},{merge:true}).catch(e=>console.warn('Avatar Studio sync',e)),450);
+  return p;
+}
+function makeView(item,scope,slot=item.slot,key=`${scope}:${item.id}`){return {key,item,scope,slot,isNew:/v391-(1[8-9]|2[0-4])$/.test(item.id||'')}}
+function baseViews(){
+  const c=window.AvatarEngine?.get?.()||{};
+  const mk=(field,group,rows)=>rows.map(([value,label,icon,color])=>({key:`base:${field}:${String(value).replace('#','')}`,scope:'base',field,value,slot:'profile',group,item:{id:String(value),label,icon,color,collection:group}}));
+  return [
+    {key:'base:gender:male',scope:'base',field:'gender',value:'male',slot:'profile',group:'Phong cách',item:{id:'male',label:'Nam',icon:'👦',collection:'Phong cách'}},
+    {key:'base:gender:female',scope:'base',field:'gender',value:'female',slot:'profile',group:'Phong cách',item:{id:'female',label:'Nữ',icon:'👧',collection:'Phong cách'}},
+    ...Object.entries(AVATAR_V378_SKINS).map(([id,x])=>({key:`base:skin:${id}`,scope:'base',field:'skin',value:id,slot:'profile',group:'Tông da',item:{id,label:`Da ${x.label}`,icon:'●',color:x.fill,collection:'Tông da'}})),
+    ...mk('faceShape','Dáng mặt',FACE2.faceShape),
+    ...mk('eyeStyle','Mắt',FACE2.eyeStyle),
+    ...mk('browStyle','Lông mày',FACE2.browStyle),
+    ...mk('mouthStyle','Miệng',FACE2.mouthStyle),
+    ...mk('irisColor','Màu mắt',FACE2.irisColor.map(x=>[x[0],x[1],x[2],x[0]])),
+    ...Object.entries(AVATAR_V378_FACES).map(([id,x])=>({key:`base:face:${id}`,scope:'base',field:'face',value:id,slot:'profile',group:'Phong thái',item:{id,label:`Phong thái ${x.label}`,icon:id==='smile'?'☺':id==='confident'?'◕':id==='focus'?'⌁':'—',collection:'Phong thái'}}))
+  ].map(v=>({...v,active:String(c[v.field]??'').toUpperCase()===String(v.value).toUpperCase()}));
+}
+function allViews(){
+  if(activeTab==='profile')return baseViews();const rows=[],seen=new Set(),add=v=>{if(!v?.item?.id||seen.has(v.key))return;seen.add(v.key);rows.push(v)};
+  const wardrobe=window.v385Wardrobe?.catalog||[],mega=window.v386MegaShop?.catalog||[],legacy=window.v380Shop?.catalog||[];
+  if(['hair','top','bottom','shoes'].includes(activeTab)){
+    wardrobe.filter(x=>x.slot===activeTab).forEach(x=>add(makeView(x,'wardrobe')));
+    if(activeTab==='top')legacy.filter(x=>x.type==='outfit').forEach(x=>add(makeView({...x,slot:'outfit',color:x.top},'legacy','outfit')));
+  }else if(activeTab==='accessories'){
+    wardrobe.filter(x=>['head','glasses','back','hand'].includes(x.slot)).forEach(x=>add(makeView(x,'wardrobe')));
+    legacy.filter(x=>x.type==='accessory').forEach(x=>add(makeView({...x,slot:'accessory'},'legacy','accessory')));
+  }else if(activeTab==='effects')mega.filter(x=>['pet','aura','background','emote'].includes(x.slot)).forEach(x=>add(makeView(x,'mega')));
+  return rows;
+}
+function owned(v){if(v.scope==='base')return true;if(v.scope==='wardrobe')return !!window.v385Wardrobe?.unlocked?.(v.item);if(v.scope==='mega')return !!window.v386MegaShop?.owned?.(v.item.id);return !!window.v380Shop?.owned?.(v.item.id)}
+function equipped(v){
+  const c=window.AvatarEngine?.get?.()||{equipped:{}};if(v.scope==='base')return !!v.active;
+  if(v.slot==='outfit')return c.outfit===v.item.id;if(v.item.clear)return !c.equipped?.[v.slot];return c.equipped?.[v.slot]===v.item.id;
+}
+function purchasable(v){if(v.scope==='base'||owned(v))return false;return !!window.v386MegaShop?.item?.(v.item.id)||!!window.v380Shop?.item?.(v.item.id)}
+function rarity(v){return v.item.rarity||((v.item.level||1)>=20?'legendary':(v.item.level||1)>=12?'epic':(v.item.level||1)>=6?'rare':'common')}
+function rarityLabel(r){return {common:'Phổ biến',rare:'Hiếm',epic:'Sử thi',legendary:'Huyền thoại'}[r]||r}
+function filteredViews(){
+  let rows=allViews().filter(v=>!searchText||(v.item.label+' '+(v.item.collection||'')).toLowerCase().includes(searchText.toLowerCase()));
+  if(filter==='owned')rows=rows.filter(owned);else if(filter==='worn')rows=rows.filter(equipped);else if(filter==='new')rows=rows.filter(v=>v.isNew);else if(filter==='locked')rows=rows.filter(v=>!owned(v));
+  return rows;
+}
+function actionLabel(v){if(equipped(v))return '✓ Đang mặc';if(owned(v))return 'Mặc ngay';if(purchasable(v))return `Mua ${Number(v.item.price||0).toLocaleString('vi-VN')} 🪙`;return 'Chưa mở khóa'}
+function card(v){
+  viewMap.set(v.key,v);const has=owned(v),eq=equipped(v),canBuy=purchasable(v),level=Number(window.v379Economy?.profile?.().level)||1,levelLock=!has&&Number(v.item.level||1)>level,r=rarity(v),preview=previewKey===v.key;
+  const swatch=v.item.hairColor||v.item.color||v.item.top||'#315bc7',meta=v.scope==='base'?'Miễn phí':has?(v.item.free?'Starter • miễn phí':'Đã sở hữu'):`Lv.${v.item.level||1}${canBuy?` • ${Number(v.item.price||0).toLocaleString('vi-VN')} vàng`:''}`;
+  return `<article class="avatar-studio-item ${eq?'equipped':''} ${preview?'previewing':''} ${has?'owned':'locked'}" data-key="${h(v.key)}">
+    <button class="avatar-studio-visual" style="--item-color:${h(swatch)}" onclick="AvatarStudio.preview('${h(v.key)}')" ${v.scope==='base'?'disabled':''}><span class="avatar-studio-rarity ${r}">${h(rarityLabel(r))}</span>${v.isNew?'<em>MỚI</em>':''}<i>${h(v.item.icon||'✦')}</i><small>${preview?'ĐANG XEM THỬ':eq?'ĐANG MẶC':has?'ĐÃ SỞ HỮU':'XEM THỬ'}</small></button>
+    <div class="avatar-studio-item-copy"><b>${h(v.item.label)}</b><span>${h(v.item.collection||meta)}</span></div>
+    <div class="avatar-studio-actions">${v.scope==='base'?`<button onclick="AvatarStudio.equip('${h(v.key)}')">${eq?'✓ Đang chọn':'Chọn'}</button>`:`<button class="preview" onclick="AvatarStudio.preview('${h(v.key)}')">👁 Xem thử</button><button onclick="AvatarStudio.${has?'equip':'buy'}('${h(v.key)}')" ${(eq||(!has&&!canBuy)||levelLock)?'disabled':''}>${levelLock?`Cần Lv.${v.item.level}`:actionLabel(v)}</button>`}</div>
+  </article>`;
+}
+function looksHtml(){
+  const looks=profile().looks||[];return `<div class="avatar-studio-looks"><div class="avatar-studio-looks-head"><div><b>Bộ phối của em</b><small>Lưu tối đa 6 cấu hình để thay nhanh.</small></div><button onclick="AvatarStudio.saveLook()">＋ Lưu bộ đang mặc</button></div><div class="avatar-studio-look-list">${looks.length?looks.map((x,i)=>`<div class="avatar-studio-look"><span>${i+1}</span><div><b>${h(x.label)}</b><small>${new Date(x.createdAt).toLocaleDateString('vi-VN')}</small></div><button onclick="AvatarStudio.applyLook('${h(x.id)}')">Áp dụng</button><button class="delete" onclick="AvatarStudio.deleteLook('${h(x.id)}')">×</button></div>`).join(''):'<div class="avatar-studio-empty-look">Chưa lưu bộ phối nào.</div>'}</div></div>`;
+}
+function render(){
+  const root=document.getElementById('avatarV378Page'),grid=root?.querySelector('.avatar-page-grid');if(!root||!grid)return;root.classList.add('avatar-studio-ready');
+  let studio=document.getElementById('avatarStudioV800');if(!studio){studio=document.createElement('section');studio.id='avatarStudioV800';studio.className='card avatar-studio';grid.appendChild(studio)}
+  viewMap=new Map();const rows=filteredViews(),pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));pageNo=Math.max(1,Math.min(pageNo,pages));const page=rows.slice((pageNo-1)*PAGE_SIZE,pageNo*PAGE_SIZE),cfg=window.AvatarEngine?.get?.()||{},ownedCount=allViews().filter(owned).length,wornCount=Object.values(cfg.equipped||{}).filter(Boolean).length;
+  studio.innerHTML=`<div class="avatar-studio-head"><div><div class="avatar-preview-kicker">AVATAR STUDIO</div><h2>Thiết kế nhân vật của em</h2><p>Tùy chỉnh diện mạo, phối đồ và xem thay đổi đồng bộ ngay trên nhân vật 3D.</p></div><div class="avatar-studio-live"><span></span><b>LIVE</b><small>Đồng bộ tức thì</small></div></div>
+    <div class="avatar-studio-stats"><span><b>${ownedCount}</b> đang sở hữu</span><span><b>${wornCount}</b> slot đang mặc</span><span><b>${profile().looks.length}</b>/6 bộ phối</span><span>Revision <b>#${cfg.revision||0}</b></span></div>
+    <nav class="avatar-studio-tabs">${tabs.map(t=>`<button class="${activeTab===t.id?'active':''}" onclick="AvatarStudio.tab('${t.id}')"><i>${t.icon}</i><span>${t.label}</span></button>`).join('')}</nav>
+    <div class="avatar-studio-toolbar"><input value="${h(searchText)}" oninput="AvatarStudio.search(this.value)" placeholder="Tìm tóc, áo, phụ kiện…"><div>${[['all','Tất cả'],['owned','Đang sở hữu'],['worn','Đang mặc'],['new','Mới'],['locked','Chưa mở']].map(([id,label])=>`<button class="${filter===id?'active':''}" onclick="AvatarStudio.filter('${id}')">${label}</button>`).join('')}</div>${previewKey?'<button class="avatar-clear-preview" onclick="AvatarStudio.clearPreview()">✕ Bỏ xem thử</button>':''}</div>
+    ${activeTab==='profile'?`<div class="avatar-face2-hint"><b>Face 2.0</b><span>Dáng mặt, mắt, lông mày, miệng và màu mắt là diện mạo gốc. Phong thái chỉ là sắc thái mặc định; Emotion sau này sẽ phản ứng mà không làm mất thiết kế của em.</span></div>`:''}<div class="avatar-studio-result"><span>${rows.length} lựa chọn phù hợp</span><span>Trang ${pageNo}/${pages}</span></div>
+    <div class="avatar-studio-grid">${page.length?page.map(card).join(''):'<div class="avatar-studio-empty">Không có vật phẩm phù hợp bộ lọc.</div>'}</div>
+    <div class="avatar-studio-pager"><button ${pageNo===1?'disabled':''} onclick="AvatarStudio.page(${pageNo-1})">← Trước</button><span>${pageNo} / ${pages}</span><button ${pageNo===pages?'disabled':''} onclick="AvatarStudio.page(${pageNo+1})">Sau →</button></div>${looksHtml()}`;
+  const previewCard=root.querySelector('.avatar-preview-card');if(previewCard){let badge=previewCard.querySelector('.avatar-studio-preview-badge');if(previewKey&&!badge){badge=document.createElement('div');badge.className='avatar-studio-preview-badge';previewCard.appendChild(badge)}if(badge){badge.textContent=previewKey?'👁 Chế độ xem thử':'';badge.hidden=!previewKey}}
+}
+function view(key){return viewMap.get(key)||allViews().find(x=>x.key===key)||null}
+function preview(key){const v=view(key);if(!v||v.scope==='base')return;previewKey=key;window.AvatarEngine?.preview?.(v.item);render()}
+function clearPreview(){previewKey='';window.AvatarEngine?.clearPreview?.();render()}
+function equip(key){
+  const v=view(key);if(!v)return false;let ok=false;
+  if(v.scope==='base'){window.AvatarEngine?.set?.(v.field,v.value);ok=true}
+  else if(v.scope==='wardrobe')ok=!!window.v385Wardrobe?.equip?.(v.item.id);
+  else if(v.scope==='mega')ok=!!window.v386MegaShop?.equip?.(v.item.id);
+  else ok=!!window.v380Shop?.equip?.(v.item.id);
+  if(ok){previewKey='';window.AvatarEngine?.clearPreview?.();window.AvatarMotion?.reactEquip?.();setTimeout(render,60)}return ok;
+}
+function buy(key){
+  const v=view(key);if(!v)return false;let ok=false;
+  if(window.v386MegaShop?.item?.(v.item.id))ok=!!window.v386MegaShop.buy(v.item.id);else if(window.v380Shop?.item?.(v.item.id))ok=!!window.v380Shop.buy(v.item.id);
+  if(ok){previewKey='';window.AvatarEngine?.clearPreview?.();setTimeout(render,90)}return ok;
+}
+function saveLook(){const p=profile(),n=p.looks.length+1,cfg=clone(window.AvatarEngine?.get?.()||{});p.looks.push({id:`look-${Date.now().toString(36)}`,label:`Bộ phối ${n}`,config:cfg,createdAt:now()});persist(p);window.examToast?.('✓ Đã lưu bộ phối hiện tại');render()}
+function applyLook(id){const look=profile().looks.find(x=>x.id===id);if(!look)return;window.AvatarEngine?.apply?.(look.config);window.AvatarMotion?.reactEquip?.();window.examToast?.(`✓ Đã áp dụng ${look.label}`);render()}
+function deleteLook(id){const p=profile(),look=p.looks.find(x=>x.id===id);if(!look||!confirm(`Xóa ${look.label}?`))return;p.looks=p.looks.filter(x=>x.id!==id);persist(p);render()}
+function adoptCloud(){const c=firebaseProfile?.avatarStudioV800;if(!c)return;const l=profile(),ct=Date.parse(c.updatedAt||0)||0,lt=Date.parse(l.updatedAt||0)||0;if(ct>=lt){bucket()[uid()]={...blank(),...clone(c),ownerUid:uid()};try{window.save?.({sync:false,reason:'avatar-studio-cloud-step8'})}catch(_){ }}}
+function install(){
+  if(typeof window.avatarV378RenderPage==='function'&&!window.avatarV378RenderPage.__avatarStudioV800){const base=window.avatarV378RenderPage;const wrapped=function(){const out=base.apply(this,arguments);requestAnimationFrame(render);return out};wrapped.__avatarStudioV800=true;window.avatarV378RenderPage=wrapped}
+  if(typeof window.goPage==='function'&&!window.goPage.__avatarStudioV800){const base=window.goPage;const wrapped=function(page,internal=false){const out=base(page,internal);if(page==='avatar')requestAnimationFrame(render);return out};wrapped.__avatarStudioV800=true;window.goPage=wrapped}
+  if(typeof window.firebaseHydrateUser==='function'&&!window.firebaseHydrateUser.__avatarStudioV800){const base=window.firebaseHydrateUser;const wrapped=async function(){const out=await base.apply(this,arguments);adoptCloud();requestAnimationFrame(render);return out};wrapped.__avatarStudioV800=true;window.firebaseHydrateUser=wrapped}
+  window.addEventListener('math12hub:avatar-state-changed',()=>requestAnimationFrame(render));window.addEventListener('math12hub:game-reward',()=>requestAnimationFrame(render));if(document.getElementById('page-avatar')?.classList.contains('active'))render();
+}
+window.AvatarStudio={build:BUILD,schema:SCHEMA,render,tab(id){if(tabs.some(t=>t.id===id)){activeTab=id;pageNo=1;previewKey='';window.AvatarEngine?.clearPreview?.();render()}},filter(id){filter=id;pageNo=1;render()},search(x){searchText=String(x||'');pageNo=1;render()},page(n){pageNo=Number(n)||1;render()},preview,clearPreview,equip,buy,saveLook,applyLook,deleteLook,profile,adoptCloud};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+
+
+/* Math12 Hub — Avatar Live Customization / Step 9 */
+(function(){
+'use strict';
+const BUILD='40.16.0-avatar-live-production',SCHEMA=900;
+const uid=()=>window.firebaseUser?.uid||'local';
+const now=()=>new Date().toISOString();
+const HAIRS=['hair-campus-modern','hair-classic','hair-side','hair-spiky','hair-bob','hair-long','hair-pony'];
+const PREMIUM={hair:'hair-campus-modern',top:'top-campus-green',bottom:'bottom-campus-green',shoes:'shoes-campus',back:'back-campus'};
+const OLD_STARTERS=new Set(['hair-classic','top-school-blue','bottom-navy','shoes-school']);
+let migrated=false,renderQueued=0;
+function cfg(){return window.AvatarEngine?.get?.()||{equipped:{}}}
+function storage(){try{return state.avatarStep9ByUser||(state.avatarStep9ByUser={})}catch(_){return {}}}
+function mark(){const b=storage();b[uid()]={schemaVersion:SCHEMA,updatedAt:now(),migratedPremium:true};try{window.save?.({sync:false,reason:'avatar-step9'})}catch(_){}}
+function shouldMigrate(){const c=cfg(),e=c.equipped||{},m=storage()[uid()];if(m?.migratedPremium)return false;const ids=[e.hair,e.top,e.bottom,e.shoes].filter(Boolean);return !ids.length||ids.every(id=>OLD_STARTERS.has(id))}
+function applyPremium(showToast=true){
+  const e=window.AvatarEngine;if(!e)return false;
+  const ok=['hair','top','bottom','shoes','back'].every(slot=>{const id=PREMIUM[slot];return !id||window.v385Wardrobe?.item?.(id)});
+  if(!ok)return false;
+  e.apply({hairId:PREMIUM.hair,shirt:PREMIUM.top,pants:PREMIUM.bottom,shoes:PREMIUM.shoes,back:PREMIUM.back,hairColor:'#20283B'});
+  mark();if(showToast)window.examToast?.('✓ Đã áp dụng phong cách Campus Pro');return true;
+}
+function migrate(){if(migrated)return;migrated=true;if(shouldMigrate())setTimeout(()=>applyPremium(false),80)}
+function set(field,value){const e=window.AvatarEngine;if(!e)return;if(field==='hair')e.setHair(value);else e.set(field,value);requestRender()}
+function equip(slot,id){if(window.AvatarEngine?.equip?.(slot,id)){window.AvatarMotion?.reactEquip?.();requestRender();return true}return false}
+function randomize(){
+  const e=window.AvatarEngine;if(!e)return;
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const genders=['male','female'],skins=['light','warm','tan'],faces=['smile','confident','focus','calm'];
+  const gender=pick(genders);e.set('gender',gender);e.set('skin',pick(skins));e.set('face',pick(faces));
+  const available=HAIRS.filter(id=>window.v385Wardrobe?.item?.(id)&&window.v385Wardrobe?.unlocked?.(window.v385Wardrobe.item(id)));
+  if(available.length)e.setHair(pick(available));
+  const looks=[
+    {top:'top-campus-green',bottom:'bottom-campus-green',shoes:'shoes-campus',back:'back-campus'},
+    {top:'top-school-blue',bottom:'bottom-navy',shoes:'shoes-school',back:''},
+    {top:'top-sport',bottom:'bottom-green',shoes:'shoes-school',back:''}
+  ];
+  const look=pick(looks);for(const [slot,id] of Object.entries(look))e.equip(slot,id);
+  window.AvatarMotion?.reactEquip?.();window.examToast?.('✦ Đã tạo phối ngẫu nhiên');requestRender();
+}
+function resetPremium(){applyPremium(true);requestRender()}
+function requestRender(){cancelAnimationFrame(renderQueued);renderQueued=requestAnimationFrame(renderPanel)}
+function chip(label,active,onclick,icon=''){return `<button class="av9-chip ${active?'active':''}" onclick="${onclick}" type="button">${icon?`<i>${icon}</i>`:''}<span>${label}</span></button>`}
+function renderPanel(){
+  const root=document.getElementById('avatarV378Page');if(!root)return;const c=cfg(),e=c.equipped||{};
+  let box=document.getElementById('avatarLiveV900');if(!box){box=document.createElement('section');box.id='avatarLiveV900';box.className='card avatar-live-panel';const grid=root.querySelector('.avatar-page-grid');grid?.appendChild(box)}
+  if(!box)return;
+  const hairItems=HAIRS.map(id=>window.v385Wardrobe?.item?.(id)).filter(Boolean);
+  box.innerHTML=`<div class="av9-head"><div><div class="avatar-preview-kicker">LIVE CUSTOMIZER</div><h3>Chỉnh trực tiếp trên nhân vật</h3><p>Mỗi lựa chọn cập nhật tức thì, tự lưu trên máy và đồng bộ tài khoản khi đăng nhập.</p></div><span class="av9-live"><i></i> LIVE</span></div>
+  <div class="av9-section"><b>Kiểu nhân vật</b><div class="av9-row">${chip('Nam',c.gender==='male',"AvatarLive.set('gender','male')",'♂')}${chip('Nữ',c.gender==='female',"AvatarLive.set('gender','female')",'♀')}</div></div>
+  <div class="av9-section"><b>Tông da</b><div class="av9-row">${chip('Sáng',c.skin==='light',"AvatarLive.set('skin','light')")}${chip('Ấm',c.skin==='warm',"AvatarLive.set('skin','warm')")}${chip('Nâu',c.skin==='tan',"AvatarLive.set('skin','tan')")}</div></div>
+  <div class="av9-section"><b>Biểu cảm</b><div class="av9-row">${chip('Thân thiện',c.face==='smile',"AvatarLive.set('face','smile')",'☺')}${chip('Tự tin',c.face==='confident',"AvatarLive.set('face','confident')",'◕')}${chip('Tập trung',c.face==='focus',"AvatarLive.set('face','focus')",'⌁')}${chip('Điềm tĩnh',c.face==='calm',"AvatarLive.set('face','calm')",'—')}</div></div>
+  <div class="av9-section"><b>Kiểu tóc</b><div class="av9-row av9-hair">${hairItems.map(it=>chip(it.label,e.hair===it.id,`AvatarLive.equip('hair','${it.id}')`,'✦')).join('')}</div></div>
+  <div class="av9-section"><b>Phong cách nhanh</b><div class="av9-actions"><button onclick="AvatarLive.premium()">✦ Campus Pro</button><button onclick="AvatarLive.randomize()">⤨ Ngẫu nhiên</button><button onclick="AvatarStudio?.saveLook?.()">♡ Lưu bộ phối</button></div></div>`;
+}
+function install(){migrate();window.addEventListener('math12hub:avatar-state-changed',requestRender);window.addEventListener('math12hub:avatar3d-ready',requestRender);if(document.getElementById('page-avatar')?.classList.contains('active'))requestRender();if(typeof window.goPage==='function'&&!window.goPage.__av9){const base=window.goPage;const wrap=function(page,internal=false){const r=base(page,internal);if(page==='avatar')setTimeout(()=>{migrate();renderPanel()},80);return r};wrap.__av9=true;window.goPage=wrap}}
+window.AvatarLive={build:BUILD,schema:SCHEMA,set,equip,randomize,premium:resetPremium,render:renderPanel};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+
+
+/* Math12 Hub — Character Studio Pro / Step 10 */
+(function(){
+'use strict';
+const BUILD='40.16.0-character-studio-production';
+let ready=false;
+function camera(){return window.v384Avatar3D?.getScene?.()?.activeCamera||null}
+function rotate(dir=1){const c=camera();if(c)c.alpha+=dir*.32}
+function zoom(dir=1){const c=camera();if(c)c.radius=Math.max(c.lowerRadiusLimit||4.7,Math.min(c.upperRadiusLimit||7.8,c.radius+dir*.45))}
+function resetView(){const c=camera();if(!c)return;c.alpha=-Math.PI/2.10;c.beta=Math.PI/2.30;c.radius=6.10}
+function focusFace(){const c=camera();if(!c)return;c.radius=4.85;c.target.y=2.35}
+function focusFull(){const c=camera();if(!c)return;c.radius=6.10;c.target.y=1.52}
+function addToolbar(){
+  const card=document.querySelector('#page-avatar .avatar-preview-card');if(!card)return;
+  let bar=card.querySelector('.av10-toolbar');if(bar)return;
+  bar=document.createElement('div');bar.className='av10-toolbar';bar.innerHTML=`<button title="Xoay trái" onclick="AvatarPro.rotate(-1)">↶</button><button title="Thu nhỏ" onclick="AvatarPro.zoom(1)">−</button><button title="Toàn thân" onclick="AvatarPro.full()">◎</button><button title="Cận mặt" onclick="AvatarPro.face()">◉</button><button title="Phóng to" onclick="AvatarPro.zoom(-1)">＋</button><button title="Xoay phải" onclick="AvatarPro.rotate(1)">↷</button>`;card.appendChild(bar);
+  let quality=card.querySelector('.av10-quality');if(!quality){quality=document.createElement('div');quality.className='av10-quality';quality.innerHTML='<span></span><b>CHARACTER PRO</b><small>Soft 3D · 360° · Realtime</small>';card.appendChild(quality)}
+}
+function polishScene(){
+  const scene=window.v384Avatar3D?.getScene?.();if(!scene)return;const c=scene.activeCamera;if(c){c.radius=6.10;c.target.y=1.56;c.wheelPrecision=92;c.inertia=.86}
+  try{scene.clearColor=new BABYLON.Color4(.955,.96,.97,1)}catch(_){ }
+}
+function install(){addToolbar();window.addEventListener('math12hub:avatar3d-ready',()=>{ready=true;polishScene();addToolbar()});window.addEventListener('math12hub:avatar-state-changed',()=>setTimeout(addToolbar,40));if(typeof window.goPage==='function'&&!window.goPage.__av10){const base=window.goPage;const wrap=function(page,internal=false){const r=base(page,internal);if(page==='avatar')setTimeout(addToolbar,100);return r};wrap.__av10=true;window.goPage=wrap}}
+window.AvatarPro={build:BUILD,rotate,zoom,reset:resetView,face:focusFace,full:focusFull,get ready(){return ready}};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();

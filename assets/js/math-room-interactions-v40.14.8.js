@@ -7,7 +7,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.15.0-interactive-room-premium';
+const BUILD='40.15.7-interactive-room-animation-polish';
 let scene=null, api=null, stage=null, homeCam=null, currentKind='', boundMeshes=[], raf=0, roomDataListener=null;
 const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c));
 const pct=v=>v==null?'—':`${Math.round(Number(v)*100)}%`;
@@ -22,8 +22,8 @@ function moveCamera(spec,duration=560){
   const c=camera();if(!c||!window.BABYLON)return false;cancelAnimationFrame(raf);
   const from=captureCamera(),target=spec.target?.clone?.()||new BABYLON.Vector3(...spec.target),to={target,radius:spec.radius,alpha:spec.alpha,beta:spec.beta};
   if(reduced()||duration<=0){c.target.copyFrom(to.target);c.radius=to.radius;c.alpha=to.alpha;c.beta=to.beta;return true}
-  const start=performance.now(),dur=Math.max(180,duration);
-  const tick=now=>{const raw=Math.min(1,(now-start)/dur),t=1-Math.pow(1-raw,3);c.target.copyFrom(BABYLON.Vector3.Lerp(from.target,to.target,t));c.radius=from.radius+(to.radius-from.radius)*t;c.alpha=angleLerp(from.alpha,to.alpha,t);c.beta=from.beta+(to.beta-from.beta)*t;if(raw<1)raf=requestAnimationFrame(tick)};
+  const start=performance.now(),dur=Math.max(220,duration),ease=x=>{x=Math.max(0,Math.min(1,x));return x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2};
+  const tick=now=>{const raw=Math.min(1,(now-start)/dur),t=ease(raw),turn=raw<.5?2*raw*raw:1-Math.pow(-2*raw+2,2)/2;c.target.copyFrom(BABYLON.Vector3.Lerp(from.target,to.target,t));c.radius=from.radius+(to.radius-from.radius)*t;c.alpha=angleLerp(from.alpha,to.alpha,turn);c.beta=from.beta+(to.beta-from.beta)*t;if(raw<1)raf=requestAnimationFrame(tick)};
   raf=requestAnimationFrame(tick);return true;
 }
 const CAMERAS={
