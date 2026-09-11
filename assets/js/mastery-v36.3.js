@@ -34,7 +34,7 @@
     return evidence>=5?'mastered':'ready'
   }
   function labelFor(s){return s==='mastered'?'Đã làm chủ':s==='ready'?'Sẵn sàng nâng mức':s==='reinforce'?'Cần củng cố':s==='learn'?'Cần học lại':'Đang thu thập dữ liệu'}
-  function targetDifficulty(m){if(!m||m.state==='new')return 2;if(m.score<.55)return 1.7;if(m.score<.75)return 2.5;if(m.score<.88)return 3.4;return 4.25}
+  function targetDifficulty(m){if(!m||m.state==='new')return 1.4;if(m.score<.55)return 1.6;if(m.score<.75)return 2.4;if(m.score<.88)return 3.3;return 4.2}
   function masteryForCode(code,sourceRows=null,sharedMap=null){
     const map=sharedMap||bankMap(),list=(sourceRows||rows()).filter(h=>h.code===code).sort((a,b)=>(Date.parse(a.date||'')||0)-(Date.parse(b.date||'')||0));
     let w=0,c=0,verifiedEvidence=0,practiceEvidence=0,lastDate='';

@@ -5,7 +5,12 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-step6-unified-state',SCHEMA=600;
+const BUILD='avatar-face2-state-v40.14.4',SCHEMA=600;
+const FACE_SHAPES=['soft','round','oval','angular'];
+const EYE_STYLES=['classic','almond','bright','soft','sharp'];
+const BROW_STYLES=['natural','straight','soft','bold','arc'];
+const MOUTH_STYLES=['soft-smile','natural','calm','confident','small'];
+const IRIS_PRESETS=['#5A3C2C','#3E5C76','#4E6B50','#6B4E71','#3C4658'];
 const WARDROBE_SLOTS=['hair','top','bottom','shoes','head','glasses','back','hand'];
 const EFFECT_SLOTS=['pet','aura','background','emote'];
 const ALL_SLOTS=[...WARDROBE_SLOTS,'accessory',...EFFECT_SLOTS];
@@ -22,7 +27,7 @@ const starterHair=(gender,hair)=>{
 };
 function defaults(){
   return {schemaVersion:SCHEMA,ownerUid:uid(),revision:0,initialized:false,
-    gender:'male',skin:'warm',face:'smile',eyes:'classic',starterHair:'short',hair:'short',hairColor:'#263248',outfit:'school-blue',
+    gender:'male',skin:'warm',face:'smile',eyes:'classic',faceShape:'soft',eyeStyle:'classic',browStyle:'natural',mouthStyle:'soft-smile',irisColor:'#5A3C2C',starterHair:'short',hair:'short',hairColor:'#263248',outfit:'school-blue',
     equipped:{hair:'hair-classic',top:'top-school-blue',bottom:'bottom-navy',shoes:'shoes-school',head:'',glasses:'',back:'',hand:'',accessory:'',pet:'',aura:'',background:'',emote:''},
     updatedAt:''};
 }
@@ -38,7 +43,12 @@ function sanitize(raw){
   const outfits=typeof AVATAR_V378_OUTFITS!=='undefined'?AVATAR_V378_OUTFITS:[];
   const starter=starterHair(gender,x.starterHair||x.hair);
   const out={...d,...x,schemaVersion:SCHEMA,ownerUid:uid(),gender,
-    skin:skins[x.skin]?x.skin:'warm',face:faces[x.face]?x.face:'smile',eyes:String(x.eyes||'classic'),
+    skin:skins[x.skin]?x.skin:'warm',face:faces[x.face]?x.face:'smile',eyes:String(x.eyes||x.eyeStyle||'classic'),
+    faceShape:FACE_SHAPES.includes(String(x.faceShape||''))?String(x.faceShape):'soft',
+    eyeStyle:EYE_STYLES.includes(String(x.eyeStyle||x.eyes||''))?String(x.eyeStyle||x.eyes):'classic',
+    browStyle:BROW_STYLES.includes(String(x.browStyle||''))?String(x.browStyle):'natural',
+    mouthStyle:MOUTH_STYLES.includes(String(x.mouthStyle||''))?String(x.mouthStyle):'soft-smile',
+    irisColor:validHex(x.irisColor)?String(x.irisColor).toUpperCase():d.irisColor,
     starterHair:starter,hair:String(x.hair||starter),hairColor:validHex(x.hairColor)?x.hairColor:d.hairColor,
     outfit:outfits.some(o=>o.id===x.outfit)?x.outfit:'school-blue',
     equipped:{...d.equipped,...(x.equipped&&typeof x.equipped==='object'?x.equipped:{})},
@@ -47,7 +57,7 @@ function sanitize(raw){
   return out;
 }
 function signature(c){
-  c=sanitize(c);return JSON.stringify({gender:c.gender,skin:c.skin,face:c.face,eyes:c.eyes,starterHair:c.starterHair,hair:c.hair,hairColor:c.hairColor,outfit:c.outfit,equipped:c.equipped,initialized:c.initialized});
+  c=sanitize(c);return JSON.stringify({gender:c.gender,skin:c.skin,face:c.face,eyes:c.eyes,faceShape:c.faceShape,eyeStyle:c.eyeStyle,browStyle:c.browStyle,mouthStyle:c.mouthStyle,irisColor:c.irisColor,starterHair:c.starterHair,hair:c.hair,hairColor:c.hairColor,outfit:c.outfit,equipped:c.equipped,initialized:c.initialized});
 }
 function wardrobeItem(id){return window.v385Wardrobe?.item?.(id)||window.v386MegaShop?.item?.(id)||null}
 function megaItem(id){return window.v386MegaShop?.item?.(id)||window.v380Shop?.item?.(id)||null}
@@ -154,7 +164,11 @@ function setBase(field,value){
     c.hair=c.starterHair;const hid=c.gender==='female'?'hair-bob':'hair-classic',hit=wardrobeItem(hid);if(hit){c.equipped.hair=hid;c.hairColor=hit.hairColor||hit.color||c.hairColor}syncOutfitSlots(c);
   }else if(field==='skin'&&AVATAR_V378_SKINS[value])c.skin=value;
   else if(field==='face'&&AVATAR_V378_FACES[value])c.face=value;
-  else if(field==='eyes')c.eyes=String(value||'classic');
+  else if(field==='eyes'||field==='eyeStyle'){const v=String(value||'classic');if(EYE_STYLES.includes(v)){c.eyes=v;c.eyeStyle=v}else return publicConfig(c);}
+  else if(field==='faceShape'){const v=String(value||'soft');if(FACE_SHAPES.includes(v))c.faceShape=v;else return publicConfig(c);}
+  else if(field==='browStyle'){const v=String(value||'natural');if(BROW_STYLES.includes(v))c.browStyle=v;else return publicConfig(c);}
+  else if(field==='mouthStyle'){const v=String(value||'soft-smile');if(MOUTH_STYLES.includes(v))c.mouthStyle=v;else return publicConfig(c);}
+  else if(field==='irisColor'){if(validHex(value))c.irisColor=String(value).toUpperCase();else return publicConfig(c);}
   else if(field==='outfit'&&AVATAR_V378_OUTFITS.some(x=>x.id===value)){c.outfit=value;syncOutfitSlots(c,value)}
   else if(field==='hair')return setHair(value);
   else return publicConfig(c);
@@ -185,7 +199,11 @@ function applyConfig(input={}){
   if(input.gender!==undefined){c.gender=input.gender==='female'?'female':'male';c.starterHair=starterHair(c.gender,c.gender==='female'?'bob':'short');c.hair=c.starterHair;const hid=c.gender==='female'?'hair-bob':'hair-classic',hit=wardrobeItem(hid);if(hit){c.equipped.hair=hid;c.hairColor=hit.hairColor||hit.color||c.hairColor}syncOutfitSlots(c);changed.push('gender','hair','top','bottom','shoes')}
   if(input.skin!==undefined&&AVATAR_V378_SKINS[input.skin]){c.skin=input.skin;changed.push('skin')}
   if(input.face!==undefined&&AVATAR_V378_FACES[input.face]){c.face=input.face;changed.push('face')}
-  if(input.eyes!==undefined){c.eyes=String(input.eyes||'classic');changed.push('eyes')}
+  if(input.eyes!==undefined||input.eyeStyle!==undefined){const v=String(input.eyeStyle||input.eyes||'classic');if(EYE_STYLES.includes(v)){c.eyes=v;c.eyeStyle=v;changed.push('eyes','eyeStyle')}}
+  if(input.faceShape!==undefined&&FACE_SHAPES.includes(String(input.faceShape))){c.faceShape=String(input.faceShape);changed.push('faceShape')}
+  if(input.browStyle!==undefined&&BROW_STYLES.includes(String(input.browStyle))){c.browStyle=String(input.browStyle);changed.push('browStyle')}
+  if(input.mouthStyle!==undefined&&MOUTH_STYLES.includes(String(input.mouthStyle))){c.mouthStyle=String(input.mouthStyle);changed.push('mouthStyle')}
+  if(input.irisColor!==undefined&&validHex(input.irisColor)){c.irisColor=String(input.irisColor).toUpperCase();changed.push('irisColor')}
   if(input.outfit!==undefined&&AVATAR_V378_OUTFITS.some(x=>x.id===input.outfit)){c.outfit=input.outfit;syncOutfitSlots(c,input.outfit);changed.push('outfit','top','bottom','shoes')}
   const mapping={hairId:'hair',shirt:'top',pants:'bottom',shoes:'shoes',accessory:'accessory',head:'head',glasses:'glasses',back:'back',hand:'hand',pet:'pet',aura:'aura',background:'background',emote:'emote'};
   const incoming={...(input.equipped||{})};for(const [key,slot] of Object.entries(mapping))if(input[key]!==undefined)incoming[slot]=input[key];
@@ -240,7 +258,8 @@ function install(){
   const c=current();lastSignature=signature(c);renderStatus();
 }
 
-const API={build:BUILD,schema:SCHEMA,slots:ALL_SLOTS,get:()=>publicConfig(),base,resolved,effect,set:setBase,setHair,equip,apply:applyConfig,renderAvatar:applyConfig,preview,clearPreview,subscribe,ingest,adoptCloud,renderStatus};
+const FACE2_CATALOG={faceShapes:FACE_SHAPES.slice(),eyeStyles:EYE_STYLES.slice(),browStyles:BROW_STYLES.slice(),mouthStyles:MOUTH_STYLES.slice(),irisPresets:IRIS_PRESETS.slice()};
+const API={build:BUILD,schema:SCHEMA,slots:ALL_SLOTS,face2:FACE2_CATALOG,get:()=>publicConfig(),base,resolved,effect,set:setBase,setHair,equip,apply:applyConfig,renderAvatar:applyConfig,preview,clearPreview,subscribe,ingest,adoptCloud,renderStatus};
 window.AvatarEngine=API;window.Math12AvatarEngine=API;
 try{Object.defineProperty(window,'AvatarConfig',{configurable:true,get:()=>API.get()})}catch(_){window.AvatarConfig=API.get()}
 window.renderAvatar=input=>API.renderAvatar(input);window.setHair=(value,color)=>API.setHair(value,color);

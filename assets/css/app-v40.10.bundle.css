@@ -1119,3 +1119,24 @@ html.math12-low-power .v386-card,html.math12-low-power .card{backdrop-filter:non
 /* V40.13.3 — Gemini 429 quota guard */
 .v40133-quota{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:9px;padding:9px 10px;border:1px dashed #c4b5fd;border-radius:10px;background:#faf5ff;color:#5b21b6;font-size:11px}.v40133-quota span{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.v40133-quota small{display:block;width:100%;color:var(--muted);margin-top:2px}.v40133-quota b{font-weight:900}.v40133-quota #v40133RetryText{color:#7c3aed}
 @media(max-width:980px){.v4013-pipeline-options{grid-template-columns:1fr 1fr}}
+
+
+/* ===== Math12 Hub v40.14.4 — Avatar Face 2.0 ===== */
+.avatar-face2-hint{margin:0 14px 10px;padding:10px 12px;border:1px solid #dbe6f5;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(241,246,255,.94));display:flex;align-items:flex-start;gap:9px;box-shadow:0 8px 24px rgba(31,64,120,.05)}
+.avatar-face2-hint b{flex:0 0 auto;border-radius:999px;padding:4px 7px;background:#e9f1ff;color:#315bc7;font-size:7px;letter-spacing:.06em;text-transform:uppercase}
+.avatar-face2-hint span{font-size:7px;line-height:1.55;color:#697991}
+#avatarStudioV800 .avatar-studio-item[data-key^="base:faceShape"],#avatarStudioV800 .avatar-studio-item[data-key^="base:eyeStyle"],#avatarStudioV800 .avatar-studio-item[data-key^="base:browStyle"],#avatarStudioV800 .avatar-studio-item[data-key^="base:mouthStyle"],#avatarStudioV800 .avatar-studio-item[data-key^="base:irisColor"]{background:linear-gradient(180deg,#fff,#fbfcff)}
+#avatarStudioV800 .avatar-studio-item[data-key^="base:irisColor"] .avatar-studio-visual>i{border:3px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(27,42,72,.08),0 7px 16px color-mix(in srgb,var(--item-color) 22%,transparent)}
+@media(max-width:580px){.avatar-face2-hint{margin:0 9px 9px}.avatar-face2-hint{display:block}.avatar-face2-hint b{display:inline-block;margin-bottom:5px}}
+
+
+/* v40.14.5 — Avatar Emotion feedback */
+.v40145-emotion-card{display:flex;align-items:center;gap:14px;margin:14px 0 18px;padding:13px 16px;border:1px solid rgba(49,91,199,.12);border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(246,249,255,.92));box-shadow:0 1px 2px rgba(20,30,50,.04),0 10px 28px rgba(20,30,50,.07);overflow:hidden;position:relative}
+.v40145-emotion-card:after{content:"";position:absolute;inset:auto -18px -28px auto;width:92px;height:92px;border-radius:50%;background:rgba(49,91,199,.055);pointer-events:none}
+.v40145-emotion-avatar{width:52px;height:58px;display:grid;place-items:center;flex:0 0 auto;overflow:hidden;border-radius:15px;background:rgba(255,255,255,.78);border:1px solid rgba(40,55,90,.08)}
+.v40145-emotion-avatar .avatar-v378-mini,.v40145-emotion-avatar .avatar-svg-mini{width:48px!important;height:56px!important;display:block}
+.v40145-emotion-copy{display:grid;gap:2px;min-width:0;position:relative;z-index:1}.v40145-emotion-copy small{font-size:10px;letter-spacing:.09em;font-weight:850;color:#67758d}.v40145-emotion-copy b{font-size:14px;color:#1f2a3d}.v40145-emotion-copy span{font-size:12.5px;line-height:1.5;color:#617087}
+.v40145-emotion-card.mood-proud{border-color:rgba(194,143,37,.18);background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(255,249,234,.94))}.v40145-emotion-card.mood-proud:after{background:rgba(214,163,58,.08)}
+.v40145-emotion-card.mood-confident{border-color:rgba(49,91,199,.16)}.v40145-emotion-card.mood-happy{border-color:rgba(79,164,106,.16);background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(244,251,246,.94))}.v40145-emotion-card.mood-thinking,.v40145-emotion-card.mood-disappointed{border-color:rgba(112,125,150,.16);background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(247,248,251,.95))}
+.v40145-emotion-fallback{font-size:22px;color:#315bc7}@media(max-width:640px){.v40145-emotion-card{padding:11px 12px;gap:11px;border-radius:15px}.v40145-emotion-avatar{width:46px;height:52px}.v40145-emotion-copy span{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.v40145-emotion-card{scroll-behavior:auto}}

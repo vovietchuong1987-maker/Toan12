@@ -4,8 +4,9 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='math-room-soft3d-premium',SCHEMA=400,CDN='https://cdn.babylonjs.com/babylon.js';
+const BUILD='math-room-unified-avatar-motion2-v40.14.6',SCHEMA=400,CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,canvas=null,loadPromise=null,renderObs=null,shadowGen=null;
+let roomAvatarNode=null,roomAvatarModel=null,roomPetNode=null,roomAvatarBaseY=.20,lastProgressSignature='',runtimeUnsubs=[];
 const uid=()=>firebaseUser?.uid||'local';
 const themes=[
  {id:'classroom',label:'Góc học tập',color:'#DDE8F8',free:true,wall:'#F2F1F3',floor:'#ECEBED',wood:'#B78961',accent:'#527CC9',board:'#24453B'},
@@ -31,9 +32,19 @@ function tor(name,d,th,x,y,z,m,parent=null){const q=BABYLON.MeshBuilder.CreateTo
 function tube(name,pts,r,m,parent=null){const path=pts.map(p=>new BABYLON.Vector3(p[0],p[1],p[2]));const q=BABYLON.MeshBuilder.CreateTube(name,{path,radius:r,tessellation:14,cap:BABYLON.Mesh.CAP_ALL},scene);q.material=m;if(parent)q.parent=parent;return q}
 function caster(mesh){try{shadowGen?.addShadowCaster(mesh)}catch(_){}return mesh}
 function groupCaster(root){try{root.getChildMeshes().forEach(m=>{caster(m);m.receiveShadows=true})}catch(_){}return root}
+function removeCasterGroup(root){try{root?.getChildMeshes?.().forEach(m=>shadowGen?.removeShadowCaster?.(m))}catch(_){}return root}
+function disposeGroup(root){
+  if(!root)return;
+  const mats=new Set();
+  try{root.getChildMeshes().forEach(m=>{if(m.material)mats.add(m.material)})}catch(_){}
+  removeCasterGroup(root);
+  try{root.dispose(false)}catch(_){}
+  for(const m of mats)try{m.dispose(false,true)}catch(_){}
+}
+function progressSignature(){const s=stats();return `${s.books}|${s.trophies}|${s.roomLevel}`}
 
 function resolvedAvatar(){const unified=window.AvatarEngine?.resolved?.(),a=unified?.base||window.avatarV378Stored?.()||window.avatarV378Current?.()||{skin:'warm',hair:'short',outfit:'school-blue'},g=unified?.garment||window.v385Wardrobe?.resolved?.(a)||{},out=window.AVATAR_V378_OUTFITS?.find?.(x=>x.id===a.outfit)||{top:'#4E8B59',bottom:'#204C48',accent:'#D6A721'};return {a,g,out}}
-function roomAvatar(){
+function legacyRoomAvatar(){
   const {a,g,out}=resolvedAvatar(),root=new BABYLON.TransformNode('roomAvatar',scene);root.position.set(-1.20,.20,.13);root.scaling.set(.78,.78,.78);
   const skin=window.AVATAR_V378_SKINS?.[a.skin]?.fill||'#E8B486',mSkin=mat('raSkin',skin,{rough:.88}),mHair=mat('raHair',g.hairColor||'#20283B',{rough:.58}),mVest=mat('raVest',g.topColor||out.top||'#4E8B59',{rough:.78}),mAccent=mat('raAccent',g.accent||out.accent||'#D4A827',{rough:.55}),mBottom=mat('raBottom',g.bottomColor||out.bottom||'#214C49',{rough:.79}),mShoe=mat('raShoe',g.shoeColor||'#202631',{rough:.58}),mWhite=mat('raWhite','#FBFAF8',{rough:.92}),mEye=mat('raEye','#1B1619',{rough:.34}),mIris=mat('raIris','#4B3429',{rough:.32}),mBlush=mat('raBlush','#F09A97',{rough:.9,alpha:.22});
   sp('raHead',1.18,0,2.38,.02,mSkin,root,1,1.04,.96,28);sp('raEarL',.24,-.58,2.37,.02,mSkin,root,.58,1,.58);sp('raEarR',.24,.58,2.37,.02,mSkin,root,.58,1,.58);
@@ -65,6 +76,34 @@ function roomAvatar(){
   if(g.head){const hm=mat('raHat',g.head.color||'#315BC7',{rough:.60}),shape=String(g.head.shape||'cap');if(shape==='crown'){cy('raCrown',.23,.68,0,2.99,.03,hm,root,8)}else if(shape==='scholar'){bx('raGradBoard',.78,.07,.78,0,3.00,.03,hm,root);cy('raGradCap',.14,.55,0,2.92,.03,hm,root)}else{sp('raCap',.78,0,2.96,.03,hm,root,1,.28,1)}}
   if(g.back){const bm=mat('raBack',g.back.color||'#426A4A',{rough:.78});bx('raBackpack',.72,.82,.26,0,1.46,.47,bm,root)}
   return groupCaster(root)
+}
+function roomAvatar(){
+  roomAvatarModel=null;roomAvatarBaseY=.20;
+  const renderer=window.Math12AvatarRenderer;
+  if(renderer?.available?.()){
+    try{
+      roomAvatarBaseY=.38;
+      roomAvatarModel=renderer.create(scene,{
+        context:'room',name:'roomAvatarUnified',
+        position:{x:-1.20,y:roomAvatarBaseY,z:.13},
+        scale:.57,rotationY:0,pose:'study'
+      });
+      const sharedRoot=roomAvatarModel?.root;
+      if(sharedRoot){sharedRoot.metadata={...(sharedRoot.metadata||{}),roomAvatar:true,unifiedWithStudio:true};return groupCaster(sharedRoot)}
+    }catch(err){console.warn('[Math Room] unified avatar fallback',err);roomAvatarModel=null;roomAvatarBaseY=.20}
+  }
+  const fallback=legacyRoomAvatar();
+  if(fallback)fallback.metadata={...(fallback.metadata||{}),roomAvatar:true,unifiedWithStudio:false};
+  return fallback;
+}
+function disposeRoomAvatar(){
+  try{window.AvatarMotion?.detachContext?.('room')}catch(_){}
+  if(!roomAvatarNode){roomAvatarModel=null;return}
+  removeCasterGroup(roomAvatarNode);
+  if(roomAvatarModel?.root===roomAvatarNode&&typeof roomAvatarModel.dispose==='function'){
+    try{roomAvatarModel.dispose()}catch(_){disposeGroup(roomAvatarNode)}
+  }else disposeGroup(roomAvatarNode);
+  roomAvatarNode=null;roomAvatarModel=null;
 }
 function roomPet(){const it=window.v387Effects?.equipped?.('pet')||null;if(!it)return null;const root=new BABYLON.TransformNode('roomPet',scene);root.position.set(.55,.2,-.85);root.scaling.set(.70,.70,.70);const main=mat('roomPetMain',it.color||'#E7A86B',{rough:.82}),dark=mat('roomPetDark','#263248',{rough:.52});sp('rpBody',.65,0,.42,0,main,root,1,1.05,.9);sp('rpHead',.52,0,.82,-.03,main,root);for(const x of [-.14,.14]){sp('rpEar'+x,.23,x,1.08,0,main,root,.7,1.2,.6);sp('rpEye'+x,.06,x*.65,.85,-.25,dark,root)}return groupCaster(root)}
 
@@ -118,20 +157,77 @@ function createScene(){
   const key=new BABYLON.DirectionalLight('roomKey',new BABYLON.Vector3(-.55,-1,.58),scene);key.position.set(-2.8,5.8,-4.2);key.diffuse=p.night?new BABYLON.Color3(.55,.66,1):new BABYLON.Color3(1,.88,.72);key.intensity=p.night?.45:1.15;
   const windowLight=new BABYLON.PointLight('windowLight',new BABYLON.Vector3(-3.2,2.55,-.1),scene);windowLight.diffuse=p.night?new BABYLON.Color3(.45,.60,1):new BABYLON.Color3(1,.82,.58);windowLight.intensity=p.night?.18:.62;windowLight.range=6;
   try{shadowGen=new BABYLON.ShadowGenerator(1536,key);shadowGen.useBlurExponentialShadowMap=true;shadowGen.blurKernel=26;shadowGen.bias=.0007}catch(_){shadowGen=null}
-  buildFurniture(t,s,p);const av=roomAvatar(),pet=roomPet();
+  buildFurniture(t,s,p);roomAvatarNode=roomAvatar();roomPetNode=roomPet();setTimeout(()=>{try{window.AvatarMotion?.attachContext?.('room');window.dispatchEvent(new CustomEvent('math12hub:avatar-renderer-mounted',{detail:{context:'room'}}))}catch(_){}},0);
   scene.meshes.forEach(m=>{if(m.name!=='floor'&&m.name!=='backWall'&&m.name!=='sideWall')caster(m)});
-  const start=performance.now();renderObs=scene.onBeforeRenderObservable.add(()=>{const z=(performance.now()-start)/1000;if(av){av.position.y=.20+Math.sin(z*1.65)*.010;av.rotation.y=Math.sin(z*.48)*.010}if(pet){pet.position.y=.2+Math.sin(z*3)*.035;pet.rotation.y=Math.sin(z*1.6)*.15}});return scene
+  lastProgressSignature=progressSignature();
+  const start=performance.now();renderObs=scene.onBeforeRenderObservable.add(()=>{const z=(performance.now()-start)/1000;if(roomAvatarNode&&!window.AvatarMotion?.hasContext?.('room')){roomAvatarNode.position.y=roomAvatarBaseY+Math.sin(z*1.65)*.010;roomAvatarNode.rotation.y=Math.sin(z*.48)*.010}if(roomPetNode){roomPetNode.position.y=.2+Math.sin(z*3)*.035;roomPetNode.rotation.y=Math.sin(z*1.6)*.15}});return scene
 }
-function destroy(){try{if(scene&&renderObs)scene.onBeforeRenderObservable.remove(renderObs)}catch(_){}renderObs=null;shadowGen=null;try{scene?.dispose()}catch(_){};try{engine?.dispose()}catch(_){};scene=null;engine=null;canvas=null}
-function hud(){const stage=document.querySelector('.v390-stage');if(!stage)return;const s=stats(),t=currentTheme();let x=stage.querySelector('.v390-stage-hud');if(!x){x=document.createElement('div');x.className='v390-stage-hud';stage.appendChild(x)}x.innerHTML=`<span>🏠 Lv.${s.roomLevel}</span><span>📚 ${s.books} sách</span><span>🏆 ${s.trophies} thành tích</span><span>${t.label}</span>`}
+function destroy(){try{window.AvatarMotion?.detachContext?.('room')}catch(_){}try{if(scene&&renderObs)scene.onBeforeRenderObservable.remove(renderObs)}catch(_){}renderObs=null;roomAvatarNode=null;roomAvatarModel=null;roomPetNode=null;shadowGen=null;try{scene?.dispose()}catch(_){};try{engine?.dispose()}catch(_){};scene=null;engine=null;canvas=null}
+function refreshAvatar(config=null,detail={}){
+  if(!scene||!window.BABYLON)return false;
+  disposeRoomAvatar();
+  try{roomAvatarNode=roomAvatar();setTimeout(()=>window.AvatarMotion?.attachContext?.('room'),0);if((detail.changed||[]).includes('pet'))refreshPet();return true}catch(err){console.warn('room avatar refresh',err);return false}
+}
+function refreshPet(){
+  if(!scene||!window.BABYLON)return false;
+  disposeGroup(roomPetNode);roomPetNode=null;
+  try{roomPetNode=roomPet();return true}catch(err){console.warn('room pet refresh',err);return false}
+}
+function refreshChrome(){
+  const root=document.getElementById('v390RoomPage');if(!root)return;const s=stats(),t=currentTheme();
+  const set=(key,value)=>root.querySelectorAll(`[data-room-stat="${key}"]`).forEach(el=>el.textContent=value);
+  set('roomLevel',`Lv.${s.roomLevel}`);set('books',String(s.books));set('trophies',String(s.trophies));set('mastered',String(s.mastered));set('roomLevelPlain',`${s.roomLevel}/5`);
+  const meta=root.querySelector('[data-room-meta]');if(meta)meta.textContent=`Level ${s.level} • ${s.mastered} mã mastered • ${s.achCount} thành tích`;
+  const theme=root.querySelector('[data-room-theme]');if(theme)theme.textContent=t.label;hud();
+}
+function refreshProgress(){
+  const next=progressSignature(),changed=next!==lastProgressSignature;lastProgressSignature=next;refreshChrome();
+  if(changed&&document.getElementById('page-room')?.classList.contains('active')&&scene)setTimeout(()=>mount(),32);
+}
+
+function hud(){const stage=document.querySelector('.v390-stage');if(!stage)return;const s=stats(),t=currentTheme();let x=stage.querySelector('.v390-stage-hud');if(!x){x=document.createElement('div');x.className='v390-stage-hud';stage.appendChild(x)}x.innerHTML=`<span>🏠 Lv.${s.roomLevel}</span><span>📚 ${s.books} sách</span><span>🏆 ${s.trophies} thành tích</span><span data-room-theme>${t.label}</span>`}
 async function mount(){const stage=document.querySelector('#page-room.active .v390-stage');if(!stage)return;destroy();const c=stage.querySelector('canvas');if(!c)return;canvas=c;stage.querySelector('.v390-loading')?.classList.remove('hidden');try{await loadBabylon();if(!document.body.contains(stage))return;engine=new BABYLON.Engine(canvas,true,{antialias:true,adaptToDeviceRatio:true,preserveDrawingBuffer:false,stencil:true});try{if(window.Math12Platform?.perf?.lowPower?.())engine.setHardwareScalingLevel(Math.max(1.35,window.devicePixelRatio||1))}catch(_){}createScene();engine.runRenderLoop(()=>scene?.render());requestAnimationFrame(()=>engine?.resize());setTimeout(()=>stage.querySelector('.v390-loading')?.remove(),260);hud()}catch(err){console.warn('room fallback',err);stage.innerHTML='<div class="v390-fallback"><div class="v390-fallback-poster"></div><b>Phòng 3D chưa sẵn sàng</b><span>Hệ thống học tập vẫn hoạt động bình thường. Hãy kiểm tra WebGL/kết nối rồi mở lại.</span></div>'}}
 function setTheme(id){const t=themes.find(x=>x.id===id);if(!t||!unlockedTheme(t)){window.examToast?.('Cần mở khóa nền tương ứng trong Mega Shop.');return}const p=profile();p.theme=id;persist(p);renderPage();setTimeout(mount,30)}
 function toggleNight(){const p=profile();p.night=!p.night;persist(p);renderPage();setTimeout(mount,30)}
 function focus(kind){const cam=scene?.activeCamera;if(!cam)return;if(kind==='avatar'){cam.target=new BABYLON.Vector3(-1.20,1.45,-.15);cam.radius=6.15;cam.alpha=-1.48;cam.beta=1.22}else if(kind==='trophy'){cam.target=new BABYLON.Vector3(2.72,1.70,2.42);cam.radius=5.85;cam.alpha=-1.18;cam.beta=1.20}else{cam.target=new BABYLON.Vector3(-.15,1.35,.38);cam.radius=9.45;cam.alpha=-1.36;cam.beta=1.15}}
-function renderPage(){const root=document.getElementById('v390RoomPage');if(!root)return;const p=profile(),s=stats(),t=currentTheme();root.innerHTML=`<div class="v390-room-shell"><section class="card v390-stage-card"><div class="v390-stage"><div class="v390-loading"><div><b>Đang dựng góc học tập của em…</b><span>Soft 3D • ánh sáng ấm • Avatar • sách • cúp thành tích</span></div></div><canvas class="v390-canvas" aria-label="Phòng học 3D cá nhân"></canvas><div class="v390-controls"><button onclick="v390Room.focus('room')">⌂ Toàn phòng</button><button onclick="v390Room.focus('avatar')">☺ Nhân vật</button><button onclick="v390Room.focus('trophy')">🏆 Kệ thành tích</button><button onclick="v390Room.toggleNight()">${p.night?'☀ Ban ngày':'☾ Ban đêm'}</button></div></div></section><aside class="v390-side"><div class="v390-hero"><div class="avatar-preview-kicker">MY MATH ROOM</div><h2>Góc học tập của em</h2><p>Không gian học tập mềm mại, ấm áp hơn; sách, cúp và vật phẩm vẫn phản ánh đúng tiến trình học thật của tài khoản.</p><div class="v390-room-level"><strong>Lv.${s.roomLevel}</strong><div><b>${window.avatarV378DisplayName?.()||'Học sinh Math12'}</b><small>Level ${s.level} • ${s.mastered} mã mastered • ${s.achCount} thành tích</small></div></div></div><div class="card v390-panel"><h3>Phong cách căn phòng</h3><p>Đổi theme mà không ảnh hưởng điểm số. Theme nâng cao tiếp tục mở khóa từ Mega Shop.</p><div class="v390-themes">${themes.map(x=>{const ok=unlockedTheme(x),active=t.id===x.id;return `<button class="v390-theme ${active?'active':''} ${ok?'':'locked'}" ${ok?'':'disabled'} onclick="v390Room.setTheme('${x.id}')" style="--theme:${x.color}"><i></i><b>${x.label}</b><small>${x.free?'Có sẵn':ok?'Đã mở khóa':'Cần '+(window.v386MegaShop?.item?.(x.requires)?.label||'vật phẩm nền')}</small><em>${active?'Đang dùng':ok?'Có sẵn':'Khóa'}</em></button>`}).join('')}</div></div><div class="card v390-panel"><h3>Đồ trưng bày theo tiến độ</h3><div class="v390-summary"><div><small>Sách học tập</small><b>${s.books}</b></div><div><small>Cúp thành tích</small><b>${s.trophies}</b></div><div><small>Mã Mastery</small><b>${s.mastered}</b></div><div><small>Room Level</small><b>${s.roomLevel}/5</b></div></div></div><div class="card v390-panel"><h3>Thiết kế mới</h3><div class="v390-legend"><span>✓ Soft 3D</span><span>✓ Bóng đổ mềm</span><span>✓ Nhân vật ngồi học</span><span>✓ Cosmetic only</span></div></div></aside></div>`;hud()}
+function setAvatarPose(pose='study'){return window.AvatarMotion?.setPose?.(pose,{context:'room',duration:420})??roomAvatarModel?.setPose?.(pose)??false}
+function playAvatarMotion(kind='nod'){return window.AvatarMotion?.play?.(kind,null,{context:'room'})||false}
+function renderPage(){const root=document.getElementById('v390RoomPage');if(!root)return;const p=profile(),s=stats(),t=currentTheme();root.innerHTML=`<div class="v390-room-shell"><section class="card v390-stage-card"><div class="v390-stage"><div class="v390-loading"><div><b>Đang dựng góc học tập của em…</b><span>Soft 3D • ánh sáng ấm • Avatar • sách • cúp thành tích</span></div></div><canvas class="v390-canvas" aria-label="Phòng học 3D cá nhân"></canvas><div class="v390-controls"><button onclick="v390Room.focus('room')">⌂ Toàn phòng</button><button onclick="v390Room.focus('avatar')">☺ Nhân vật</button><button onclick="v390Room.focus('trophy')">🏆 Kệ thành tích</button><button onclick="v390Room.toggleNight()">${p.night?'☀ Ban ngày':'☾ Ban đêm'}</button></div></div></section><aside class="v390-side"><div class="v390-hero"><div class="avatar-preview-kicker">MY MATH ROOM</div><h2>Góc học tập của em</h2><p>Không gian học tập mềm mại, ấm áp hơn; sách, cúp và vật phẩm vẫn phản ánh đúng tiến trình học thật của tài khoản.</p><div class="v390-room-level"><strong data-room-stat="roomLevel">Lv.${s.roomLevel}</strong><div><b>${window.avatarV378DisplayName?.()||'Học sinh Math12'}</b><small data-room-meta>Level ${s.level} • ${s.mastered} mã mastered • ${s.achCount} thành tích</small></div></div></div><div class="card v390-panel"><h3>Phong cách căn phòng</h3><p>Đổi theme mà không ảnh hưởng điểm số. Theme nâng cao tiếp tục mở khóa từ Mega Shop.</p><div class="v390-themes">${themes.map(x=>{const ok=unlockedTheme(x),active=t.id===x.id;return `<button class="v390-theme ${active?'active':''} ${ok?'':'locked'}" ${ok?'':'disabled'} onclick="v390Room.setTheme('${x.id}')" style="--theme:${x.color}"><i></i><b>${x.label}</b><small>${x.free?'Có sẵn':ok?'Đã mở khóa':'Cần '+(window.v386MegaShop?.item?.(x.requires)?.label||'vật phẩm nền')}</small><em>${active?'Đang dùng':ok?'Có sẵn':'Khóa'}</em></button>`}).join('')}</div></div><div class="card v390-panel"><h3>Đồ trưng bày theo tiến độ</h3><div class="v390-summary"><div><small>Sách học tập</small><b data-room-stat="books">${s.books}</b></div><div><small>Cúp thành tích</small><b data-room-stat="trophies">${s.trophies}</b></div><div><small>Mã Mastery</small><b data-room-stat="mastered">${s.mastered}</b></div><div><small>Room Level</small><b data-room-stat="roomLevelPlain">${s.roomLevel}/5</b></div></div></div><div class="card v390-panel"><h3>Thiết kế mới</h3><div class="v390-legend"><span>✓ Soft 3D</span><span>✓ Bóng đổ mềm</span><span>✓ Avatar + Motion 2.0 đồng bộ Studio ↔ Room</span><span>✓ Cosmetic only</span></div></div></aside></div>`;hud()}
 function inject(){try{ROLE_ACCESS.student.add('room')}catch(_){};const nav=document.querySelector('[data-nav-group="student-world"] .nav-group-items');if(nav&&!nav.querySelector('[data-page="room"]'))nav.insertAdjacentHTML('beforeend','<button data-page="room" title="Phòng học 3D của em"><span class="ico">🏠</span><span class="nav-label">Phòng của em</span></button>');const main=document.querySelector('main .content')||document.querySelector('main');if(main&&!document.getElementById('page-room'))main.insertAdjacentHTML('beforeend','<section class="section student-only" id="page-room"><div id="v390RoomPage"></div></section>')}
 function adoptCloud(){const c=window.firebaseProfile?.roomV390;if(!c)return;const l=profile(),ct=Date.parse(c.updatedAt||0)||0,lt=Date.parse(l.updatedAt||0)||0;if(ct>=lt){bucket()[uid()]={...blank(),...c,ownerUid:uid()};try{window.save?.({sync:false,reason:'room-cloud'})}catch(_){}}}
-function install(){inject();if(typeof window.goPage==='function'&&!window.goPage.__v390){const base=window.goPage;const wrap=function(page,internal=false){const r=base(page,internal);if(page==='room'){renderPage();setTimeout(mount,40)}else destroy();return r};wrap.__v390=true;window.goPage=wrap}if(typeof window.firebaseHydrateUser==='function'&&!window.firebaseHydrateUser.__v390){const base=window.firebaseHydrateUser;const wrap=async function(u){const r=await base(u);adoptCloud();return r};wrap.__v390=true;window.firebaseHydrateUser=wrap}window.addEventListener('resize',()=>engine?.resize());['math12hub:attempt-rewarded','math12hub:game-reward','math12hub:avatar-changed','math12hub:avatar-state-changed'].forEach(ev=>window.addEventListener(ev,()=>{if(document.getElementById('page-room')?.classList.contains('active')){renderPage();setTimeout(mount,50)}}));if(document.getElementById('page-room')?.classList.contains('active')){renderPage();mount()}}
-window.v390Room={build:BUILD,schema:SCHEMA,themes,profile,stats,render:renderPage,mount,setTheme,toggleNight,focus,destroy};
+function registerRendererBridge(){
+  const bridge=window.AvatarRendererBridge;if(!bridge||bridge.has('room'))return false;
+  bridge.register('room',{
+    isMounted:()=>!!scene&&!!roomAvatarNode,
+    getScene:()=>scene,
+    getRoot:()=>roomAvatarNode,
+    getParts:()=>roomAvatarModel?.parts||null,
+    applyAppearance:(config,detail)=>refreshAvatar(config,detail),
+    setExpression:(value,detail={})=>roomAvatarModel?.setExpression?.(value,detail)??window.AvatarEmotion?.applyToParts?.(roomAvatarModel?.parts||null,value,{...detail,context:'room'})??false,
+    setPose:(value)=>roomAvatarModel?.setPose?.(value)??false,
+    refresh:()=>refreshAvatar(),
+    destroy:()=>destroy()
+  },{autoSync:true});
+  return true;
+}
+function installLegacyHooks(){
+  if(typeof window.goPage==='function'&&!window.goPage.__v390){const base=window.goPage;const wrap=function(page,internal=false){const r=base(page,internal);if(page==='room'){renderPage();setTimeout(mount,40)}else destroy();return r};wrap.__v390=true;window.goPage=wrap}
+  if(typeof window.firebaseHydrateUser==='function'&&!window.firebaseHydrateUser.__v390){const base=window.firebaseHydrateUser;const wrap=async function(u){const r=await base(u);adoptCloud();return r};wrap.__v390=true;window.firebaseHydrateUser=wrap}
+  window.addEventListener('math12hub:avatar-state-changed',e=>{if(document.getElementById('page-room')?.classList.contains('active'))refreshAvatar(e.detail?.current,e.detail||{})});
+  ['math12hub:attempt-rewarded','math12hub:game-reward'].forEach(ev=>window.addEventListener(ev,()=>{if(document.getElementById('page-room')?.classList.contains('active'))refreshProgress()}));
+}
+function install(){
+  inject();registerRendererBridge();
+  if(window.Math12Events){
+    runtimeUnsubs.push(window.Math12Events.on('page:changed',d=>{if(d.page==='room'){renderPage();setTimeout(mount,40)}else destroy()}));
+    runtimeUnsubs.push(window.Math12Events.on('account:hydrated',()=>{adoptCloud();if(document.getElementById('page-room')?.classList.contains('active')){refreshChrome();setTimeout(mount,40)}}));
+    runtimeUnsubs.push(window.Math12Events.on('learning:attempt-rewarded',()=>{if(document.getElementById('page-room')?.classList.contains('active'))refreshProgress()}));
+    runtimeUnsubs.push(window.Math12Events.on('game:reward',()=>{if(document.getElementById('page-room')?.classList.contains('active'))refreshProgress()}));
+  }else installLegacyHooks();
+  window.addEventListener('math12hub:avatar-runtime-ready',registerRendererBridge);
+  window.addEventListener('resize',()=>engine?.resize());
+  if(document.getElementById('page-room')?.classList.contains('active')){renderPage();mount()}
+}
+window.v390Room={build:BUILD,schema:SCHEMA,themes,profile,stats,render:renderPage,mount,setTheme,toggleNight,focus,setAvatarPose,playAvatarMotion,destroy,refreshAvatar,refreshPet,refreshProgress,getScene:()=>scene,getAvatarRoot:()=>roomAvatarNode,getAvatarParts:()=>roomAvatarModel?.parts||null,getAvatarRenderer:()=>roomAvatarModel?.build||'legacy-room'};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();

@@ -6,7 +6,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='avatar-step6-unified-avatar-engine';
+const BUILD='avatar-motion2-renderer-core-v40.14.6';
 const CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,root=null,canvas=null,rafMount=0,loadPromise=null,celebrateUntil=0,parts={},previewItem=null;
 
@@ -58,7 +58,7 @@ function cyl(name,h,dt,db,pos,material,parent=root,tess=28){const m=BABYLON.Mesh
 function torus(name,diam,thick,pos,material,parent=root){const m=BABYLON.MeshBuilder.CreateTorus(name,{diameter:diam,thickness:thick,tessellation:32},scene);m.position.set(pos.x,pos.y,pos.z);m.material=material;m.parent=parent;return m}
 function cone(name,h,diam,pos,material,parent=root){return cyl(name,h,0,diam,pos,material,parent,20)}
 function tube(name,pts,r,material,parent=root){const path=pts.map(p=>new BABYLON.Vector3(p.x,p.y,p.z));const m=BABYLON.MeshBuilder.CreateTube(name,{path,radius:r,tessellation:12,cap:BABYLON.Mesh.CAP_ALL},scene);m.material=material;m.parent=parent;return m}
-function avatar(){return window.AvatarEngine?.base?.()||window.avatarV378Current?.()||window.avatarV378Stored?.()||{gender:'male',skin:'warm',face:'smile',hair:'short',outfit:'school-blue'}}
+function avatar(){return window.AvatarEngine?.get?.()||window.AvatarEngine?.base?.()||window.avatarV378Current?.()||window.avatarV378Stored?.()||{gender:'male',skin:'warm',face:'smile',hair:'short',outfit:'school-blue'}}
 function outfit(a){return AVATAR_V378_OUTFITS?.find?.(x=>x.id===a.outfit)||[{top:'#EAF2FF',accent:'#315BC7',bottom:'#27364E'}][0]}
 function skinColor(a){return AVATAR_V378_SKINS?.[a.skin]?.fill||({light:'#F4C7A1',warm:'#E6AD7B',tan:'#B97850'}[a.skin]||'#E6AD7B')}
 function disposeModel(){if(root){try{root.dispose(false,true)}catch(_){}root=null}parts={}}
@@ -67,68 +67,95 @@ function normalizeStyle(style,fallback='classic'){return String(style||fallback)
 function toneHex(value,mul=1,lift=0){const c=hex(value,'#263248'),clamp=v=>Math.max(0,Math.min(1,v));return new BABYLON.Color3(clamp(c.r*mul+lift),clamp(c.g*mul+lift),clamp(c.b*mul+lift)).toHexString()}
 function isLowPower(){try{return !!window.Math12Platform?.perf?.lowPower?.()}catch(_){return false}}
 
+function faceShapeProfile(style='soft'){
+  const key=normalizeStyle(style,'soft');
+  return ({
+    round:{x:.995,y:1.015,z:.955},
+    oval:{x:.925,y:1.105,z:.925},
+    angular:{x:.955,y:1.030,z:.930},
+    soft:{x:.965,y:1.060,z:.945}
+  })[key]||{x:.965,y:1.060,z:.945};
+}
+function eyeStyleProfile(style='classic'){
+  const key=normalizeStyle(style,'classic');
+  return ({
+    almond:{sx:.88,sy:.90,iris:.132,pupil:.069,lid:.205,tilt:.055},
+    bright:{sx:.86,sy:1.13,iris:.151,pupil:.076,lid:.215,tilt:.018},
+    soft:{sx:.84,sy:1.00,iris:.141,pupil:.071,lid:.198,tilt:.025},
+    sharp:{sx:.91,sy:.82,iris:.126,pupil:.067,lid:.222,tilt:.095},
+    classic:{sx:.80,sy:1.06,iris:.137,pupil:.072,lid:.205,tilt:.035}
+  })[key]||{sx:.80,sy:1.06,iris:.137,pupil:.072,lid:.205,tilt:.035};
+}
+function browStyleProfile(style='natural'){
+  const key=normalizeStyle(style,'natural');
+  return ({
+    straight:{len:.245,r:.019,baseTilt:.018,y:3.022},
+    soft:{len:.230,r:.017,baseTilt:.055,y:3.030},
+    bold:{len:.255,r:.026,baseTilt:.060,y:3.026},
+    arc:{len:.238,r:.019,baseTilt:.115,y:3.035},
+    natural:{len:.235,r:.020,baseTilt:.075,y:3.025}
+  })[key]||{len:.235,r:.020,baseTilt:.075,y:3.025};
+}
+function mouthPoints(style='soft-smile',legacy='smile'){
+  const key=normalizeStyle(style,'soft-smile');
+  if(key==='natural')return [{x:-.100,y:2.520,z:-.674},{x:0,y:2.510,z:-.681},{x:.100,y:2.520,z:-.674}];
+  if(key==='calm')return [{x:-.105,y:2.525,z:-.672},{x:0,y:2.507,z:-.682},{x:.105,y:2.525,z:-.672}];
+  if(key==='confident')return [{x:-.115,y:2.532,z:-.671},{x:-.025,y:2.505,z:-.683},{x:.075,y:2.512,z:-.679},{x:.125,y:2.542,z:-.670}];
+  if(key==='small')return [{x:-.078,y:2.523,z:-.674},{x:0,y:2.506,z:-.681},{x:.078,y:2.523,z:-.674}];
+  if(legacy==='focus')return [{x:-.090,y:2.505,z:-.674},{x:0,y:2.512,z:-.680},{x:.090,y:2.505,z:-.674}];
+  return [{x:-.125,y:2.545,z:-.670},{x:-.065,y:2.505,z:-.682},{x:0,y:2.492,z:-.687},{x:.065,y:2.505,z:-.682},{x:.125,y:2.545,z:-.670}];
+}
 function buildFace(a,mSkin,mEye,mIris,mWhite,mAccent,parent=root){
   const face=makeNode('face-group',parent);parts.face=face;
   const expression=normalizeStyle(a.face||'smile');
+  const eyeProfile=eyeStyleProfile(a.eyeStyle||a.eyes||'classic');
+  const browProfile=browStyleProfile(a.browStyle||'natural');
   const innerEar=mat('inner-ear','#C98270',.88);
-  // Soft ears with a shallow inner fold. The old flat side-discs are removed.
   for(const [i,x] of [-.655,.655].entries()){
     sphere('ear-'+i,.30,{x,y:2.79,z:-.005},mSkin,{x:.60,y:1,z:.72},face);
     sphere('ear-fold-'+i,.135,{x:x+(i?-.006:.006),y:2.79,z:-.105},innerEar,{x:.48,y:.78,z:.22},face,18);
   }
-
-  // A restrained blush gives warmth without the painted-doll look.
   const cheekMat=transparentMat('cheek','#E98B87',.12);
   sphere('cheekL',.18,{x:-.36,y:2.59,z:-.654},cheekMat,{x:1.42,y:.52,z:.10},face);
   sphere('cheekR',.18,{x:.36,y:2.59,z:-.654},cheekMat,{x:1.42,y:.52,z:.10},face);
 
-  const socketMat=transparentMat('eye-socket','#6A483F',.075);
-  const lidMat=mat('eyelid-line','#3A2D2B',.80);
-  parts.eyes=[];parts.gaze=[];
+  const socketMat=transparentMat('eye-socket','#6A483F',.065),lidMat=mat('eyelid-line','#3A2D2B',.80);
+  parts.eyes=[];parts.gaze=[];parts.irises=[];parts.eyelids=[];
   for(const [i,x] of [-.235,.235].entries()){
-    sphere('eye-socket-'+i,.285,{x,y:2.835,z:-.647},socketMat,{x:.88,y:1.08,z:.10},face);
-    const eye=makeNode('eye-group-'+i,face);eye.position.set(x,2.835,-.650);
-    sphere('eye-white-'+i,.252,{x:0,y:0,z:0},mWhite,{x:.80,y:1.06,z:.14},eye);
-    // Iris, pupil and highlights now sit only millimetres in front of the eye
-    // surface instead of floating far outside the head.
+    sphere('eye-socket-'+i,.285,{x,y:2.835,z:-.647},socketMat,{x:eyeProfile.sx*1.10,y:eyeProfile.sy*1.02,z:.10},face);
+    const eye=makeNode('eye-group-'+i,face);eye.position.set(x,2.835,-.650);eye.metadata={baseScaleY:1,side:i?'R':'L',eyeStyle:a.eyeStyle||a.eyes||'classic'};
+    sphere('eye-white-'+i,.252,{x:0,y:0,z:0},mWhite,{x:eyeProfile.sx,y:eyeProfile.sy,z:.14},eye);
     const gaze=makeNode('eye-gaze-'+i,eye);parts.gaze.push(gaze);
-    sphere('iris-'+i,.137,{x:0,y:-.006,z:-.034},mIris,{x:.90,y:1,z:.12},gaze);
-    sphere('pupil-'+i,.072,{x:0,y:-.007,z:-.050},mEye,{x:.86,y:1,z:.10},gaze);
+    const iris=sphere('iris-'+i,eyeProfile.iris,{x:0,y:-.006,z:-.034},mIris,{x:.90,y:1,z:.12},gaze);parts.irises.push(iris);
+    sphere('pupil-'+i,eyeProfile.pupil,{x:0,y:-.007,z:-.050},mEye,{x:.86,y:1,z:.10},gaze);
     const hi=mat('eye-highlight-'+i,'#ffffff',.12,0,'#ffffff');
     sphere('eye-hi-main-'+i,.034,{x:-.023,y:.031,z:-.061},hi,{x:1,y:1,z:.07},gaze,18);
-    sphere('eye-hi-soft-'+i,.015,{x:.020,y:-.020,z:-.062},hi,{x:1,y:1,z:.07},gaze,14);
-    const lid=capsule('upper-lid-'+i,.205,.012,{x:0,y:.112,z:-.009},lidMat,eye);lid.rotation.z=Math.PI/2+(i?-.035:.035);
+    if(a.eyeStyle!=='sharp')sphere('eye-hi-soft-'+i,.015,{x:.020,y:-.020,z:-.062},hi,{x:1,y:1,z:.07},gaze,14);
+    const lid=capsule('upper-lid-'+i,eyeProfile.lid,.012,{x:0,y:.112,z:-.009},lidMat,eye);lid.rotation.z=Math.PI/2+(i?-eyeProfile.tilt:eyeProfile.tilt);parts.eyelids.push(lid);
     if(a.gender==='female'){
       const lash=capsule('lash-'+i,.075,.010,{x:i?.112:-.112,y:.088,z:-.012},lidMat,eye);lash.rotation.z=Math.PI/2+(i?-.32:.32);
     }
     parts.eyes.push(eye);
   }
 
-  const brow=mat('brow','#382B2A',.84);
+  const brow=mat('brow','#382B2A',.84);parts.eyebrows=[];
   const focus=expression==='focus',confident=expression==='confident';
   for(const [i,x] of [-.235,.235].entries()){
-    const tilt=focus?(i?-.18:.18):confident?(i?-.04:.15):(i?-.075:.075);
-    const y=confident&&i===0?3.045:3.025;
-    const b=capsule('brow-'+i,.235,.020,{x,y,z:-.650},brow,face);b.rotation.z=Math.PI/2+tilt;
+    const pivot=makeNode('brow-pivot-'+i,face);pivot.position.set(x,browProfile.y,-.650);
+    const tilt=focus?(i?-.18:.18):confident?(i?-.04:.15):(i?-browProfile.baseTilt:browProfile.baseTilt);
+    const b=capsule('brow-'+i,browProfile.len,browProfile.r,{x:0,y:confident&&i===0?.020:0,z:0},brow,pivot);b.rotation.z=Math.PI/2+tilt;
+    pivot.metadata={baseTilt:tilt,side:i?'R':'L',browStyle:a.browStyle||'natural'};parts.eyebrows.push(pivot);
   }
 
-  // Small nose with a soft shadow and highlight, kept subtle for chibi scale.
   const noseShadow=transparentMat('nose-shadow','#9A5F4D',.14);
   sphere('nose-shadow',.078,{x:.012,y:2.668,z:-.671},noseShadow,{x:.72,y:.88,z:.34},face,18);
   sphere('nose',.064,{x:-.006,y:2.682,z:-.680},mSkin,{x:.64,y:.82,z:.28},face,18);
 
-  const mouthMat=mat('mouth','#854B49',.76);
-  const lipLight=transparentMat('lip-light','#F3A5A0',.24);
-  if(expression==='focus'){
-    tube('mouth',[{x:-.090,y:2.505,z:-.674},{x:0,y:2.512,z:-.680},{x:.090,y:2.505,z:-.674}],.014,mouthMat,face);
-  }else if(expression==='calm'){
-    tube('mouth',[{x:-.105,y:2.525,z:-.672},{x:0,y:2.507,z:-.682},{x:.105,y:2.525,z:-.672}],.014,mouthMat,face);
-  }else if(expression==='confident'){
-    tube('mouth',[{x:-.115,y:2.532,z:-.671},{x:-.025,y:2.505,z:-.683},{x:.075,y:2.512,z:-.679},{x:.125,y:2.542,z:-.670}],.016,mouthMat,face);
-  }else{
-    tube('mouth',[{x:-.125,y:2.545,z:-.670},{x:-.065,y:2.505,z:-.682},{x:0,y:2.492,z:-.687},{x:.065,y:2.505,z:-.682},{x:.125,y:2.545,z:-.670}],.016,mouthMat,face);
-    sphere('smile-light',.075,{x:0,y:2.491,z:-.690},lipLight,{x:1.35,y:.17,z:.09},face,16);
-  }
+  const mouthMat=mat('mouth','#854B49',.76),lipLight=transparentMat('lip-light','#F3A5A0',.24);
+  const mouth=makeNode('mouth-group',face),mouthOrigin={x:0,y:2.520,z:-.680};mouth.position.set(mouthOrigin.x,mouthOrigin.y,mouthOrigin.z);parts.mouth=mouth;mouth.metadata={mouthStyle:a.mouthStyle||'soft-smile',baseY:mouthOrigin.y};
+  const points=mouthPoints(a.mouthStyle||'soft-smile',expression).map(p=>({x:p.x-mouthOrigin.x,y:p.y-mouthOrigin.y,z:p.z-mouthOrigin.z}));
+  tube('mouth',points,.014+(a.mouthStyle==='confident'?.002:0),mouthMat,mouth);
+  if((a.mouthStyle||'soft-smile')==='soft-smile'&&expression!=='focus')sphere('smile-light',.075,{x:0,y:2.491-mouthOrigin.y,z:-.690-mouthOrigin.z},lipLight,{x:1.35,y:.17,z:.09},mouth,16);
 }
 
 function buildHair(a,hairMat,parent=root,headItem=null){
@@ -440,18 +467,18 @@ function buildAvatarAO(){
   sphere('ao-chin',.34,{x:0,y:2.36,z:.12},ao,{x:1.18,y:.18,z:.78},grp,18);
 }
 
-function buildAvatar(){
-  disposeModel();const unified=window.AvatarEngine?.resolved?.(),base=unified?.base||avatar(),o=outfit(base),g0=unified?.garment||window.v385Wardrobe?.resolved?.(base)||{},g={...g0};
+function buildAvatarCore(){
+  const unified=window.AvatarEngine?.resolved?.(),base=unified?.config||unified?.base||avatar(),o=outfit(base),g0=unified?.garment||window.v385Wardrobe?.resolved?.(base)||{},g={...g0};
   if(previewItem&&previewItem.slot){g[previewItem.slot]=previewItem;if(previewItem.slot==='hair'){g.hairStyle=previewItem.hairStyle;g.hairColor=previewItem.hairColor||previewItem.color}}
-  const a={...base,hair:g.hairStyle||base.hair};root=makeNode('avatarRoot',null);root.position.y=-.02;
-  const mSkin=mat('skin',skinColor(a),.88),mHair=mat('hair',g.hairColor||'#1F2940',.58),mEye=mat('eye','#17151B',.20),mIris=mat('iris','#5A3C2C',.22),mWhite=mat('white','#FDFDFD',.34),mTop=mat('top',g.topColor||g.top?.color||o.top||'#3B7B4B',.78),mAccent=mat('accent',g.accent||g.top?.accent||o.accent||'#D6A721',.56),mBottom=mat('bottom',g.bottomColor||g.bottom?.color||o.bottom||'#204C48',.78),mShoe=mat('shoe',g.shoeColor||g.shoes?.color||'#202631',.56);
+  const a={...base,hair:g.hairStyle||base.hair,eyeStyle:base.eyeStyle||base.eyes||'classic',browStyle:base.browStyle||'natural',mouthStyle:base.mouthStyle||'soft-smile',irisColor:base.irisColor||'#5A3C2C',faceShape:base.faceShape||'soft'};root=makeNode('avatarRoot',null);root.position.y=-.02;
+  const mSkin=mat('skin',skinColor(a),.88),mHair=mat('hair',g.hairColor||'#1F2940',.58),mEye=mat('eye','#17151B',.20),mIris=mat('iris',a.irisColor||'#5A3C2C',.22),mWhite=mat('white','#FDFDFD',.34),mTop=mat('top',g.topColor||g.top?.color||o.top||'#3B7B4B',.78),mAccent=mat('accent',g.accent||g.top?.accent||o.accent||'#D6A721',.56),mBottom=mat('bottom',g.bottomColor||g.bottom?.color||o.bottom||'#204C48',.78),mShoe=mat('shoe',g.shoeColor||g.shoes?.color||'#202631',.56);
   const torsoInfo=buildTorso(a,g,mTop,mAccent,mSkin);
   // A motion pivot at the actual head centre prevents the face from orbiting
   // around the body when it tilts. The inner rig maps legacy coordinates to
   // the smaller Step 1/2 head without breaking hats, glasses or hairstyles.
   const headMotion=makeNode('head-motion');headMotion.position.set(0,2.94,-.0172);parts.head=headMotion;
   const headRig=makeNode('head-rig',headMotion);headRig.position.set(0,-2.4252,.0172);headRig.scaling.set(.82,.82,.82);
-  const headShape=a.gender==='female'?{x:.945,y:1.070,z:.935}:{x:.975,y:1.045,z:.945};
+  const fs=faceShapeProfile(a.faceShape);const genderShape=a.gender==='female'?{x:.985,y:1.015,z:.995}:{x:1.015,y:.995,z:1.005};const headShape={x:fs.x*genderShape.x,y:fs.y*genderShape.y,z:fs.z*genderShape.z};
   sphere('head',1.36,{x:0,y:2.82,z:-.02},mSkin,headShape,headRig);
   buildFace(a,mSkin,mEye,mIris,mWhite,mAccent,headRig);buildHair(a,mHair,headRig,g.head);
   buildArm('L',mTop,mAccent,mSkin,torsoInfo.style);buildArm('R',mTop,mAccent,mSkin,torsoInfo.style);
@@ -461,6 +488,68 @@ function buildAvatar(){
   if(g.back)buildBack(g);else buildBack({back:{backStyle:'backpack',color:g.accent||'#416B48',accent:'#294B33'}});
   buildHandTool(g);
   try{root.getChildMeshes().forEach(x=>{x.receiveShadows=true;x.isPickable=false})}catch(_){ }
+  return {root,parts,appearance:a,garment:g};
+}
+function buildAvatar(){disposeModel();return buildAvatarCore()}
+function applyFactoryPose(model,pose='stand'){
+  const p=model?.parts||{},r=model?.root;if(!r)return false;
+  // Pose only touches reusable pivots. Motion 2.0 blends between these baselines,
+  // so Studio and Room can share the same body language without rebuilding geometry.
+  if(p.head){p.head.rotation.x=0;p.head.rotation.y=0;p.head.rotation.z=0}
+  if(p.leftArm){p.leftArm.rotation.x=0;p.leftArm.rotation.y=0;p.leftArm.rotation.z=-.065}
+  if(p.rightArm){p.rightArm.rotation.x=0;p.rightArm.rotation.y=0;p.rightArm.rotation.z=.065}
+  if(p.legL){p.legL.rotation.x=0;p.legL.rotation.y=0;p.legL.rotation.z=0}
+  if(p.legR){p.legR.rotation.x=0;p.legR.rotation.y=0;p.legR.rotation.z=0}
+  const key=normalizeStyle(pose,'stand');
+  if(key==='study'||key==='desk'||key==='sit-study'){
+    if(p.head){p.head.rotation.x=.070;p.head.rotation.y=-.018}
+    if(p.leftArm){p.leftArm.rotation.x=-.76;p.leftArm.rotation.z=.105}
+    if(p.rightArm){p.rightArm.rotation.x=-.76;p.rightArm.rotation.z=-.105}
+    if(p.legL)p.legL.rotation.x=.055;
+    if(p.legR)p.legR.rotation.x=.055;
+  }else if(key==='focus'){
+    if(p.head)p.head.rotation.x=.042;
+    if(p.leftArm)p.leftArm.rotation.x=-.08;
+    if(p.rightArm)p.rightArm.rotation.x=-.08;
+  }else if(key==='relax'){
+    if(p.head){p.head.rotation.x=-.025;p.head.rotation.y=.025;p.head.rotation.z=.030}
+    if(p.leftArm){p.leftArm.rotation.x=.055;p.leftArm.rotation.z=-.17}
+    if(p.rightArm){p.rightArm.rotation.x=.055;p.rightArm.rotation.z=.17}
+    if(p.legL)p.legL.rotation.z=-.018;
+    if(p.legR)p.legR.rotation.z=.018;
+  }else if(key==='window'||key==='look-window'){
+    if(p.head){p.head.rotation.x=-.012;p.head.rotation.y=.235;p.head.rotation.z=-.018}
+    if(p.leftArm)p.leftArm.rotation.z=-.12;
+    if(p.rightArm)p.rightArm.rotation.z=.12;
+  }
+  model.pose=key;return true;
+}
+function createAvatarModel(targetScene,options={}){
+  if(!targetScene||!window.BABYLON)throw new Error('Avatar model factory requires a Babylon scene');
+  const prevScene=scene,prevRoot=root,prevParts=parts,prevPreview=previewItem;
+  try{
+    scene=targetScene;root=null;parts={};previewItem=options.previewItem||null;
+    const built=buildAvatarCore(),modelRoot=built.root,modelParts=built.parts;
+    if(options.name)modelRoot.name=String(options.name);
+    const pos=options.position||{};modelRoot.position.set(Number(pos.x)||0,Number(pos.y??-.02),Number(pos.z)||0);
+    const scale=options.scaling??options.scale??1;
+    if(typeof scale==='number')modelRoot.scaling.set(scale,scale,scale);else modelRoot.scaling.set(Number(scale.x)||1,Number(scale.y)||1,Number(scale.z)||1);
+    if(Number.isFinite(options.rotationY))modelRoot.rotation.y=options.rotationY;
+    modelRoot.metadata={...(modelRoot.metadata||{}),math12AvatarRenderer:true,rendererBuild:BUILD,context:String(options.context||'external')};
+    const model={root:modelRoot,parts:modelParts,scene:targetScene,build:BUILD,context:String(options.context||'external'),appearance:built.appearance,garment:built.garment,pose:'stand'};
+    model.setPose=value=>applyFactoryPose(model,value);
+    model.dispose=()=>{
+      const mats=new Set();
+      try{modelRoot.getChildMeshes().forEach(mesh=>{if(mesh.material)mats.add(mesh.material)})}catch(_){ }
+      try{modelRoot.dispose(false)}catch(_){ }
+      for(const material of mats)try{material.dispose(false,true)}catch(_){ }
+      model.root=null;model.parts={};
+    };
+    if(options.pose)model.setPose(options.pose);
+    return model;
+  }finally{
+    scene=prevScene;root=prevRoot;parts=prevParts;previewItem=prevPreview;
+  }
 }
 function createScene(){
   const lowPower=isLowPower();scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.965,.965,.975,1);scene.environmentIntensity=.78;scene.ambientColor=new BABYLON.Color3(.13,.14,.18);
@@ -502,7 +591,7 @@ function install(){
   if(typeof window.goPage==='function'&&!window.goPage.__v384){const base=window.goPage;const wrap=function(page,internal=false){const r=base(page,internal);if(page==='avatar')requestAnimationFrame(remountSoon);else destroy();return r};wrap.__v384=true;window.goPage=wrap}
   window.addEventListener('math12hub:avatar-changed',remountSoon);window.addEventListener('math12hub:avatar-state-changed',remountSoon);if(document.getElementById('page-avatar')?.classList.contains('active'))remountSoon();
 }
-window.v384Avatar3D={build:BUILD,mount:remountSoon,rebuild:remountSoon,sync:remountSoon,celebrate(){if(window.AvatarMotion?.celebrate)return window.AvatarMotion.celebrate();celebrateUntil=performance.now()+1800},destroy,getScene:()=>scene,getRoot:()=>root,getParts:()=>parts,getEngine:()=>engine,preview(it){if(window.AvatarEngine)return window.AvatarEngine.preview(it);previewItem=it||null;remountSoon()},clearPreview(){if(window.AvatarEngine)return window.AvatarEngine.clearPreview();previewItem=null;remountSoon()}};
+window.v384Avatar3D={build:BUILD,mount:remountSoon,rebuild:remountSoon,sync:remountSoon,setPose(value){return applyFactoryPose({root,parts,pose:'stand'},value)},celebrate(){if(window.AvatarMotion?.celebrate)return window.AvatarMotion.celebrate();celebrateUntil=performance.now()+1800},destroy,getScene:()=>scene,getRoot:()=>root,getParts:()=>parts,getEngine:()=>engine,createAvatarModel,applyFactoryPose,preview(it){if(window.AvatarEngine)return window.AvatarEngine.preview(it);previewItem=it||null;remountSoon()},clearPreview(){if(window.AvatarEngine)return window.AvatarEngine.clearPreview();previewItem=null;remountSoon()}};
 window.v392Avatar3D=window.v384Avatar3D;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();

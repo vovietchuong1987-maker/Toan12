@@ -7,7 +7,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.0-approved-self-study';
+const BUILD='40.14.1-approved-self-study-motivational';
 const TYPES=new Set(['mcq','tf','tf4','short']);
 function bank(){return window.V383PracticeBank?.effectiveBank?.()||window.V3822PracticeBank?.effectiveBank?.({approvedOnly:false})||[]}
 function patternOf(q={}){
@@ -17,11 +17,14 @@ function patternOf(q={}){
 }
 function normal(q,part){return typeof normalizeBankQuestion==='function'?normalizeBankQuestion(q,part):JSON.parse(JSON.stringify(q))}
 function shuffled(rows){return typeof examShuffle==='function'?examShuffle(rows,Date.now()):rows.slice().sort(()=>Math.random()-.5)}
+function difficulty(q){const d=Number(q?.difficulty);if(Number.isFinite(d))return Math.max(1,Math.min(5,d));const lv=String(q?.level||'').toUpperCase();return lv==='NB'?1.5:lv==='TH'?2.5:lv==='VD'?3.7:4.7}
+function hasAttempt(attemptType){return (state?.examAttempts||[]).some(a=>String(a?.type||'')===String(attemptType))}
 function openRows(rows,title,subtitle,attemptType){
   rows=rows.filter(q=>q&&q.id&&TYPES.has(q.type));
   if(!rows.length)return alert('Chưa có câu hỏi phù hợp trong ngân hàng tự học.');
-  const pick=shuffled(rows).map(q=>normal(q,title));
-  openExamStart({id:`v383-${attemptType}-${Date.now()}`,mode:'practice',attemptType,title,subtitle:`${pick.length} câu • ${subtitle}`,durationMinutes:Math.max(10,Math.ceil(pick.length*1.7)),questions:pick,scoring:'normalized',rules:'Bộ luyện lấy trực tiếp từ toàn bộ ngân hàng hiện tại. Chỉ dùng câu đã Approved/Reviewed; Draft chỉ dành cho giáo viên kiểm duyệt.'});
+  const first=!hasAttempt(attemptType);let ordered=shuffled(rows);if(first)ordered=ordered.sort((a,b)=>difficulty(a)-difficulty(b));
+  const pick=ordered.map(q=>normal(q,title));
+  openExamStart({id:`v383-${attemptType}-${Date.now()}`,mode:'practice',attemptType,title,subtitle:`${pick.length} câu • ${first?'khởi động từ dễ đến khó • ':''}${subtitle}`,durationMinutes:Math.max(10,Math.ceil(pick.length*1.7)),questions:pick,scoring:'normalized',rules:first?'Lượt đầu sắp câu dễ trước để tạo đà; các lượt sau xáo trộn bình thường. Chỉ dùng câu đã Approved/Reviewed.':'Bộ luyện lấy trực tiếp từ toàn bộ ngân hàng hiện tại. Chỉ dùng câu đã Approved/Reviewed; Draft chỉ dành cho giáo viên kiểm duyệt.'});
 }
 function allLesson(lessonId){
   const rows=bank().filter(q=>q.lessonId===lessonId);
