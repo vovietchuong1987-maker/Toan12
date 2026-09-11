@@ -8,7 +8,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.14.6-avatar-motion-2',VERSION=40146;
+const BUILD='40.14.9-avatar-motion-presence-bridge',VERSION=40149;
 const controllers=new Map();
 const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -30,6 +30,21 @@ function currentBase(c,ms){
   const p=clamp((ms-tr.start)/(tr.until-tr.start||1));const t=smooth(p);const base=mixSnapshot(tr.from,tr.to,t);
   if(p>=1){c.base=tr.to;c.poseTransition=null;return c.base}
   return base;
+}
+function mergeRoot(base,patch={}){
+  if(!base)return base;const out={...base};
+  for(const k of ['px','py','pz','rx','ry','rz','sx','sy','sz'])if(Number.isFinite(patch[k]))out[k]=Number(patch[k]);
+  return out;
+}
+function currentPresenceRoot(c,baseRoot,ms){
+  const tr=c.rootTransition;if(!tr)return baseRoot;
+  const p=clamp((ms-tr.start)/(tr.until-tr.start||1)),t=smooth(p),root=mix(tr.from,tr.to,t);
+  if(p>=1){
+    c.base.root=mergeRoot(c.base.root,tr.to);
+    if(c.poseTransition){c.poseTransition.from.root=mergeRoot(c.poseTransition.from.root,tr.to);c.poseTransition.to.root=mergeRoot(c.poseTransition.to.root,tr.to)}
+    c.rootTransition=null;return c.base.root;
+  }
+  return root;
 }
 function resetToBase(c){applySnapshot(c,c.base)}
 function blinkAmount(ms,c){
@@ -60,6 +75,8 @@ function actionOffsets(c,ms){
       z.root.py=s*.035;z.root.ry=pulse*.025*s;z.leftArm.rz=-s*.54;z.rightArm.rz=s*.54;z.leftArm.rx=-s*.12;z.rightArm.rx=-s*.12;z.head.rx=-s*.025;break;
     case 'bigCelebrate':
       z.root.py=Math.abs(Math.sin(Math.PI*p*3))* .105;z.root.ry=Math.sin(Math.PI*p*4)*.075;z.root.scale=Math.abs(Math.sin(Math.PI*p*3))*.022;z.leftArm.rz=-s*1.15;z.rightArm.rz=s*1.15;z.leftArm.rx=-s*.30;z.rightArm.rx=-s*.30;z.head.rz=Math.sin(Math.PI*p*4)*.028;break;
+    case 'walk':
+      z.root.py=Math.abs(rapid)*.012*s;z.root.ry=pulse*.010*s;z.leftArm.rx=rapid*.18*s;z.rightArm.rx=-rapid*.18*s;z.legL.rx=-rapid*.15*s;z.legR.rx=rapid*.15*s;z.head.rx=-Math.abs(rapid)*.010*s;break;
   }
   return z;
 }
@@ -69,7 +86,7 @@ function tick(c){
   if(ms>=c.nextGaze){c.gazeTargetX=rand(-.025,.025);c.gazeTargetY=rand(-.012,.013);c.nextGaze=ms+rand(2300,5000)}
   c.gazeX+=(c.gazeTargetX-c.gazeX)*(slow?.04:.072);c.gazeY+=(c.gazeTargetY-c.gazeY)*(slow?.04:.072);
   const blink=blinkAmount(ms,c),breath=slow?0:Math.sin(t*1.68),sway=slow?0:Math.sin(t*.46),weight=slow?0:Math.sin(t*.31);
-  const rb=base.root;if(rb){c.root.position.x=rb.px+weight*.003;c.root.position.y=rb.py+breath*.014+(off.root.py||0);c.root.position.z=rb.pz;c.root.rotation.x=rb.rx;c.root.rotation.y=rb.ry+sway*.011+(off.root.ry||0);c.root.rotation.z=rb.rz+weight*.003;const sc=off.root.scale||0;c.root.scaling.set(rb.sx*(1+sc),rb.sy*(1+sc),rb.sz*(1+sc))}
+  const rb=currentPresenceRoot(c,base.root,ms);if(rb){c.root.position.x=rb.px+weight*.003;c.root.position.y=rb.py+breath*.014+(off.root.py||0);c.root.position.z=rb.pz;c.root.rotation.x=rb.rx;c.root.rotation.y=rb.ry+sway*.011+(off.root.ry||0);c.root.rotation.z=rb.rz+weight*.003;const sc=off.root.scale||0;c.root.scaling.set(rb.sx*(1+sc),rb.sy*(1+sc),rb.sz*(1+sc))}
   if(p.head&&base.head){const b=base.head;addRot(p.head,b,{rx:(slow?0:Math.sin(t*.37)*.006)+(off.head.rx||0),ry:(slow?0:Math.sin(t*.42)*.018)+(off.head.ry||0),rz:(slow?0:Math.sin(t*.67)*.012)+(off.head.rz||0)})}
   for(const [i,eye] of (p.eyes||[]).entries()){const b=base.eyes?.[i];if(!b)continue;eye.scaling.y=b.sy*(1-.90*blink);eye.scaling.x=b.sx*(1+.015*blink);eye.scaling.z=b.sz}
   for(const [i,gaze] of (p.gaze||[]).entries()){const b=base.gaze?.[i];if(!b)continue;gaze.position.x=b.px+c.gazeX;gaze.position.y=b.py+c.gazeY;gaze.position.z=b.pz}
@@ -87,7 +104,7 @@ function detach(context='all'){
 function attach(context='studio',detail={}){
   context=String(context||'studio');const adapter=window.AvatarRendererBridge?.get?.(context);const scene=detail.scene||adapter?.getScene?.()||(context==='studio'?window.v384Avatar3D?.getScene?.():null);const root=detail.root||adapter?.getRoot?.()||(context==='studio'?window.v384Avatar3D?.getRoot?.():null);const parts=detail.parts||adapter?.getParts?.()||(context==='studio'?window.v384Avatar3D?.getParts?.():null);
   if(!scene||!root||!parts)return false;const old=controllers.get(context);if(old?.scene===scene&&old?.root===root)return true;if(old)detach(context);
-  const ms=now(),c={context,scene,root,parts,observer:null,reduced:reduced(),pose:'stand',action:null,poseTransition:null,nextBlink:ms+rand(1500,3900),blinkStart:0,doubleBlink:false,nextGaze:ms+rand(1100,2800),gazeX:0,gazeY:0,gazeTargetX:0,gazeTargetY:0};
+  const ms=now(),c={context,scene,root,parts,observer:null,reduced:reduced(),pose:'stand',action:null,poseTransition:null,rootTransition:null,nextBlink:ms+rand(1500,3900),blinkStart:0,doubleBlink:false,nextGaze:ms+rand(1100,2800),gazeX:0,gazeY:0,gazeTargetX:0,gazeTargetY:0};
   c.base=capture(c);c.observer=scene.onBeforeRenderObservable.add(()=>tick(c));controllers.set(context,c);
   try{window.Math12Events?.emit?.('avatar:motion-context-ready',{context,build:BUILD,reduced:c.reduced},{source:'avatar-motion'})}catch(_){}
   try{window.dispatchEvent(new CustomEvent('math12hub:avatar-motion-ready',{detail:{context,build:BUILD,reduced:c.reduced}}))}catch(_){}
@@ -104,7 +121,7 @@ function sparkle(kind='equip'){
 }
 function normalizeAction(kind){const k=String(kind||'').trim();if(k==='celebrate')return 'bigCelebrate';if(k==='small-celebrate')return 'smallCelebrate';if(k==='big-celebrate')return 'bigCelebrate';if(k==='head-tilt')return 'headTilt';return k||'nod'}
 function play(kind='nod',duration,options={}){
-  kind=normalizeAction(kind);const times={equip:850,preview:680,nod:900,headTilt:1200,wave:1450,think:1650,smallCelebrate:1350,bigCelebrate:1850};const context=options?.context||'all',ms=now(),until=ms+(duration||times[kind]||1200);
+  kind=normalizeAction(kind);const times={equip:850,preview:680,nod:900,headTilt:1200,wave:1450,think:1650,smallCelebrate:1350,bigCelebrate:1850,walk:900};const context=options?.context||'all',ms=now(),until=ms+(duration||times[kind]||1200);
   for(const c of targetControllers(context)){if(c.reduced&&['bigCelebrate','smallCelebrate','wave'].includes(kind)){c.action={kind:'nod',start:ms,until:ms+650};continue}c.action={kind,start:ms,until}}
   if(kind==='equip'||kind==='preview')sparkle(kind);
   try{window.Math12Events?.emit?.('avatar:motion-play',{kind,context,duration:until-ms,build:BUILD},{source:'avatar-motion'})}catch(_){}
@@ -124,6 +141,24 @@ function setPose(pose='stand',options={}){
   try{window.Math12Events?.emit?.('avatar:pose-changed',{pose,context,count:changed,build:BUILD},{source:'avatar-motion'})}catch(_){}
   return changed>0;
 }
+
+function moveRoot(transform={},options={}){
+  const context=options.context||'all',duration=Math.max(0,Number(options.duration??820)),targets=targetControllers(context),ms=now();let changed=0;
+  for(const c of targets){
+    const live=nodeState(c.root);if(!live)continue;
+    const to=mergeRoot(live,{px:transform.x,py:transform.y,pz:transform.z,rx:transform.rotationX,ry:transform.rotationY,rz:transform.rotationZ,sx:transform.scaleX,sy:transform.scaleY,sz:transform.scaleZ});
+    if(Number.isFinite(transform.scale)){to.sx=to.sy=to.sz=Number(transform.scale)}
+    if(c.reduced||duration<=0){c.rootTransition=null;c.base.root=mergeRoot(c.base.root,to);if(c.poseTransition){c.poseTransition.from.root=mergeRoot(c.poseTransition.from.root,to);c.poseTransition.to.root=mergeRoot(c.poseTransition.to.root,to)}setNode(c.root,to)}
+    else c.rootTransition={from:live,to,start:ms,until:ms+duration};
+    changed++;
+  }
+  try{window.Math12Events?.emit?.('avatar:root-transition',{context,count:changed,transform:{...transform},duration,build:BUILD},{source:'avatar-motion'})}catch(_){}
+  return changed>0;
+}
+function getRootTransform(context='room'){
+  const c=controllers.get(String(context));if(!c?.root)return null;const s=nodeState(c.root);return s?{x:s.px,y:s.py,z:s.pz,rotationX:s.rx,rotationY:s.ry,rotationZ:s.rz,scaleX:s.sx,scaleY:s.sy,scaleZ:s.sz}:null;
+}
+
 function onState(e){const d=e?.detail||{},visual=(d.changed||[]).some(x=>['gender','skin','face','faceShape','eyeStyle','browStyle','mouthStyle','irisColor','hair','hairColor','outfit','top','bottom','shoes','head','glasses','back','hand','accessory','pet','aura','background'].includes(x));if(d.source==='preview'||d.source==='preview-clear')play('preview');else if(visual)play('equip');setTimeout(syncContexts,80)}
 function install(){
   window.addEventListener('math12hub:avatar3d-ready',e=>attach('studio',e.detail||{}));window.addEventListener('math12hub:avatar-state-changed',onState);window.addEventListener('math12hub:avatar-runtime-ready',()=>setTimeout(syncContexts,20));window.addEventListener('math12hub:avatar-renderer-mounted',e=>setTimeout(()=>attachContext(e.detail?.context||e.detail?.name),0));
@@ -131,6 +166,6 @@ function install(){
   window.addEventListener('resize',()=>{for(const c of controllers.values())c.reduced=reduced()});
   let tries=0;const timer=setInterval(()=>{tries++;syncContexts();if(tries>=20)clearInterval(timer)},250);setTimeout(syncContexts,60);
 }
-window.AvatarMotion={build:BUILD,version:VERSION,managed:true,attach:(detail={})=>attach('studio',detail),attachContext,detach,detachContext:detach,syncContexts,hasContext:name=>controllers.has(String(name)),contexts:()=>[...controllers.keys()],play,setPose,nod:(o={})=>play('nod',null,o),headTilt:(o={})=>play('headTilt',null,o),wave:(o={})=>play('wave',null,o),think:(o={})=>play('think',null,o),smallCelebrate:(o={})=>play('smallCelebrate',null,o),celebrate:(o={})=>play('bigCelebrate',null,o),bigCelebrate:(o={})=>play('bigCelebrate',null,o),reactEquip:()=>play('equip'),status:()=>({build:BUILD,version:VERSION,reduced:reduced(),contexts:[...controllers.entries()].map(([name,c])=>({name,pose:c.pose,action:c.action?.kind||'idle',mounted:!!c.root}))})};
+window.AvatarMotion={build:BUILD,version:VERSION,managed:true,attach:(detail={})=>attach('studio',detail),attachContext,detach,detachContext:detach,syncContexts,hasContext:name=>controllers.has(String(name)),contexts:()=>[...controllers.keys()],play,setPose,moveRoot,getRootTransform,nod:(o={})=>play('nod',null,o),headTilt:(o={})=>play('headTilt',null,o),wave:(o={})=>play('wave',null,o),think:(o={})=>play('think',null,o),smallCelebrate:(o={})=>play('smallCelebrate',null,o),celebrate:(o={})=>play('bigCelebrate',null,o),bigCelebrate:(o={})=>play('bigCelebrate',null,o),reactEquip:()=>play('equip'),status:()=>({build:BUILD,version:VERSION,reduced:reduced(),contexts:[...controllers.entries()].map(([name,c])=>({name,pose:c.pose,action:c.action?.kind||'idle',moving:!!c.rootTransition,mounted:!!c.root}))})};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
