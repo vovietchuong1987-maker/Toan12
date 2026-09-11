@@ -1,5 +1,5 @@
 /* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260911-v40.16.0-avatar-math-room-production';
+const CACHE_REV='20260911-v40.16.1-avatar-math-room-production';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[

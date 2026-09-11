@@ -4,7 +4,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.16.0-math-room-production',SCHEMA=400,CDN='https://cdn.babylonjs.com/babylon.js';
+const BUILD='40.16.1-math-room-spatial-fix',SCHEMA=400,CDN='https://cdn.babylonjs.com/babylon.js';
 let engine=null,scene=null,canvas=null,loadPromise=null,renderObs=null,shadowGen=null,renderLoop=null;
 let roomAvatarNode=null,roomAvatarModel=null,roomPetNode=null,roomAvatarBaseY=.20,lastProgressSignature='',runtimeUnsubs=[];
 const uid=()=>firebaseUser?.uid||'local';
@@ -112,7 +112,11 @@ function addWindow(t,night){
   const frame=mat('windowFrame','#D6B88A',{rough:.82}),glass=mat('windowGlass',night?'#30456D':'#D9F0FF',{rough:.26,emissive:!night}),blind=mat('windowBlind',t.accent,{rough:.82});
   // left wall window, using Z as width because wall is on x=-4
   bx('windowGlow',.035,1.55,1.75,-3.91,2.23,.18,glass);for(const z of [-.88,.88])bx('wfV',.07,1.75,.07,-3.87,2.23,.18+z,frame);for(const y of [1.38,3.08])bx('wfH',.07,.07,1.82,-3.87,y,.18,frame);bx('windowMidV',.075,1.52,.06,-3.84,2.23,.18,frame);bx('windowMidH',.075,.06,1.65,-3.84,2.22,.18,frame);bx('blind',.08,.22,1.92,-3.80,3.12,.18,blind);
-  const pot=cy('windowPot',.22,.24,-3.55,1.43,.18,mat('pot','#F5EFE6',{rough:.9}),null,24);for(let i=0;i<4;i++){const leaf=sp('windowLeaf'+i,.26,-3.55+(i-1.5)*.07,1.64+(i%2)*.09,.18+(i-1.5)*.06,mat('leaf'+i,'#68A853',{rough:.9}),null,.48,1.30,.40);leaf.rotation.z=(i-1.5)*.22}
+  // anchored planter: small wall shelf + brackets so the plant no longer appears to float
+  const plantWood=mat('windowPlantShelfMat',t.id==='space'?'#5C6784':'#C8A37D',{rough:.84});
+  bx('windowPlantShelf',.18,.06,.54,-3.80,1.32,.18,plantWood);
+  bx('windowPlantBracketL',.06,.16,.06,-3.83,1.22,.01,plantWood);bx('windowPlantBracketR',.06,.16,.06,-3.83,1.22,.35,plantWood);
+  const pot=cy('windowPot',.22,.24,-3.55,1.45,.18,mat('pot','#F5EFE6',{rough:.9}),null,24);for(let i=0;i<4;i++){const leaf=sp('windowLeaf'+i,.26,-3.55+(i-1.5)*.07,1.66+(i%2)*.09,.18+(i-1.5)*.06,mat('leaf'+i,'#68A853',{rough:.9}),null,.48,1.30,.40);leaf.rotation.z=(i-1.5)*.22}
 }
 function addBoard(t){
   const wood=mat('boardWood',t.wood,{rough:.83}),boardMat=mat('boardMat',t.board||'#28473F',{rough:.94});bx('boardCore',3.25,1.48,.08,-.52,2.48,2.89,boardMat);bx('boardTop',3.50,.10,.13,-.52,3.26,2.86,wood);bx('boardBottom',3.50,.12,.18,-.52,1.70,2.84,wood);bx('boardLeft',.11,1.62,.14,-2.24,2.48,2.86,wood);bx('boardRight',.11,1.62,.14,1.20,2.48,2.86,wood);
@@ -128,9 +132,9 @@ function addDesk(t){
   const cup=cy('pencilCup',.34,.27,-.07,1.34,-.58,mat('cup','#E9B93E',{rough:.68}),null,32);for(let i=0;i<4;i++){const pencil=cy('pencil'+i,.48,.035,-.16+i*.055,1.65,-.58+(i%2)*.04,mat('pencilM'+i,['#3B78CE','#E46B5A','#47A26B','#D69C35'][i],{rough:.7}),null,16);pencil.rotation.z=(i-1.5)*.06}
   // stack books
   const colors=['#416FC8','#4EA873','#D85E56'];for(let i=0;i<3;i++){const b=bx('deskBook'+i,.72,.12,.48,.25,1.25+i*.13,-.28,mat('deskBookM'+i,colors[i],{rough:.78}));b.rotation.y=(i-1)*.04}
-  // desk lamp
-  const dark=mat('lampDark','#38445A',{rough:.50,metal:.18});cy('lampBase',.06,.42,-2.02,1.20,-.70,dark);const stem=cy('lampStem',.68,.055,-2.02,1.54,-.70,dark);stem.rotation.z=-.22;const shade=cone('lampShade',.34,.50,-1.87,1.88,-.73,dark);shade.rotation.z=-.30;shade.rotation.x=Math.PI;sp('lampBulb',.13,-1.80,1.75,-.76,mat('lampGlow','#FFD36B',{rough:.35,emissive:true}),null,1,.75,1);
-  const lampLight=new BABYLON.PointLight('deskLampLight',new BABYLON.Vector3(-1.80,1.72,-.78),scene);lampLight.diffuse=new BABYLON.Color3(1,.72,.40);lampLight.intensity=.28;lampLight.range=2.3;
+  // desk lamp — reoriented to aim into the work area instead of outwards
+  const dark=mat('lampDark','#38445A',{rough:.50,metal:.18});cy('lampBase',.06,.42,-2.08,1.20,-.66,dark);const stem=cy('lampStem',.68,.055,-2.00,1.53,-.64,dark);stem.rotation.z=.30;const shade=cone('lampShade',.34,.50,-1.70,1.84,-.69,dark);shade.rotation.z=.62;shade.rotation.x=Math.PI;shade.rotation.y=-.12;sp('lampBulb',.13,-1.63,1.70,-.71,mat('lampGlow','#FFD36B',{rough:.35,emissive:true}),null,1,.75,1);
+  const lampLight=new BABYLON.PointLight('deskLampLight',new BABYLON.Vector3(-1.30,1.42,-.72),scene);lampLight.diffuse=new BABYLON.Color3(1,.72,.40);lampLight.intensity=.34;lampLight.range=2.8;
   // desk plant
   cy('deskPot',.24,.28,-1.74,1.34,-.34,mat('deskPot','#D6C7A7',{rough:.9}),null,28);for(let i=0;i<5;i++){const leaf=sp('deskLeaf'+i,.27,-1.74+(i-2)*.055,1.55+(i%2)*.12,-.34+(i-2)*.035,mat('deskLeafM'+i,'#6EAD58',{rough:.9}),null,.46,1.35,.38);leaf.rotation.z=(i-2)*.20}
 }
@@ -146,7 +150,7 @@ function addShelf(t,s){
   bx('boxPink',.62,.32,.42,2.25,.24,2.34,mat('boxPinkM','#E8A3AA',{rough:.86}));bx('boxMint',.62,.32,.42,3.12,.24,2.34,mat('boxMintM','#79C5AF',{rough:.86}));
 }
 function addChairAndRug(t){
-  const rug=mat('rug',t.accent,{rough:.94});bx('rug',3.18,.035,2.10,-.82,.02,-.55,rug);const chair=mat('chair','#65728A',{rough:.82}),wood=mat('chairWood',t.wood,{rough:.84});bx('chairSeat',.70,.13,.68,.90,.46,.05,chair);bx('chairBack',.72,.92,.13,.90,.96,.34,chair);for(const x of [.63,1.17])for(const z of [-.18,.27])bx('chairLeg'+x+z,.09,.72,.09,x,.16,z,wood);
+  const rug=mat('rug',t.accent,{rough:.94});bx('rug',3.18,.035,2.10,-.82,.02,-.55,rug);const chair=mat('chair','#65728A',{rough:.82}),wood=mat('chairWood',t.wood,{rough:.84});bx('chairSeat',.74,.14,.72,1.02,.47,.14,chair);bx('chairBack',.76,.90,.13,1.02,.97,.50,chair);for(const x of [.75,1.29])for(const z of [-.10,.38])bx('chairLeg'+x+z,.09,.74,.09,x,.17,z,wood);
 }
 function addThemeExtras(t){if(t.id==='space'){const starM=mat('star','#A8B8FF',{rough:.35,emissive:true});for(let i=0;i<26;i++)sp('star'+i,.045,-3.6+Math.random()*7.0,.45+Math.random()*3.15,2.80,starM)}if(t.id==='champion'){const banner=bx('banner',1.45,1.00,.055,-2.82,2.38,2.86,mat('bannerM','#E7C251',{rough:.66}));banner.rotation.y=0}}
 function buildFurniture(t,s,p){const floor=mat('floor',t.floor,{rough:.97}),wall=mat('wall',t.wall,{rough:.98});const fl=bx('floor',8,.16,6,0,-.08,0,floor);fl.receiveShadows=true;const bw=bx('backWall',8,4,.14,0,1.92,3,wall);bw.receiveShadows=true;const sw=bx('sideWall',.14,4,6,-4,1.92,0,wall);sw.receiveShadows=true;addWindow(t,p.night);addBoard(t);addDesk(t);addShelf(t,s);addChairAndRug(t);addThemeExtras(t)}
@@ -202,7 +206,7 @@ function hud(){const stage=document.querySelector('.v390-stage');if(!stage)retur
 async function mount(){const stage=document.querySelector('#page-room.active .v390-stage');if(!stage)return;destroy();const c=stage.querySelector('canvas');if(!c)return;canvas=c;stage.querySelector('.v390-loading')?.classList.remove('hidden');try{await loadBabylon();if(!document.body.contains(stage))return;engine=new BABYLON.Engine(canvas,true,{antialias:true,adaptToDeviceRatio:true,preserveDrawingBuffer:false,stencil:true});try{const perf=window.Math12AvatarRoomPremium?.performanceProfile?.();if(perf?.hardwareScaling>1)engine.setHardwareScalingLevel(perf.hardwareScaling)}catch(_){}createScene();startRenderLoop();requestAnimationFrame(()=>engine?.resize());setTimeout(()=>{const l=stage.querySelector('.v390-loading');if(l){l.classList.add('is-ready');setTimeout(()=>l.remove(),260)}},360);hud()}catch(err){console.warn('room fallback',err);stage.innerHTML='<div class="v390-fallback"><div class="v390-fallback-poster"></div><b>Phòng 3D chưa sẵn sàng</b><span>Hệ thống học tập vẫn hoạt động bình thường. Hãy kiểm tra WebGL/kết nối rồi mở lại.</span></div>'}}
 function setTheme(id){const t=themes.find(x=>x.id===id);if(!t||!unlockedTheme(t)){window.examToast?.('Cần mở khóa nền tương ứng trong Mega Shop.');return}const p=profile();p.theme=id;persist(p);renderPage();setTimeout(mount,30)}
 function toggleNight(){const p=profile(),order=['auto','day','night'],i=order.indexOf(p.lighting);p.lighting=order[(i+1)%order.length];p.night=p.lighting==='night';persist(p);renderPage();setTimeout(mount,30)}
-function focus(kind){const cam=scene?.activeCamera;if(!cam)return;if(kind==='avatar'){const p=roomAvatarNode?.position||{x:-1.20,y:.38,z:.13};cam.target=new BABYLON.Vector3(p.x,p.y+1.07,p.z-.22);cam.radius=6.15;cam.alpha=-1.48;cam.beta=1.22}else if(kind==='trophy'){cam.target=new BABYLON.Vector3(2.72,1.70,2.42);cam.radius=5.85;cam.alpha=-1.18;cam.beta=1.20}else{cam.target=new BABYLON.Vector3(-.15,1.35,.38);cam.radius=9.45;cam.alpha=-1.36;cam.beta=1.15}}
+function focus(kind){const cam=scene?.activeCamera;if(!cam)return;if(kind==='avatar'){const p=roomAvatarNode?.position||{x:-1.12,y:.38,z:.58};cam.target=new BABYLON.Vector3(p.x,p.y+1.07,p.z-.22);cam.radius=6.15;cam.alpha=-1.48;cam.beta=1.22}else if(kind==='trophy'){cam.target=new BABYLON.Vector3(2.72,1.70,2.42);cam.radius=5.85;cam.alpha=-1.18;cam.beta=1.20}else{cam.target=new BABYLON.Vector3(-.15,1.35,.38);cam.radius=9.45;cam.alpha=-1.36;cam.beta=1.15}}
 function setAvatarPose(pose='study'){return window.AvatarMotion?.setPose?.(pose,{context:'room',duration:520,style:'room-pose'})??roomAvatarModel?.setPose?.(pose)??false}
 function playAvatarMotion(kind='nod'){return window.AvatarMotion?.play?.(kind,null,{context:'room'})||false}
 function moveAvatar(location='study',options={}){return window.Math12RoomPresence?.go?.(location,options)??false}

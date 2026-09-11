@@ -7,7 +7,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.16.0-avatar-room-premium-production',VERSION=401600;
+const BUILD='40.16.1-avatar-room-premium-spatial-fix',VERSION=401601;
 let auraRoot=null,auraObserver=null,auraScene=null;
 const reduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches||!!window.Math12Platform?.perf?.lowPower?.()}catch(_){return false}};
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,Number(v)||0));

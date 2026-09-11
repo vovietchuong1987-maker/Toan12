@@ -7,7 +7,7 @@
    ========================================================= */
 (function(){
 'use strict';
-const BUILD='40.15.7-interactive-room-animation-polish';
+const BUILD='40.16.1-interactive-room-spatial-fix';
 let scene=null, api=null, stage=null, homeCam=null, currentKind='', boundMeshes=[], raf=0, roomDataListener=null;
 const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c));
 const pct=v=>v==null?'—':`${Math.round(Number(v)*100)}%`;
@@ -32,8 +32,8 @@ const CAMERAS={
   trophy:{target:[3.12,2.45,2.34],radius:4.45,alpha:-1.02,beta:1.12},
   board:{target:[-.50,2.42,2.72],radius:5.20,alpha:-1.47,beta:1.20},
   window:{target:[-3.72,2.28,.18],radius:5.15,alpha:-2.02,beta:1.16},
-  chair:{target:[.90,.78,.08],radius:4.50,alpha:-1.02,beta:1.18},
-  avatar:{target:[-1.20,1.48,-.16],radius:5.05,alpha:-1.48,beta:1.18}
+  chair:{target:[1.02,.82,.18],radius:4.50,alpha:-1.02,beta:1.18},
+  avatar:{target:[-1.12,1.48,.30],radius:5.05,alpha:-1.48,beta:1.18}
 };
 function iconFor(kind){return ({notebook:'📖',bookshelf:'📚',trophy:'🏆',board:'∑',window:'☁',chair:'☕',avatar:'☺'})[kind]||'✦'}
 function titleFor(kind){return ({notebook:'Sổ học tập',bookshelf:'Kệ kiến thức',trophy:'Kệ thành tích',board:'Bảng tiến độ',window:'Khoảng lặng',chair:'Góc thư giãn',avatar:'Nhân vật của em'})[kind]||'Math Room'}
