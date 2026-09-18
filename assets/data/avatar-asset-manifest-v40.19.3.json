@@ -1,0 +1,114 @@
+{
+  "build": "40.19.3-asset-cleanup",
+  "removed": [
+    "assets/js/avatar-shop-room-pro-v40.18.6.js",
+    "assets/js/avatar-shop-room-pro-v40.18.3.js",
+    "assets/js/avatar-shop-room-pro-v40.18.2.js",
+    "assets/js/avatar-shop-room-pro-v40.18.5.js",
+    "assets/js/avatar-shop-room-pro-v40.18.7.js",
+    "assets/js/avatar-shop-room-pro-v40.18.1.js",
+    "assets/js/avatar-shop-room-pro-v40.18.4.js",
+    "assets/js/avatar-shop-room-pro-v40.18.8.js",
+    "assets/js/avatar-shop-room-pro-v40.18.9.js",
+    "assets/js/avatar-shop-room-pro-v40.19.0.js",
+    "assets/js/avatar-shop-room-pro-v40.19.1.js",
+    "assets/css/avatar-suite-v40.18.5.css",
+    "assets/css/avatar-suite-v40.18.9.css",
+    "assets/css/avatar-suite-v40.18.6.css",
+    "assets/css/avatar-suite-v40.18.3.css",
+    "assets/css/avatar-suite-v40.18.2.css",
+    "assets/css/avatar-suite-v40.18.1.css",
+    "assets/css/avatar-suite-v40.18.7.css",
+    "assets/css/avatar-suite-v40.18.8.css",
+    "assets/css/avatar-suite-v40.18.4.css",
+    "assets/css/avatar-suite-v40.19.0.css",
+    "assets/js/avatar-renderer-2d-v40.17.0.js",
+    "assets/js/avatar-renderer-2d-v40.17.1.js",
+    "assets/css/avatar-2d-v40.17.0.css"
+  ],
+  "current_avatar_assets": [
+    {
+      "path": "assets/img/avatar-2d-pro-preview-female.png",
+      "bytes": 70520
+    },
+    {
+      "path": "assets/img/avatar-2d-pro-preview-male.png",
+      "bytes": 64485
+    },
+    {
+      "path": "assets/img/avatar-2d-pro-reference.png",
+      "bytes": 1140319
+    },
+    {
+      "path": "assets/img/avatar-mask-female-accent.png",
+      "bytes": 3344
+    },
+    {
+      "path": "assets/img/avatar-mask-female-bottom.png",
+      "bytes": 6341
+    },
+    {
+      "path": "assets/img/avatar-mask-female-foreground.png",
+      "bytes": 10065
+    },
+    {
+      "path": "assets/img/avatar-mask-female-hair-highlight.png",
+      "bytes": 28658
+    },
+    {
+      "path": "assets/img/avatar-mask-female-hair.png",
+      "bytes": 10148
+    },
+    {
+      "path": "assets/img/avatar-mask-female-shoes.png",
+      "bytes": 3610
+    },
+    {
+      "path": "assets/img/avatar-mask-female-top.png",
+      "bytes": 5758
+    },
+    {
+      "path": "assets/img/avatar-mask-male-accent.png",
+      "bytes": 3263
+    },
+    {
+      "path": "assets/img/avatar-mask-male-bottom.png",
+      "bytes": 6502
+    },
+    {
+      "path": "assets/img/avatar-mask-male-hair-highlight.png",
+      "bytes": 14447
+    },
+    {
+      "path": "assets/img/avatar-mask-male-hair.png",
+      "bytes": 7187
+    },
+    {
+      "path": "assets/img/avatar-mask-male-shoes.png",
+      "bytes": 3613
+    },
+    {
+      "path": "assets/img/avatar-mask-male-top.png",
+      "bytes": 5301
+    },
+    {
+      "path": "assets/img/avatar-premium-concept.webp",
+      "bytes": 53088
+    },
+    {
+      "path": "assets/img/avatar-signature-female.png",
+      "bytes": 1140319
+    },
+    {
+      "path": "assets/img/avatar-signature-male.png",
+      "bytes": 1265701
+    }
+  ],
+  "production_v40_19_7": {
+    "avatar_shop": "assets/js/avatar-shop-pro-v40.19.7.js",
+    "runtime": "assets/js/avatar-runtime-v40.19.7.js",
+    "qa": "assets/js/avatar-qa-v40.19.7.js",
+    "room_enabled": false,
+    "room_cloud_data_preserved": "roomV390"
+  }
+}

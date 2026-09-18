@@ -1,24 +1,43 @@
-/* Math12 Hub  — lightweight offline shell + runtime cache */
-const CACHE_REV='20260911-v40.16.1-avatar-math-room-production';
+/* Math12 Hub v40.19.7 GitHub Lite — offline shell */
+const CACHE_REV='20260918-v40.19.7-github-lite';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
-  './','./index.html','./manifest.webmanifest',
-  './assets/css/app-v40.10.bundle.css','./assets/css/navigation-v40.12.css',
-  './assets/js/mathjax-config.js','./assets/vendor/mathjax.js',
-  './assets/js/core.js','./assets/js/id6-taxonomy-v37.4.js','./assets/js/lesson-content-v37.7.js',
-  './assets/data/question-bank-canonical-v40.11.js','./assets/js/full-bank-v40.11.js','./assets/js/unified-bank-v40.11.js','./assets/js/authoring.js','./assets/js/exam.js','./assets/js/question-id-v40.js','./assets/js/bbt-renderer-v40.6.js','./assets/js/bbt-autodetect-v40.10.js','./assets/js/honor-board-v40.9.js','./assets/js/mobile-exam-v40.8.js','./assets/js/compact-nav-v40.12.js','./assets/js/platform-v40.js',
-  './assets/js/avatar-compat-v40.15.9.js','./assets/js/avatar-runtime-v40.15.9.js','./assets/js/avatar-renderer-v40.15.9.js','./assets/js/avatar-engine-v40.15.9.js','./assets/js/avatar-motion-v40.15.9.js','./assets/js/avatar-studio-v40.15.9.js','./assets/js/avatar-emotion-v40.15.9.js','./assets/js/math-room-data-v40.14.7.js','./assets/js/math-room-interactions-v40.14.8.js','./assets/js/math-room-presence-v40.14.9.js','./assets/js/avatar-room-premium-v40.15.9.js','./assets/js/math-room-v40.15.9.js',
-  './assets/img/avatar-premium-concept.webp','./assets/img/room-premium-concept.webp',
-  './assets/icons/icon-192.png','./assets/icons/icon-512.png'
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./assets/css/math12hub-v40.19.7.bundle.css",
+  "./assets/js/mathjax-config.js",
+  "./assets/vendor/mathjax.js",
+  "./assets/js/math12hub-v40.19.7.bundle.js",
+  "./assets/js/ai-teacher-v32.js",
+  "./assets/js/reports-v33.js",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./assets/data/avatar-asset-manifest-v40.19.3.json",
+  "./assets/img/avatar-2d-pro-preview-female.png",
+  "./assets/img/avatar-2d-pro-preview-male.png",
+  "./assets/img/avatar-2d-pro-reference.png",
+  "./assets/img/avatar-mask-female-accent.png",
+  "./assets/img/avatar-mask-female-bottom.png",
+  "./assets/img/avatar-mask-female-foreground.png",
+  "./assets/img/avatar-mask-female-hair-highlight.png",
+  "./assets/img/avatar-mask-female-hair.png",
+  "./assets/img/avatar-mask-female-shoes.png",
+  "./assets/img/avatar-mask-female-top.png",
+  "./assets/img/avatar-mask-male-accent.png",
+  "./assets/img/avatar-mask-male-bottom.png",
+  "./assets/img/avatar-mask-male-hair-highlight.png",
+  "./assets/img/avatar-mask-male-hair.png",
+  "./assets/img/avatar-mask-male-shoes.png",
+  "./assets/img/avatar-mask-male-top.png",
+  "./assets/img/avatar-premium-concept.webp",
+  "./assets/img/avatar-signature-female.png",
+  "./assets/img/avatar-signature-male.png",
+  "./assets/img/room-premium-concept.webp"
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('math12hub-')&&![SHELL,RUNTIME].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function networkFirst(req,fallback){try{const r=await fetch(req);if(r&&r.ok){const c=await caches.open(RUNTIME);c.put(req,r.clone())}return r}catch(_){return (await caches.match(req))||(fallback?await caches.match(fallback):Response.error())}}
 async function stale(req){const cached=await caches.match(req);const fresh=fetch(req).then(async r=>{if(r&&r.ok){const c=await caches.open(RUNTIME);c.put(req,r.clone())}return r}).catch(()=>null);return cached||fresh||Response.error()}
-self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const u=new URL(req.url);if(u.origin!==location.origin)return;
-  if(req.mode==='navigate'){event.respondWith(networkFirst(req,'./index.html'));return}
-  if(/question-bank-canonical|lesson-content/.test(u.pathname)){event.respondWith(stale(req));return}
-  if(/\.(?:js|css|png|webmanifest)$/.test(u.pathname)){event.respondWith(stale(req));return}
-  event.respondWith(networkFirst(req));
-});
+self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const u=new URL(req.url);if(u.origin!==location.origin)return;if(req.mode==='navigate'){event.respondWith(networkFirst(req,'./index.html'));return}if(/\.(?:js|css|png|webp|json|webmanifest)$/.test(u.pathname)){event.respondWith(stale(req));return}event.respondWith(networkFirst(req));});

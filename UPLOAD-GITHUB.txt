@@ -1,0 +1,6 @@
+MATH12 HUB v40.19.7 — GITHUB LITE
+
+Gói này đã gộp JS/CSS để giảm số file xuống dưới 100.
+Cách dùng: giải nén rồi tải TOÀN BỘ nội dung bên trong thư mục lên root repository GitHub Pages, ghi đè file cũ.
+Sau khi deploy: Ctrl+F5.
+Không tải file ZIP trực tiếp lên repo để chạy Pages; phải giải nén trước.

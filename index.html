@@ -6,18 +6,17 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Math12 Hub</title>
 <meta content="Nền tảng ôn tập Toán 12 theo Chương trình GDPT 2018; học theo bài, ôn theo chương, kiểm tra định kỳ, luyện thi tốt nghiệp THPT và theo dõi tiến độ." name="description"/>
-<meta content="40.16.1" name="app-version"/>
-<meta content="40.16.1-avatar-math-room-production" name="app-build"/>
+<meta content="40.17.0" name="app-version"/>
+<meta content="40.19.6-performance" name="app-build"/>
 <meta content="modular-static-github-pages" name="app-architecture"/>
 <meta content="production" name="release-channel"/>
 <meta content="#172033" name="theme-color"/>
-<link href="manifest.webmanifest?v=40.16.1" rel="manifest"/>
+<link href="manifest.webmanifest?v=40.17.0" rel="manifest"/>
 <link href="assets/icons/icon-192.png?v=40.0" rel="icon" sizes="192x192" type="image/png"/>
 <link crossorigin="" href="https://www.gstatic.com" rel="preconnect"/>
 <script defer="" src="assets/js/mathjax-config.js?v=40.0"></script>
 <script defer="" src="assets/vendor/mathjax.js?v=40.0"></script>
-<link href="assets/css/app-v40.10.bundle.css?v=40.15.0-premium" rel="stylesheet"/>
-<link href="assets/css/navigation-v40.12.css?v=40.14.7" rel="stylesheet"/>
+<link href="assets/css/math12hub-v40.19.7.bundle.css?v=40.19.7-lite" rel="stylesheet"/>
 </head>
 <body>
 <div class="v33-public-shell hidden" id="v33PublicReportShell"><div class="v33-public-wrap"><div class="v33-public-brand"><div class="brand-logo">∑</div><div><b>Math12 Hub</b><small>Báo cáo học tập </small></div></div><div id="v33PublicReportContent"><div class="online-empty">Đang tải báo cáo…</div></div><div class="v33-public-actions"><button class="btn btn-blue" onclick="window.print()">In / Lưu PDF</button><button class="btn btn-soft" onclick="v33ClosePublicReport()">Đóng</button></div></div></div>
@@ -59,7 +58,6 @@
 <div class="nav-group-items">
 <button data-page="avatar" title="Nhân vật của em"><span class="ico">♟</span><span class="nav-label">Nhân vật</span></button>
 <button data-page="shop" title="Shop &amp; Tủ đồ"><span class="ico">🛍</span><span class="nav-label">Shop &amp; Tủ đồ</span></button>
-<button data-page="room" title="Phòng học 3D của em"><span class="ico">🏠</span><span class="nav-label">Phòng của em</span></button>
 <button data-page="collections" title="Bộ sưu tập thành tích"><span class="ico">🗂</span><span class="nav-label">Bộ sưu tập</span></button>
 </div>
 </div>
@@ -127,7 +125,7 @@
 <div class="badge" style="background:rgba(255,255,255,.16);color:white">NỀN TẢNG HỌC TOÁN</div>
 <h2>Học Toán • Nâng cấp nhân vật • Xây phòng của em</h2>
 <p>Mỗi bài học có kiểm tra nhanh, mỗi chương có bài tổng hợp, giữa kỳ – học kỳ có đề chuẩn hóa, và cuối lộ trình là đề mô phỏng tốt nghiệp THPT theo định dạng hiện hành.</p>
-<div class="hero-actions"><button class="btn btn-primary" onclick="v28StartNextAction()">Tiếp tục học</button><button class="btn btn-ghost" onclick="goPage('avatar')">Avatar 3D</button><button class="btn btn-ghost" onclick="goPage('shop')">Mega Shop</button><button class="btn btn-ghost" onclick="goPage('room')">🏠 Phòng của em</button></div>
+<div class="hero-actions"><button class="btn btn-primary" onclick="v28StartNextAction()">Tiếp tục học</button><button class="btn btn-ghost" onclick="goPage('avatar')">Avatar 2D</button><button class="btn btn-ghost" onclick="goPage('shop')">Mega Shop</button></div>
 </div>
 <div class="hero-progress"><div style="display:flex;justify-content:space-between;align-items:end"><div><small>Tiến độ chương trình</small><br/><strong id="heroPercent">0%</strong></div><div style="text-align:right"><small>Mục tiêu</small><br/><b id="v28GoalScoreHero">8.0+</b></div></div><div class="progress" style="margin-top:14px"><span id="heroBar" style="width:0%"></span></div><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:#d9e3ff"><span id="doneLessonText">0/19 bài đã hoàn thành</span><span id="learningStreakText">Chuỗi học: 0 ngày</span></div></div>
 </div>
@@ -746,82 +744,6 @@
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore-compat.js"></script>
-<script src="assets/js/core.js?v=40.14.7"></script>
-<script src="assets/js/id6-taxonomy-v37.4.js?v=40.0"></script>
-<script src="assets/js/lesson-content-v37.7.js?v=40.14.6"></script>
-<script src="assets/js/taxonomy-sync-v38.2.1.js?v=40.0"></script>
-<script src="assets/data/question-bank-canonical-v40.11.js?v=40.11"></script>
-<script src="assets/js/full-bank-v40.11.js?v=40.11"></script>
-<script src="assets/js/authoring.js?v=40.0"></script>
-<script src="assets/js/data-vault.js?v=40.0"></script>
-<script src="assets/js/exam.js?v=40.15.7-animation-polish"></script>
-<script src="assets/js/firebase.js?v=40.0"></script>
-<script src="assets/js/unified-bank-v40.11.js?v=40.11"></script>
-<script src="assets/js/dashboard-v22.js?v=40.0"></script>
-<script src="assets/js/admin-v25.js?v=40.0"></script>
-<script src="assets/js/integrity-v26.js?v=40.0"></script>
-<script src="assets/js/teacher-ops-v27.js?v=40.0"></script>
-<script src="assets/js/student-ux-v28.js?v=40.0"></script>
-<script src="assets/js/avatar-compat-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/question-id-v40.js?v=40.0"></script>
-<script src="assets/js/question-bank-v29.js?v=40.0"></script>
-<script src="assets/js/exam-pro-v30.js?v=40.0"></script>
-<script src="assets/js/analytics-pro-v31.js?v=40.0"></script>
-<script src="assets/js/scale-v34.js?v=40.0"></script>
-<script src="assets/js/hardening-v35.js?v=40.0"></script>
-<script src="assets/js/ui-v35.js?v=40.12"></script>
-<script src="assets/js/bootstrap.js?v=40.0"></script>
-<script src="assets/js/ux-v35.3.js?v=40.12"></script>
-<script src="assets/js/smart-nav-v35.4.js?v=40.12"></script>
-<script src="assets/js/knowledge-map-v36.js?v=40.0"></script>
-<script src="assets/js/quality-engine-v36.1.js?v=40.0"></script>
-<script src="assets/js/smart-exam-v36.2.js?v=40.0"></script>
-<script src="assets/js/mastery-v36.3.js?v=40.14.7"></script>
-<script src="assets/js/ai-intelligence-v37.js?v=40.0"></script>
-<script src="assets/js/bank-backup-v37.1.js?v=40.0"></script>
-<script src="assets/js/tikz-support-v37.2.js?v=40.0"></script>
-<script src="assets/js/graph-engine-v37.3.3.js?v=40.0"></script>
-<script src="assets/js/tools-menu-v37.3.1.js?v=40.0"></script>
-<script src="assets/js/variation-exam-v37.3.6.js?v=40.0"></script>
-<script src="assets/js/id6-ui-v37.4.js?v=40.0"></script>
-<script src="assets/js/id6-hierarchy-v37.4.1.js?v=40.0"></script>
-<script src="assets/js/id6-pure-ui-v37.4.2.js?v=40.0"></script>
-<script src="assets/js/bank-reset-v37.4.3.js?v=40.0"></script>
-<script src="assets/js/figure-engine-v37.4.5.js?v=40.0"></script>
-<script src="assets/js/figure-layout-v37.4.6.js?v=40.0"></script>
-<script src="assets/js/figure-qc-v37.4.7.js?v=40.0"></script>
-<script src="assets/js/figure-manager-v37.4.8.js?v=40.0"></script>
-<script src="assets/js/figure-production-v37.5.js?v=40.0"></script>
-<script src="assets/js/dynamic-practice-v37.5.1.js?v=40.14.6"></script>
-<script src="assets/js/graph-reading-v37.5.2.js?v=40.0"></script>
-<script src="assets/js/unified-figure-v37.5.3.js?v=40.0"></script>
-<script src="assets/js/bbt-renderer-v40.6.js?v=40.6"></script>
-<script src="assets/js/bbt-autodetect-v40.10.js?v=40.10"></script>
-<script src="assets/js/freeform-graph-v37.5.4.js?v=40.0"></script>
-<script src="assets/js/exam-pro-v37.6.js?v=40.0"></script>
-<script src="assets/js/game-economy-v37.9.js?v=40.14.7"></script>
-<script src="assets/js/game-shop-v38.0.js?v=40.12"></script>
-<script src="assets/js/game-missions-v38.1.js?v=40.12"></script>
-<script src="assets/js/game-mastery-v38.2.js?v=40.14.7"></script>
-<script src="assets/js/avatar-runtime-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/avatar-renderer-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/wardrobe-v38.5.js?v=40.0"></script>
-<script src="assets/js/mega-shop-v38.6.js?v=40.0"></script>
-<script src="assets/js/pets-effects-v38.7.js?v=40.0"></script>
-<script src="assets/js/avatar-engine-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/avatar-motion-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/avatar-studio-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/avatar-emotion-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/achievement-collections-v38.8.js?v=40.14.7"></script>
-<script src="assets/js/math-room-data-v40.14.7.js?v=40.14.7"></script>
-<script src="assets/js/math-room-interactions-v40.14.8.js?v=40.15.7-animation-polish"></script>
-<script src="assets/js/math-room-presence-v40.14.9.js?v=40.15.7-animation-polish"></script>
-<script src="assets/js/avatar-room-premium-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/math-room-v40.15.9.js?v=40.16.1"></script>
-<script src="assets/js/self-study-v38.3.js?v=40.14.7"></script>
-<script src="assets/js/honor-board-v40.9.js?v=40.12"></script>
-<script src="assets/js/mobile-exam-v40.8.js?v=40.8"></script>
-<script src="assets/js/compact-nav-v40.12.js?v=40.12"></script>
-<script src="assets/js/platform-v40.js?v=40.12"></script>
+<script src="assets/js/math12hub-v40.19.7.bundle.js?v=40.19.7-lite"></script>
 </body>
 </html>
