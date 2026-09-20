@@ -1,25 +1,30 @@
 {
   "product": "Math12 Hub",
-  "version": "40.30.1",
-  "build": "unified-profile-sync-fix",
-  "generatedAt": "2026-09-20T03:07:00Z",
-  "predecessor": "40.30.0",
+  "version": "40.33.0",
+  "build": "student-learning-flow",
+  "generatedAt": "2026-09-20T03:44:04Z",
+  "predecessor": "40.32.0",
   "safeModeQuery": "?safe=1",
   "criticalAssets": [
     {
       "path": "index.html",
-      "bytes": 84745,
-      "sha256": "4ec01960583a2142dedb2289b12c38a04573572a456007bb629adbba10aa874a"
+      "bytes": 85175,
+      "sha256": "6b10d1c7c231436fa0aed62769281fe1bb604ba3e8f7f826a9819336efc66e03"
     },
     {
       "path": "sw.js",
-      "bytes": 2556,
-      "sha256": "31358d8077d7dead0f9ebedb8ca0e81ce594bdc6422487ab37a8b2cac582a9aa"
+      "bytes": 2816,
+      "sha256": "6e04c33e7bd6036a1ee6b00e865e8579c8d78596236f5569873fa1320be8be5d"
     },
     {
       "path": "manifest.webmanifest",
       "bytes": 810,
       "sha256": "f7c787b5d500d2893a2db50a80c63dd724e7a4a5ec995a2ee2b2fe2b4db18a58"
+    },
+    {
+      "path": "firestore.rules",
+      "bytes": 27310,
+      "sha256": "fd070665b1d30061db08f241e0fb7f4676324bb4a12953ce48d00f4e6bb3cfdc"
     },
     {
       "path": "assets/js/math12hub-v40.20.0.bundle.js",
@@ -47,14 +52,24 @@
       "sha256": "46987925744fefcd671fcc1354a3e87528df7ac3c9ff542a57d772d9e6a0bf51"
     },
     {
-      "path": "assets/js/arena-integration-v40.26.0.js",
-      "bytes": 12788,
-      "sha256": "a9e4441c7ce17124128f829a6f408d37dd458c9918da620b85d35f118d4c7a7d"
-    },
-    {
       "path": "assets/js/quality-gate-v40.30.0.js",
       "bytes": 6828,
       "sha256": "1c78a8112be50c65ef6565fecad8f8821444fefdd312b5bf27ea7b8765d1282c"
+    },
+    {
+      "path": "assets/js/ux-experience-v40.31.0.js",
+      "bytes": 11228,
+      "sha256": "434e3c2bc3edd63d3450d7986194fa77948c9f866015309acafb08cf9b723f19"
+    },
+    {
+      "path": "assets/js/student-home-v40.32.0.js",
+      "bytes": 15397,
+      "sha256": "9e0ac16e3bdea22d9c6a88e606cb9957dc1a7ea65059bc29e226bd105f9971c9"
+    },
+    {
+      "path": "assets/js/student-flow-v40.33.0.js",
+      "bytes": 15031,
+      "sha256": "ace984e31e383a80d9b1ef83202a60df90ba48c8c52aaea25a5f37c520c73a50"
     },
     {
       "path": "assets/css/math12hub-v40.20.0.bundle.css",
@@ -70,6 +85,26 @@
       "path": "assets/css/quality-gate-v40.30.0.css",
       "bytes": 1233,
       "sha256": "50d070862a4649c73fba26beccb2c54d656c3a696dbabebdbf39692119347a01"
+    },
+    {
+      "path": "assets/css/ux-experience-v40.31.0.css",
+      "bytes": 7183,
+      "sha256": "aaa9392a9b993362d9800cabda43dd4b9962ef3e4c3499c3bd1620038a3b8f11"
+    },
+    {
+      "path": "assets/css/student-home-v40.32.0.css",
+      "bytes": 8903,
+      "sha256": "ab61f47bbea5661d80cdb29cb689b0ef489ba1e7333c91e0ab75dca37b181d02"
+    },
+    {
+      "path": "assets/css/student-flow-v40.33.0.css",
+      "bytes": 4076,
+      "sha256": "1b7d00967c45eafb4addd5a3273b89102fe254e5a56c8e569e0683a69ea9a0f2"
     }
+  ],
+  "notes": [
+    "Student learning flow",
+    "No new background Firestore reads",
+    "Secure assignment answers remain protected"
   ]
 }

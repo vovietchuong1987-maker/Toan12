@@ -33,3 +33,28 @@
 - Hall of Fame explicitly re-syncs after EXP/reward events.
 - Dashboard removes duplicated Level/Rank from the lower EXP strip; the strip now focuses on EXP progress and gold.
 - PWA cache revision bumped so GitHub Pages clients receive the fix immediately.
+
+## v40.31.0 — UX Experience Upgrade
+- Mobile **Cá nhân/Thêm** mở bottom-sheet tác vụ nhanh theo vai trò thay vì mở toàn sidebar.
+- Tìm nhanh và Tài khoản/đồng bộ dễ tiếp cận hơn trên mobile.
+- Ghi nhớ vị trí cuộn từng trang trong phiên và khôi phục khi quay lại.
+- Chuẩn hóa các nhãn kỹ thuật/thương hiệu phụ thành tên người dùng dễ hiểu.
+- Topbar, hero, touch target, card, form và table được tối ưu responsive.
+- Loại badge ngoại tuyến trùng khi network status cũ đã hiển thị.
+- Thêm nút lên đầu trang và chuyển trang nhẹ, hỗ trợ reduced motion.
+- Không phát sinh Firestore Reads/Writes mới.
+
+## v40.32.0 — Student Home Redesign
+- Đổi dashboard học sinh thành màn hình **Hôm nay**.
+- Ưu tiên bài giáo viên giao đang mở; nếu không có thì dùng Next Best Action của lộ trình v28.
+- Tóm tắt tiến độ và bài được giao trong màn hình đầu, giảm trùng các khối cũ.
+- Thêm lối tắt Lộ trình / Bài được giao / Câu sai / Thử thách.
+- Không phát sinh Firestore query mới; tận dụng dữ liệu lõi đã tải.
+- Giữ `?safe=1` để quay về lớp UX trước khi cần đối chiếu.
+
+## v40.33.0 — Student Learning Flow
+- Nối chu trình Hôm nay → Làm bài → Kết quả → Sửa câu sai → EXP → Việc tiếp theo.
+- Làm lại đúng các câu vừa sai đối với bài tự chấm.
+- Secure Assignment chỉ dẫn luồng tiếp theo mà không lộ đáp án.
+- Đồng bộ trạng thái nộp vào dashboard ngay sau commit thành công, không thêm Firestore read nền.
+- Thẻ tiếp tục vòng học trên trang Hôm nay và CTA theo ngữ cảnh.

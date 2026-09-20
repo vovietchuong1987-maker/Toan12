@@ -1,4 +1,4 @@
-const CACHE_REV='20260920-v40.30.1';
+const CACHE_REV='20260920-v40.33.0';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
@@ -23,6 +23,12 @@ const CORE=[
   "./assets/css/ux-pro-v40.29.0.css",
   "./assets/js/quality-gate-v40.30.0.js",
   "./assets/css/quality-gate-v40.30.0.css",
+  "./assets/css/ux-experience-v40.31.0.css",
+  "./assets/js/ux-experience-v40.31.0.js",
+  "./assets/css/student-home-v40.32.0.css",
+  "./assets/js/student-home-v40.32.0.js",
+  "./assets/css/student-flow-v40.33.0.css",
+  "./assets/js/student-flow-v40.33.0.js",
   "./release-manifest.json",
   "./assets/js/arena-integration-v40.26.0.js",
   "./assets/css/arena-integration-v40.25.0.css",

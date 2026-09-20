@@ -1,5 +1,8 @@
-Math12 Hub v40.20.0 Character Platform Core — GitHub Lite
+Math12 Hub v40.32.0 — Student Home Redesign
 1. Giải nén ZIP.
-2. Upload toàn bộ file/thư mục bên trong vào repository GitHub Pages.
-3. Không upload nguyên ZIP để chạy website.
-4. Sau khi deploy, Ctrl+F5 một lần để bỏ cache cũ.
+2. Upload toàn bộ file/thư mục bên trong lên repository GitHub Pages, ghi đè các file cũ cùng tên.
+3. Không upload nguyên file ZIP để chạy website.
+4. Giữ nguyên cấu trúc thư mục assets/.
+5. Sau khi deploy, mở trang và Ctrl+F5 một lần để nhận Service Worker v40.32.0.
+6. Đăng nhập một tài khoản học sinh và kiểm tra màn hình “Hôm nay”, bài giáo viên giao, tiến độ, lối tắt.
+7. Nếu cần đối chiếu đường cũ, thêm ?safe=1 vào URL để bỏ qua lớp UX mới.

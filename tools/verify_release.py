@@ -14,7 +14,7 @@ else:
         if rel.startswith(('http://','https://','data:','#','mailto:','javascript:')): continue
         path=(root/rel.split('?',1)[0].lstrip('./'))
         if not path.exists(): errors.append('missing asset: '+rel)
-required=['sw.js','manifest.webmanifest','assets/js/security-core-v40.26.0.js','assets/js/sync-delta-v40.27.0.js','assets/js/performance-v40.28.0.js','assets/js/ux-pro-v40.29.0.js','assets/js/quality-gate-v40.30.0.js']
+required=['sw.js','manifest.webmanifest','assets/js/security-core-v40.26.0.js','assets/js/sync-delta-v40.27.0.js','assets/js/performance-v40.28.0.js','assets/js/ux-pro-v40.29.0.js','assets/js/quality-gate-v40.30.0.js','assets/js/ux-experience-v40.31.0.js','assets/css/ux-experience-v40.31.0.css','assets/js/student-home-v40.32.0.js','assets/css/student-home-v40.32.0.css','assets/js/student-flow-v40.33.0.js','assets/css/student-flow-v40.33.0.css']
 for rel in required:
     if not (root/rel).exists(): errors.append('missing required file: '+rel)
 js=list((root/'assets/js').glob('*.js'))
@@ -23,7 +23,7 @@ manifest=[]
 for p in sorted(root.rglob('*')):
     if p.is_file() and '.git' not in p.parts and p.name!='release-manifest.json':
         manifest.append({'path':str(p.relative_to(root)).replace('\\','/'),'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
-print('Math12 Hub v40.30 static verification')
+print('Math12 Hub v40.33 static verification')
 print('files:',len(manifest),'size:',sum(x['bytes'] for x in manifest))
 if warnings:
     for x in warnings: print('WARN:',x)
