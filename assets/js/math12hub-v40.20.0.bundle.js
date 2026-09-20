@@ -3236,8 +3236,19 @@ let avatarV378OnboardingGender='';
 let avatarV378PromptedUid='';
 
 function avatarV378OwnerUid(){return firebaseUser?.uid||'local'}
+function avatarV378LearningProfile(raw=null){
+  const owner=avatarV378OwnerUid();let p=null;
+  try{p=window.v379Economy?.profile?.()||null}catch(_){}
+  if(!p)try{p=(typeof state!=='undefined'&&state?.gamificationV379ByUser?.[owner])||firebaseProfile?.gamificationV379||null}catch(_){}
+  const primaryLevel=Number(p?.level);
+  let level=Number.isFinite(primaryLevel)&&primaryLevel>=1?Math.floor(primaryLevel):Math.max(1,Math.floor(Number(raw?.level)||AVATAR_V378_STARTER_LEVEL));
+  let rank=String(p?.rank||raw?.rank||'').trim();
+  if(!rank)try{rank=String(window.v379Economy?.rankFor?.(level)||'').trim()}catch(_){}
+  return {level,rank:rank||AVATAR_V378_RANK,totalExp:Math.max(0,Math.floor(Number(p?.totalExp)||0)),gold:Math.max(0,Math.floor(Number(p?.gold)||0))};
+}
 function avatarV378Starter(gender='male'){
-  return {schemaVersion:AVATAR_V378_SCHEMA,initialized:false,ownerUid:avatarV378OwnerUid(),gender:gender==='female'?'female':'male',skin:'warm',face:'smile',hair:gender==='female'?'bob':'short',outfit:'school-blue',level:AVATAR_V378_STARTER_LEVEL,rank:AVATAR_V378_RANK,starter:true,updatedAt:''};
+  const game=avatarV378LearningProfile();
+  return {schemaVersion:AVATAR_V378_SCHEMA,initialized:false,ownerUid:avatarV378OwnerUid(),gender:gender==='female'?'female':'male',skin:'warm',face:'smile',hair:gender==='female'?'bob':'short',outfit:'school-blue',level:game.level,rank:game.rank,starter:true,updatedAt:''};
 }
 function avatarV378Sanitize(raw,owner=avatarV378OwnerUid()){
   if(!raw||typeof raw!=='object')return null;
@@ -3253,8 +3264,8 @@ function avatarV378Sanitize(raw,owner=avatarV378OwnerUid()){
     face:AVATAR_V378_FACES[raw.face]?raw.face:'smile',
     hair:hairs.includes(raw.hair)?raw.hair:hairs[0],
     outfit:AVATAR_V378_OUTFITS.some(x=>x.id===raw.outfit)?raw.outfit:'school-blue',
-    level:AVATAR_V378_STARTER_LEVEL,
-    rank:AVATAR_V378_RANK,
+    level:avatarV378LearningProfile(raw).level,
+    rank:avatarV378LearningProfile(raw).rank,
     starter:true,
     updatedAt:String(raw.updatedAt||'')
   };
@@ -3287,7 +3298,7 @@ function avatarV378Svg(raw,size='large'){
   const cls=size==='mini'?'avatar-svg avatar-svg-mini':'avatar-svg';
   const smile=a.face==='smile'?`<path d="M108 112 Q120 121 132 112" fill="none" stroke="#7C443B" stroke-width="3.2" stroke-linecap="round"/>`:a.face==='confident'?`<path d="M108 114 Q120 121 133 111" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`:a.face==='focus'?`<path d="M110 116 Q120 113 130 116" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`:`<path d="M110 114 Q120 117 130 114" fill="none" stroke="#7C443B" stroke-width="3" stroke-linecap="round"/>`;
   const lower=a.gender==='female'?`<path d="M84 250 L156 250 L172 321 L68 321Z" fill="${out.bottom}"/><path d="M89 321 L111 321 L106 354 L82 354Z" fill="#E7EDF6"/><path d="M129 321 L151 321 L158 354 L134 354Z" fill="#E7EDF6"/>`:`<path d="M82 250 L158 250 L151 329 L126 329 L120 275 L114 329 L89 329Z" fill="${out.bottom}"/><path d="M89 329 L112 329 L108 354 L83 354Z" fill="#E7EDF6"/><path d="M127 329 L151 329 L158 354 L133 354Z" fill="#E7EDF6"/>`;
-  return `<svg class="${cls}" viewBox="0 0 240 370" role="img" aria-label="Avatar ${a.gender==='female'?'nữ':'nam'} ${esc(AVATAR_V378_RANK)}" xmlns="http://www.w3.org/2000/svg">
+  return `<svg class="${cls}" viewBox="0 0 240 370" role="img" aria-label="Avatar ${a.gender==='female'?'nữ':'nam'} ${esc(a.rank)}" xmlns="http://www.w3.org/2000/svg">
     <defs><linearGradient id="avbg-${a.gender}-${a.skin}-${a.outfit}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F6F9FF"/><stop offset="1" stop-color="#DDE8FF"/></linearGradient></defs>
     <rect x="8" y="8" width="224" height="354" rx="42" fill="url(#avbg-${a.gender}-${a.skin}-${a.outfit})"/>
     <circle cx="120" cy="105" r="46" fill="${skin.fill}"/><ellipse cx="76" cy="106" rx="7" ry="12" fill="${skin.shadow}" opacity=".8"/><ellipse cx="164" cy="106" rx="7" ry="12" fill="${skin.shadow}" opacity=".8"/>
@@ -3299,7 +3310,7 @@ function avatarV378Svg(raw,size='large'){
     <circle cx="69" cy="249" r="10" fill="${skin.fill}"/><circle cx="171" cy="249" r="10" fill="${skin.fill}"/>
     ${lower}
     <path d="M80 354 Q96 348 111 354 L110 361 L78 361Z" fill="#27364E"/><path d="M130 354 Q145 348 160 354 L162 361 L130 361Z" fill="#27364E"/>
-    <circle cx="205" cy="46" r="20" fill="#FFFFFF" opacity=".92"/><text x="205" y="52" text-anchor="middle" font-size="17" font-weight="800" fill="#315BC7">1</text>
+    <circle cx="205" cy="46" r="20" fill="#FFFFFF" opacity=".92"/><text x="205" y="52" text-anchor="middle" font-size="17" font-weight="800" fill="#315BC7">${a.level}</text>
   </svg>`;
 }
 function avatarV378GenericSvg(size='mini'){
@@ -3342,7 +3353,7 @@ function avatarV378RenderPage(){
       <div class="avatar-preview-kicker">NHÂN VẬT HỌC TẬP</div>
       <div class="avatar-preview-stage">${avatarV378Svg(a)}</div>
       <div class="avatar-name">${esc(avatarV378DisplayName())}</div>
-      <div class="avatar-rank-row"><span>Lv.${AVATAR_V378_STARTER_LEVEL}</span><b>${esc(AVATAR_V378_RANK)}</b></div>
+      <div class="avatar-rank-row"><span>Lv.${a.level}</span><b>${esc(a.rank)}</b></div>
       <p>Nhân vật khởi đầu dùng vật phẩm cơ bản; EXP, vàng và Shop được đồng bộ cùng hồ sơ học tập.</p>
       <div class="avatar-foundation-status"><span>✓ Avatar cá nhân</span><span>✓ Đồng bộ tài khoản</span><span>✓ Bộ đồ tân thủ</span></div>
     </section>
@@ -3377,11 +3388,12 @@ async function avatarV378Save(){
 }
 function avatarV378DashboardHtml(){
   const a=avatarV378Stored();
-  return `<div class="card avatar-dashboard-card"><div class="avatar-dashboard-visual">${a?avatarV378Svg(a,'mini'):avatarV378GenericSvg('mini')}</div><div class="avatar-dashboard-copy"><div class="avatar-preview-kicker">NHÂN VẬT CỦA EM</div><h3>${esc(avatarV378DisplayName())}</h3><p>${a?.initialized?`Lv.1 • ${esc(AVATAR_V378_RANK)} • Bộ đồ tân thủ đã lưu.`:'Chưa tạo nhân vật. Bắt đầu với bộ đồ tân thủ miễn phí.'}</p><div class="avatar-dashboard-tags"><span>Lv.1</span><span>${esc(AVATAR_V378_RANK)}</span><span>${a?.initialized?'✓ Đã tạo':'Chưa thiết lập'}</span></div></div><button class="btn ${a?.initialized?'btn-soft':'btn-blue'}" onclick="goPage('avatar')">${a?.initialized?'Tùy chỉnh':'Tạo nhân vật'}</button></div>`;
+  const game=avatarV378LearningProfile(a);
+  return `<div class="card avatar-dashboard-card"><div class="avatar-dashboard-visual">${a?avatarV378Svg(a,'mini'):avatarV378GenericSvg('mini')}</div><div class="avatar-dashboard-copy"><div class="avatar-preview-kicker">NHÂN VẬT CỦA EM</div><h3>${esc(avatarV378DisplayName())}</h3><p>${a?.initialized?`Lv.${game.level} • ${esc(game.rank)} • Bộ đồ tân thủ đã lưu.`:'Chưa tạo nhân vật. Bắt đầu với bộ đồ tân thủ miễn phí.'}</p><div class="avatar-dashboard-tags"><span>Lv.${game.level}</span><span>${esc(game.rank)}</span><span>${a?.initialized?'✓ Đã tạo':'Chưa thiết lập'}</span></div></div><button class="btn ${a?.initialized?'btn-soft':'btn-blue'}" onclick="goPage('avatar')">${a?.initialized?'Tùy chỉnh':'Tạo nhân vật'}</button></div>`;
 }
 function avatarV378RefreshUI(){
   const dash=document.getElementById('avatarV378Dashboard');if(dash)dash.innerHTML=avatarV378DashboardHtml();
-  const top=document.getElementById('avatarV378Topbar');if(top){const a=avatarV378Stored();top.innerHTML=`${avatarV378MiniHtml(a)}<span><b>${esc(avatarV378DisplayName())}</b><small>Lv.1 • ${esc(AVATAR_V378_RANK)}</small></span>`;top.classList.toggle('is-ready',!!avatarV378Stored()?.initialized)}
+  const top=document.getElementById('avatarV378Topbar');if(top){const a=avatarV378Stored(),game=avatarV378LearningProfile(a);top.innerHTML=`${avatarV378MiniHtml(a)}<span><b>${esc(avatarV378DisplayName())}</b><small>Lv.${game.level} • ${esc(game.rank)}</small></span>`;top.classList.toggle('is-ready',!!avatarV378Stored()?.initialized)}
   if(document.getElementById('page-avatar')?.classList.contains('active'))avatarV378RenderPage();
 }
 function avatarV378PickOnboardingGender(gender){avatarV378OnboardingGender=gender==='female'?'female':'male';document.querySelectorAll('.avatar-onboard-gender').forEach(b=>b.classList.toggle('selected',b.dataset.gender===avatarV378OnboardingGender));let btn=document.getElementById('avatarV378OnboardNext');if(btn)btn.disabled=false}
@@ -3391,8 +3403,8 @@ function avatarV378StartOnboarding(){
 }
 function avatarV378OpenOnboarding(){
   avatarV378OnboardingGender='';
-  const male=avatarV378Starter('male'),female=avatarV378Starter('female');
-  openModal('Chào mừng tân binh!','Avatar Foundation',`<div class="avatar-onboard-intro"><div class="avatar-onboard-badge">Lv.1</div><div><h4>Tạo nhân vật học tập đầu tiên</h4><p>Chọn Nam hoặc Nữ để nhận bộ đồ tân thủ cơ bản. Sau đó em có thể chọn tóc, tông da và đồng phục miễn phí.</p></div></div><div class="avatar-onboard-grid"><button type="button" class="avatar-onboard-gender" data-gender="male" onclick="avatarV378PickOnboardingGender('male')">${avatarV378Svg(male,'mini')}<b>Nam</b><small>Bắt đầu với nhân vật nam</small></button><button type="button" class="avatar-onboard-gender" data-gender="female" onclick="avatarV378PickOnboardingGender('female')">${avatarV378Svg(female,'mini')}<b>Nữ</b><small>Bắt đầu với nhân vật nữ</small></button></div><div class="avatar-onboard-note"> chỉ có vật phẩm tân thủ miễn phí. EXP, vàng và Shop chưa ảnh hưởng đến điểm số hay kết quả học tập.</div>`,`<button class="btn btn-soft" onclick="closeModal()">Để sau</button><button class="btn btn-blue" id="avatarV378OnboardNext" disabled onclick="avatarV378StartOnboarding()">Tạo nhân vật →</button>`);
+  const male=avatarV378Starter('male'),female=avatarV378Starter('female'),game=avatarV378LearningProfile();
+  openModal('Tạo nhân vật học tập','Avatar',`<div class="avatar-onboard-intro"><div class="avatar-onboard-badge">Lv.${game.level}</div><div><h4>Thiết lập nhân vật của em</h4><p>Cấp độ ${esc(game.rank)} được giữ nguyên từ hồ sơ học tập. Chọn Nam hoặc Nữ rồi tùy chỉnh tóc, tông da và đồng phục miễn phí.</p></div></div><div class="avatar-onboard-grid"><button type="button" class="avatar-onboard-gender" data-gender="male" onclick="avatarV378PickOnboardingGender('male')">${avatarV378Svg(male,'mini')}<b>Nam</b><small>Bắt đầu với nhân vật nam</small></button><button type="button" class="avatar-onboard-gender" data-gender="female" onclick="avatarV378PickOnboardingGender('female')">${avatarV378Svg(female,'mini')}<b>Nữ</b><small>Bắt đầu với nhân vật nữ</small></button></div><div class="avatar-onboard-note">Vật phẩm tân thủ miễn phí; EXP, vàng và Shop chỉ phục vụ trải nghiệm học tập, không làm thay đổi điểm số.</div>`,`<button class="btn btn-soft" onclick="closeModal()">Để sau</button><button class="btn btn-blue" id="avatarV378OnboardNext" disabled onclick="avatarV378StartOnboarding()">Tạo nhân vật →</button>`);
 }
 function avatarV378MaybePrompt(){
   if(!firebaseUser||currentSecureRole()!=='student'||firebaseAccountLocked)return;
@@ -9440,9 +9452,9 @@ function rewardAttempt(attempt,config={}){
   let lv=applyDelta(p,xp,gold);persist(p);let reward={ok:true,attemptId:attempt.id,xp,gold,uniqueCorrect,score:Number(attempt.score)||0,...lv,profile:p};showReward(reward);window.dispatchEvent(new CustomEvent('math12hub:attempt-rewarded',{detail:{attempt,reward,config}}));return reward
 }
 function showReward(r){if(!r||(r.xp<=0&&r.gold<=0))return;try{examToast?.(`+${r.xp} EXP • +${r.gold} vàng${r.levelUp?`Lên Lv.${r.newLevel}!`:''}`)}catch(_){};setTimeout(()=>{let card=document.querySelector('.exam-result-card');if(!card||card.querySelector('.v379-reward-card'))return;let div=document.createElement('div');div.className='v379-reward-card';div.innerHTML=`<div><b>🎁 Phần thưởng học tập</b><small>Chỉ tính câu đúng duy nhất trong ngày; tối đa 3 thưởng đề/ngày.</small></div><strong>+${r.xp} EXP</strong><strong>+${r.gold} 🪙</strong>${r.levelUp?`<em>Lv.${r.newLevel}</em>`:''}`;let metrics=card.querySelector('.exam-result-metrics');metrics?.insertAdjacentElement('afterend',div)},30)}
-function economyStrip(){let p=profile(),inf=levelInfo(p.totalExp),pct=Math.round(inf.exp*100/Math.max(1,inf.next));return `<div class="v379-economy-strip"><div><span>LV.${p.level}</span><b>${esc(p.rank)}</b></div><div class="v379-exp"><small>${inf.exp}/${inf.next} EXP</small><i><em style="width:${pct}%"></em></i></div><div class="v379-gold">🪙 <b>${p.gold.toLocaleString('vi-VN')}</b></div></div>`}
+function economyStrip(){let p=profile(),inf=levelInfo(p.totalExp),pct=Math.round(inf.exp*100/Math.max(1,inf.next));return `<div class="v379-economy-strip"><div><span>TIẾN ĐỘ</span><b>EXP học tập</b></div><div class="v379-exp"><small>${inf.exp}/${inf.next} EXP</small><i><em style="width:${pct}%"></em></i></div><div class="v379-gold">🪙 <b>${p.gold.toLocaleString('vi-VN')}</b></div></div>`}
 function decorateAvatar(){let p=profile(),top=document.getElementById('avatarV378Topbar');if(top){let a=avatarV378Stored?.();top.innerHTML=`${avatarV378MiniHtml(a)}<span><b>${esc(avatarV378DisplayName())}</b><small>Lv.${p.level} • 🪙 ${p.gold.toLocaleString('vi-VN')}</small></span>`}let dash=document.getElementById('avatarV378Dashboard');if(dash&&!dash.querySelector('.v379-economy-strip'))dash.insertAdjacentHTML('beforeend',economyStrip());let page=document.getElementById('avatarV378Page');if(page){let future=page.querySelector('.avatar-future-grid');if(future)future.innerHTML=`<div class="card avatar-future-card v379-live"><span>⚡</span><div><b>EXP & Level</b><small>Lv.${p.level} • ${esc(p.rank)}</small></div><em>${levelInfo(p.totalExp).exp}/${levelInfo(p.totalExp).next}</em></div><div class="card avatar-future-card v379-live"><span>🪙</span><div><b>Vàng</b><small>Chỉ dùng cho vật phẩm thẩm mỹ.</small></div><em>${p.gold.toLocaleString('vi-VN')}</em></div><div class="card avatar-future-card v379-rule"><span>🛡</span><div><b>Chống farm</b><small>Mỗi câu chỉ nhận thưởng đầy đủ 1 lần/ngày; thưởng đề giới hạn 3 lượt/ngày.</small></div><em>Công bằng</em></div>`;let strips=[...page.querySelectorAll(':scope > .v379-economy-strip')];strips.slice(1).forEach(x=>x.remove());if(!strips.length)page.insertAdjacentHTML('afterbegin',economyStrip())}}
-function refreshUI(){decorateAvatar()}
+function refreshUI(){try{window.avatarV378RefreshUI?.()}catch(_){}try{window.M12Suite?.syncCompactAvatars?.()}catch(_){}decorateAvatar()}
 function install(){
   if(typeof window.avatarV378Svg==='function'&&!window.avatarV378Svg.__v379){let base=window.avatarV378Svg;let wrap=function(raw,size='large'){let s=base(raw,size),p=profile();return s.replace(/(<text x="205" y="52"[^>]*>)(?:1|\?)(<\/text>)/,`$1${p.level}$2`)};wrap.__v379=true;window.avatarV378Svg=wrap}
   if(typeof window.avatarV378RefreshUI==='function'&&!window.avatarV378RefreshUI.__v379){let base=window.avatarV378RefreshUI;let wrap=function(){let r=base();decorateAvatar();return r};wrap.__v379=true;window.avatarV378RefreshUI=wrap}
@@ -9977,9 +9989,9 @@ function captureLegacy(){
     outfit:base.outfit,equipped:eq,updatedAt:previous.updatedAt||base.updatedAt||''});
 }
 function mirrorLegacy(c){
-  c=sanitize(c);const owner=uid(),stamp=c.updatedAt||now();
+  c=sanitize(c);const owner=uid(),stamp=c.updatedAt||now(),game=window.avatarV378LearningProfile?.()||window.v379Economy?.profile?.()||{level:1,rank:'Tân binh Toán học'};
   const legacyBase={...(state.avatarV378||{}),schemaVersion:1,ownerUid:owner,initialized:c.initialized,gender:c.gender,skin:c.skin,face:c.face,
-    hair:starterHair(c.gender,c.starterHair),outfit:c.outfit,level:1,rank:'Tân binh Toán học',starter:true,updatedAt:stamp};
+    hair:starterHair(c.gender,c.starterHair),outfit:c.outfit,level:Math.max(1,Math.floor(Number(game.level)||1)),rank:String(game.rank||'Tân binh Toán học'),starter:true,updatedAt:stamp};
   state.avatarV378=legacyBase;
   state.wardrobeV385ByUser=state.wardrobeV385ByUser&&typeof state.wardrobeV385ByUser==='object'?state.wardrobeV385ByUser:{};
   const oldW=state.wardrobeV385ByUser[owner]||{};
@@ -10030,7 +10042,7 @@ function write(next,{source='engine',cloud=true,force=false,changed=[]}={}){
   try{window.save?.({sync:false,reason:'avatar-engine-step6'})}catch(_){ }
   if(cloud)scheduleCloud(clean);notify(clean,previous,source,changed);return clean;
 }
-function base(){const c=current();return {schemaVersion:1,initialized:c.initialized,ownerUid:c.ownerUid,gender:c.gender,skin:c.skin,face:c.face,hair:c.starterHair,outfit:c.outfit,level:1,rank:'Tân binh Toán học',starter:true,updatedAt:c.updatedAt}}
+function base(){const c=current(),game=window.avatarV378LearningProfile?.()||window.v379Economy?.profile?.()||{level:1,rank:'Tân binh Toán học'};return {schemaVersion:1,initialized:c.initialized,ownerUid:c.ownerUid,gender:c.gender,skin:c.skin,face:c.face,hair:c.starterHair,outfit:c.outfit,level:Math.max(1,Math.floor(Number(game.level)||1)),rank:String(game.rank||'Tân binh Toán học'),starter:true,updatedAt:c.updatedAt}}
 function resolved(){
   const c=current(),eq={...c.equipped},preview=previewItem,garment={};
   for(const slot of WARDROBE_SLOTS){let it=wardrobeItem(eq[slot]);if(preview?.slot===slot)it=preview;if(it)garment[slot]=it}
@@ -11167,7 +11179,7 @@ function inject(){
 }
 function installNavigationHook(){const base=window.goPage;if(typeof base!=='function'||base.__v409)return;const wrap=function(page,internal=false){const out=base.call(this,page,internal);if(page==='honor'){const title=document.getElementById('pageTitle');if(title)title.textContent='Bảng vinh danh toàn hệ thống';setTimeout(render,0)}else if(unsubscribe)setTimeout(stopRealtime,0);return out};wrap.__v409=true;wrap.__base=base;window.goPage=wrap}
 function probeAuth(){clearInterval(authProbeTimer);let tries=0;authProbeTimer=setInterval(()=>{tries++;if(typeof firebaseUser!=='undefined'&&firebaseUser){cacheOwnPublicKey();scheduleOwnSync(false);clearInterval(authProbeTimer)}else if(tries>30)clearInterval(authProbeTimer)},1000)}
-function init(){inject();installPushHook();installSaveSideHook();installNavigationHook();probeAuth();document.documentElement.dataset.honorBoardBuild=BUILD;if(isHonorActive())render()}
+function init(){inject();installPushHook();installSaveSideHook();installNavigationHook();probeAuth();window.addEventListener('math12hub:game-reward',()=>scheduleOwnSync(true));window.addEventListener('math12hub:attempt-rewarded',()=>scheduleOwnSync(true));document.documentElement.dataset.honorBoardBuild=BUILD;if(isHonorActive())render()}
 window.v409HonorBoard={build:BUILD,schema:SCHEMA,collection:COLLECTION,render,refresh,syncOwnProfile,buildOwnPayload,boardData,limits:LIMITS};
 window.v409SelectPeriod=selectPeriod;window.v409Refresh=refresh;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
@@ -11639,11 +11651,11 @@ function assetAvatarHtml(className='m12asset-avatar',alt='Avatar Math12'){
 function previewAvatarHtml({className=''}={}){return assetAvatarHtml(className||'m12asset-avatar','Avatar '+(assetInfo().gender==='female'?'nữ':'nam')+' Math12')}
 function miniAvatarHtml(){return `<span class="m12asset-mini"><span class="m12asset-mini-canvas">${assetAvatarHtml('m12asset-mini-img')}</span></span>`}
 function syncCompactAvatars(){
-  const eco=levelGold(),name=esc(currentDisplayName());
+  const eco=levelGold(),game=window.v379Economy?.profile?.()||eco,name=esc(currentDisplayName()),rank=esc(game.rank||window.avatarV378LearningProfile?.()?.rank||'Học viên'),inf=window.v379Economy?.levelInfo?.(game.totalExp||0)||{exp:0,next:100},pct=Math.round(Number(inf.exp||0)*100/Math.max(1,Number(inf.next||100)));
   const top=document.getElementById('avatarV378Topbar');
-  if(top){top.innerHTML=`${miniAvatarHtml()}<span><b>${name}</b><small>Lv.${eco.level||1} • 🪙 ${Number(eco.gold||0).toLocaleString('vi-VN')}</small></span>`;top.classList.add('m12suite-topbar-ready')}
+  if(top){top.innerHTML=`${miniAvatarHtml()}<span><b>${name}</b><small>Lv.${game.level||1} • ${rank} • 🪙 ${Number(game.gold||0).toLocaleString('vi-VN')}</small></span>`;top.classList.add('m12suite-topbar-ready')}
   const dash=document.getElementById('avatarV378Dashboard');
-  if(dash){dash.innerHTML=`<div class="card m12suite-dashboard-avatar"><div class="m12suite-dashboard-visual">${miniAvatarHtml()}</div><div class="m12suite-dashboard-copy"><div class="m12suite-kicker">NHÂN VẬT CỦA EM</div><h3>${name}</h3><p>Character Platform • một trạng thái dùng chung cho toàn Math12 Hub.</p><div class="m12suite-pill-row"><span class="m12suite-pill active">Lv.${eco.level||1}</span><span class="m12suite-pill">🪙 ${Number(eco.gold||0).toLocaleString('vi-VN')}</span><span class="m12suite-pill">CHARACTER CORE</span></div></div><button class="btn btn-soft" onclick="goPage('avatar')">Xem nhân vật</button></div>`}
+  if(dash){dash.innerHTML=`<div class="card m12suite-dashboard-avatar"><div class="m12suite-dashboard-visual">${miniAvatarHtml()}</div><div class="m12suite-dashboard-copy"><div class="m12suite-kicker">NHÂN VẬT CỦA EM</div><h3>${name}</h3><p>Lv.${game.level||1} • ${rank} • Nhân vật đồng bộ với hồ sơ học tập.</p><div class="m12suite-pill-row"><span class="m12suite-pill active">Lv.${game.level||1}</span><span class="m12suite-pill">${rank}</span><span class="m12suite-pill">🪙 ${Number(game.gold||0).toLocaleString('vi-VN')}</span></div></div><button class="btn btn-soft" onclick="goPage('avatar')">Xem nhân vật</button></div><div class="v379-economy-strip"><div><span>TIẾN ĐỘ</span><b>EXP học tập</b></div><div class="v379-exp"><small>${Number(inf.exp||0)}/${Number(inf.next||100)} EXP</small><i><em style="width:${pct}%"></em></i></div><div class="v379-gold">🪙 <b>${Number(game.gold||0).toLocaleString('vi-VN')}</b></div></div>`}
 }
 function renderSvg(target,opts={}){if(!target)return;target.innerHTML=previewAvatarHtml({className:'m12asset-avatar'});return target}
 function schedule(fn){requestAnimationFrame(()=>setTimeout(fn,0))}
@@ -11799,6 +11811,7 @@ window.M12Suite={
   status:productionStatus,
   motion:triggerAvatarMotion,
   renderCurrentPage,
+  syncCompactAvatars,
   setAvatarTab(id){state.avatarTab=id; renderAvatarPage()},
   setAvatarSlot(id){state.avatarSlot=id; renderAvatarPage()},
   setEffectSlot(id){state.avatarEffectSlot=id; renderAvatarPage()},

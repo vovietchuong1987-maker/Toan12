@@ -1,9 +1,9 @@
-/* Math12 Hub v40.30.0 — Production Quality Gate */
+/* Math12 Hub v40.30.1 — Production Quality Gate */
 (function(){
 'use strict';
-const BUILD='40.30.0-production-quality-gate';
-const VERSION=403000;
-const STORAGE='math12hub-quality-v4030';
+const BUILD='40.30.1-production-quality-gate';
+const VERSION=403001;
+const STORAGE='math12hub-quality-v40301';
 const LAST_GOOD='math12hub-last-good-build';
 const safeMode=new URLSearchParams(location.search).has('safe');
 const errors=[];
@@ -46,11 +46,11 @@ function renderAdmin(){
   box.innerHTML=`<div class="m12-quality-head"><div><small>KIỂM TRA HỆ THỐNG</small><h3>${r.ok?'Hệ thống lõi đang hoạt động':'Có lỗi lõi cần kiểm tra'}</h3><p>${safeMode?'Safe Mode đang bật. Các lớp Delta/Performance/UX mới được bỏ qua để chẩn đoán.':'Kiểm tra nhanh cấu trúc, lưu trữ, module và PWA.'}</p></div><span class="m12-quality-state ${r.state}">${r.state==='pass'?'SẴN SÀNG':r.state==='warn'?'CÓ CẢNH BÁO':'CẦN SỬA'}</span></div><div class="m12-quality-grid">${r.checks.map(x=>`<div class="m12-quality-check ${x.ok?'pass':x.critical?'fail':'warn'}"><b>${x.ok?'✓':'!'} ${esc(x.name)}</b><small>${esc(x.detail)}</small></div>`).join('')}</div><div class="m12-quality-actions"><button class="btn btn-blue" onclick="M12QualityGate.refresh()">Kiểm tra lại</button><button class="btn btn-soft" onclick="M12QualityGate.exportDiagnostics()">Xuất chẩn đoán</button>${safeMode?'<button class="btn btn-soft" onclick="M12QualityGate.exitSafeMode()">Thoát Safe Mode</button>':'<button class="btn btn-soft" onclick="M12QualityGate.enterSafeMode()">Mở Safe Mode</button>'}</div>`;
 }
 function download(name,data){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1200)}
-async function exportDiagnostics(){const report=runSync(),assets=await verifyAssets();download(`math12hub-v40.30-diagnostics-${new Date().toISOString().slice(0,10)}.json`,{...report,assetProbe:assets,lastGood:JSON.parse(localStorage.getItem(LAST_GOOD)||'null')})}
+async function exportDiagnostics(){const report=runSync(),assets=await verifyAssets();download(`math12hub-v40.30.1-diagnostics-${new Date().toISOString().slice(0,10)}.json`,{...report,assetProbe:assets,lastGood:JSON.parse(localStorage.getItem(LAST_GOOD)||'null')})}
 function setSafe(on){const u=new URL(location.href);if(on)u.searchParams.set('safe','1');else u.searchParams.delete('safe');location.href=u.toString()}
-function installHook(){if(typeof window.goPage!=='function'||window.goPage.__m12qg4030)return;const base=window.goPage;const wrap=function(page,internal=false){const out=base.call(this,page,internal);if(page==='admin')setTimeout(renderAdmin,0);return out};wrap.__m12qg4030=true;wrap.__base=base;window.goPage=wrap}
+function installHook(){if(typeof window.goPage!=='function'||window.goPage.__m12qg40301)return;const base=window.goPage;const wrap=function(page,internal=false){const out=base.call(this,page,internal);if(page==='admin')setTimeout(renderAdmin,0);return out};wrap.__m12qg40301=true;wrap.__base=base;window.goPage=wrap}
 function refresh(){renderAdmin();return lastReport}
-function install(){installHook();setTimeout(()=>{runSync();if(document.getElementById('page-admin')?.classList.contains('active'))renderAdmin()},500);document.documentElement.dataset.qualityGate='40.30'}
+function install(){installHook();setTimeout(()=>{runSync();if(document.getElementById('page-admin')?.classList.contains('active'))renderAdmin()},500);document.documentElement.dataset.qualityGate='40.30.1'}
 window.M12QualityGate={build:BUILD,version:VERSION,run:runSync,verifyAssets,refresh,exportDiagnostics,enterSafeMode:()=>setSafe(true),exitSafeMode:()=>setSafe(false),errors:()=>[...errors],last:()=>lastReport};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();

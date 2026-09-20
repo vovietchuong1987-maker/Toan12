@@ -1,20 +1,20 @@
 {
   "product": "Math12 Hub",
-  "version": "40.30.0",
-  "build": "production-quality-gate",
-  "generatedAt": "2026-09-20T03:00:00Z",
-  "predecessor": "40.29.0",
+  "version": "40.30.1",
+  "build": "unified-profile-sync-fix",
+  "generatedAt": "2026-09-20T03:07:00Z",
+  "predecessor": "40.30.0",
   "safeModeQuery": "?safe=1",
   "criticalAssets": [
     {
       "path": "index.html",
       "bytes": 84745,
-      "sha256": "9bcedbb1eaed0519a896e40e11aa006d782889b85784fac61765434601f237c4"
+      "sha256": "4ec01960583a2142dedb2289b12c38a04573572a456007bb629adbba10aa874a"
     },
     {
       "path": "sw.js",
       "bytes": 2556,
-      "sha256": "878644bf91b5255350139e147f852d3a97a1358b7a7354c988c21a605444900c"
+      "sha256": "31358d8077d7dead0f9ebedb8ca0e81ce594bdc6422487ab37a8b2cac582a9aa"
     },
     {
       "path": "manifest.webmanifest",
@@ -23,8 +23,8 @@
     },
     {
       "path": "assets/js/math12hub-v40.20.0.bundle.js",
-      "bytes": 3311741,
-      "sha256": "8f9e04d182b4a0655acb50ca5a8f545e02ecafdd9f18b3d79de2a1e2a0205dc1"
+      "bytes": 3313916,
+      "sha256": "3934989c870572c8527234ad9eec629c74f2569a85d136f58f3b62de968a7e1d"
     },
     {
       "path": "assets/js/security-core-v40.26.0.js",
@@ -53,8 +53,8 @@
     },
     {
       "path": "assets/js/quality-gate-v40.30.0.js",
-      "bytes": 6821,
-      "sha256": "b26d178a8f5854de26c0b5c582eade9e425a6770a8cf6aa35a527bd6cef94739"
+      "bytes": 6828,
+      "sha256": "1c78a8112be50c65ef6565fecad8f8821444fefdd312b5bf27ea7b8765d1282c"
     },
     {
       "path": "assets/css/math12hub-v40.20.0.bundle.css",

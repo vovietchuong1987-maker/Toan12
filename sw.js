@@ -1,4 +1,4 @@
-const CACHE_REV='20260920-v40.30.0';
+const CACHE_REV='20260920-v40.30.1';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[

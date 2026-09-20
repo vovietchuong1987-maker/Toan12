@@ -1,785 +1,714 @@
-// Math12 Hub V34 — Performance & Scale. No new public data paths; V33 report protections remain unchanged.
-// Math12 Hub V33 — Firestore Security Rules
-// V27 Teacher Operations, V26 Integrity/Recovery, V25 Admin, V24 Account Security, Secure Exam V18 and Low Reads V19 remain compatible.
-// V33 adds expiring parent-report snapshots under classes/{classId}/reportsV33/{reportId}.
-// Public access is GET-only, token-addressed, time-limited and restricted to sanitized snapshots. Listing remains teacher/admin only.
-// V32 AI remains browser-local; V31 verified competency, V30 cloud drafts and earlier security invariants remain compatible.
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ============================================================
+    // Math12 Hub v40.30.0 — COMPLETE FIRESTORE RULES
+    // Roles: admin / teacher / student
+    // Default deny. First admin must be created from Firebase Console
+    // (users/{UID}.role = "admin", accountStatus = "active").
+    // ============================================================
+
+    // ---------- Core identity helpers ----------
     function signedIn() {
       return request.auth != null;
     }
 
-    function ownUser(uid) {
-      return signedIn() && request.auth.uid == uid;
+    function myUid() {
+      return request.auth.uid;
     }
 
-    function currentAccountActive() {
-      return signedIn()
-        && (!exists(/databases/$(database)/documents/users/$(request.auth.uid))
-            || !('accountStatus' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
-            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountStatus != 'locked');
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
     }
 
-    function activeOwnUser(uid) {
-      return ownUser(uid) && currentAccountActive();
+    function hasProfile() {
+      return signedIn() && exists(userPath(myUid()));
+    }
+
+    function profile() {
+      return get(userPath(myUid())).data;
+    }
+
+    function active() {
+      return hasProfile()
+        && (!('accountStatus' in profile()) || profile().accountStatus != 'locked');
     }
 
     function isAdmin() {
-      return currentAccountActive()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return active() && ('role' in profile()) && profile().role == 'admin';
     }
 
     function isTeacher() {
-      return currentAccountActive()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher'
-            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      return active()
+        && ('role' in profile())
+        && (profile().role == 'teacher' || profile().role == 'admin');
     }
 
-    function isClassOwner(classId) {
-      return currentAccountActive()
-        && exists(/databases/$(database)/documents/classes/$(classId))
-        && get(/databases/$(database)/documents/classes/$(classId)).data.ownerId == request.auth.uid;
+    function isStudent() {
+      return active()
+        && (!('role' in profile()) || profile().role == 'student');
     }
 
-    function isClassOwnerAfter(classId) {
-      return currentAccountActive()
-        && getAfter(/databases/$(database)/documents/classes/$(classId)).data.ownerId == request.auth.uid;
+    // ---------- Class helpers ----------
+    function classPath(classId) {
+      return /databases/$(database)/documents/classes/$(classId);
     }
 
-    function isActiveClass(classId) {
-      return exists(/databases/$(database)/documents/classes/$(classId))
-        && (!('status' in get(/databases/$(database)/documents/classes/$(classId)).data)
-            || get(/databases/$(database)/documents/classes/$(classId)).data.status != 'trashed')
-        && (!('accessStatus' in get(/databases/$(database)/documents/classes/$(classId)).data)
-            || get(/databases/$(database)/documents/classes/$(classId)).data.accessStatus != 'locked');
+    function classExists(classId) {
+      return exists(classPath(classId));
     }
 
-    function isClassMember(classId) {
-      return currentAccountActive()
-        && isActiveClass(classId)
-        && exists(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid))
-        && (!('status' in get(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid)).data)
-            || get(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid)).data.status != 'suspended');
+    function classData(classId) {
+      return get(classPath(classId)).data;
     }
 
-    function validJoinCode(classId, code) {
-      return code is string
-        && currentAccountActive()
-        && isActiveClass(classId)
-        && exists(/databases/$(database)/documents/joinCodes/$(code))
-        && get(/databases/$(database)/documents/joinCodes/$(code)).data.classId == classId
-        && get(/databases/$(database)/documents/joinCodes/$(code)).data.ownerId
-          == get(/databases/$(database)/documents/classes/$(classId)).data.ownerId
-        && (!('status' in get(/databases/$(database)/documents/joinCodes/$(code)).data)
-            || get(/databases/$(database)/documents/joinCodes/$(code)).data.status != 'disabled');
+    function classOwner(classId) {
+      return isTeacher()
+        && classExists(classId)
+        && ('ownerId' in classData(classId))
+        && classData(classId).ownerId == myUid();
     }
 
-    function secureAssignment(classId, assignmentId) {
-      return get(/databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId)).data;
+    function classUsable(classId) {
+      return classExists(classId)
+        && (!('status' in classData(classId)) || classData(classId).status != 'trashed')
+        && (!('accessStatus' in classData(classId)) || classData(classId).accessStatus != 'locked');
     }
 
-    function assignmentTargetsMe(classId, assignmentId) {
-      let a = secureAssignment(classId, assignmentId);
-      return (!('status' in a) || a.status != 'trashed')
-        && (
-          !('targetMode' in a)
-          || a.targetMode == 'all'
-          || (a.targetUids is list && request.auth.uid in a.targetUids)
-        );
+    function memberPath(classId, uid) {
+      return /databases/$(database)/documents/classes/$(classId)/members/$(uid);
     }
 
-    function assignmentOpened(classId, assignmentId) {
-      let a = secureAssignment(classId, assignmentId);
-      return !(a.opensAt is timestamp)
-        || request.time >= a.opensAt - duration.value(30, 's');
+    function activeMember(classId, uid) {
+      return active()
+        && classUsable(classId)
+        && exists(memberPath(classId, uid))
+        && (!('status' in get(memberPath(classId, uid)).data)
+            || get(memberPath(classId, uid)).data.status == 'active');
     }
 
-    function beforeAssignmentDeadline(classId, assignmentId) {
-      let a = secureAssignment(classId, assignmentId);
-      return assignmentOpened(classId, assignmentId)
-        && (!(a.dueAt is timestamp)
-            || request.time <= a.dueAt + duration.value(30, 's'));
+    function meActiveMember(classId) {
+      return signedIn() && activeMember(classId, myUid());
     }
 
-    function attemptWithinLimit(classId, assignmentId, attemptNumber) {
-      let a = secureAssignment(classId, assignmentId);
-      return (attemptNumber is int)
-        && attemptNumber >= 1
-        && (
-          (!('maxAttempts' in a) && attemptNumber <= 1)
-          || (('maxAttempts' in a)
-              && a.maxAttempts is int
-              && a.maxAttempts >= 1
-              && attemptNumber <= a.maxAttempts)
-        );
+    // ---------- Assignment helpers ----------
+    function assignmentPath(classId, assignmentId) {
+      return /databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId);
     }
 
-
-    function answerRevealAllowed(classId, assignmentId) {
-      let a = secureAssignment(classId, assignmentId);
-      return currentAccountActive()
-        && isClassMember(classId)
-        && assignmentTargetsMe(classId, assignmentId)
-        && (
-          (('revealPolicy' in a)
-            && a.revealPolicy == 'after_due'
-            && a.dueAt is timestamp
-            && request.time >= a.dueAt)
-          || (('revealPolicy' in a)
-            && a.revealPolicy == 'after_grade'
-            && exists(/databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId)/submissions/$(request.auth.uid))
-            && ('score' in get(/databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId)/submissions/$(request.auth.uid)).data))
-        );
+    function assignmentExists(classId, assignmentId) {
+      return exists(assignmentPath(classId, assignmentId));
     }
 
-    function pairedIndexAfter(classId, assignmentId, uid) {
-      return getAfter(
-        /databases/$(database)/documents/classes/$(classId)/submissionIndexV19/$(assignmentId + '__' + uid)
-      ).data;
+    function assignmentData(classId, assignmentId) {
+      return get(assignmentPath(classId, assignmentId)).data;
     }
 
-    function existingIndexExists(classId, assignmentId, uid) {
-      return exists(
-        /databases/$(database)/documents/classes/$(classId)/submissionIndexV19/$(assignmentId + '__' + uid)
-      );
-    }
-
-    function existingIndex(classId, assignmentId, uid) {
-      return get(
-        /databases/$(database)/documents/classes/$(classId)/submissionIndexV19/$(assignmentId + '__' + uid)
-      ).data;
-    }
-
-    function pairedSubmissionAfter(classId, assignmentId, uid) {
-      return getAfter(
-        /databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId)/submissions/$(uid)
-      ).data;
-    }
-
-    /* ---------- USER PROFILE ---------- */
-    match /users/{uid} {
-      // Locked users may still read their own profile so the UI can explain the lock.
-      // Admin may list profiles for the V26 management console.
-      allow read: if ownUser(uid) || isAdmin();
-
-      allow create: if ownUser(uid)
-        && request.resource.data.role == 'student'
-        && (!('accountStatus' in request.resource.data)
-            || request.resource.data.accountStatus == 'active');
-
-      // Owners may update normal profile/heartbeat fields but never self-promote
-      // or remove their own account lock. Admin can manage student/teacher role
-      // and active/locked status, but browser clients cannot create another admin.
-      allow update: if (
-          activeOwnUser(uid)
-          && request.resource.data.role == resource.data.role
-          && (
-            (!('accountStatus' in resource.data)
-              && (!('accountStatus' in request.resource.data)
-                  || request.resource.data.accountStatus == 'active'))
-            || (('accountStatus' in resource.data)
-                && ('accountStatus' in request.resource.data)
-                && request.resource.data.accountStatus == resource.data.accountStatus)
-          )
-        )
+    function assignmentMapTargets(data, uid) {
+      return !(('targetMode' in data))
+        || data.targetMode == 'all'
         || (
-          isAdmin()
-          && uid != request.auth.uid
-          && resource.data.role != 'admin'
-          && (request.resource.data.role == 'student'
-              || request.resource.data.role == 'teacher')
-          && (request.resource.data.accountStatus == 'active'
-              || request.resource.data.accountStatus == 'locked')
+          ('targetUids' in data)
+          && data.targetUids is list
+          && data.targetUids.hasAny([uid])
+        );
+    }
+
+    function assignmentTargets(classId, assignmentId, uid) {
+      return assignmentExists(classId, assignmentId)
+        && assignmentMapTargets(assignmentData(classId, assignmentId), uid);
+    }
+
+    function assignmentAcceptsNow(classId, assignmentId, uid) {
+      return meActiveMember(classId)
+        && assignmentExists(classId, assignmentId)
+        && assignmentTargets(classId, assignmentId, uid)
+        && (!('status' in assignmentData(classId, assignmentId))
+            || assignmentData(classId, assignmentId).status != 'trashed')
+        && (!('opensAt' in assignmentData(classId, assignmentId))
+            || request.time >= assignmentData(classId, assignmentId).opensAt)
+        && (!('dueAt' in assignmentData(classId, assignmentId))
+            || request.time <= assignmentData(classId, assignmentId).dueAt);
+    }
+
+    function assignmentMaxAttempts(classId, assignmentId) {
+      return ('maxAttempts' in assignmentData(classId, assignmentId))
+        ? assignmentData(classId, assignmentId).maxAttempts
+        : 1;
+    }
+
+    function validStudentAttemptNumber(classId, assignmentId) {
+      return ('attemptNumber' in request.resource.data)
+        && request.resource.data.attemptNumber is number
+        && request.resource.data.attemptNumber >= 1
+        && request.resource.data.attemptNumber <= assignmentMaxAttempts(classId, assignmentId);
+    }
+
+    function validStudentSubmission(classId, assignmentId, uid) {
+      return assignmentAcceptsNow(classId, assignmentId, uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.classId == classId
+        && request.resource.data.assignmentId == assignmentId
+        && request.resource.data.status == 'submitted'
+        && request.resource.data.secureSchemaVersion == 18
+        && validStudentAttemptNumber(classId, assignmentId)
+        && (!('score' in request.resource.data))
+        && (!('questionResults' in request.resource.data))
+        && (!('gradedBy' in request.resource.data))
+        && (!('gradedAt' in request.resource.data))
+        && (!('gradingVersion' in request.resource.data))
+        && (!('durationMs' in request.resource.data)
+            || (request.resource.data.durationMs is number
+                && request.resource.data.durationMs >= 0
+                && request.resource.data.durationMs <= 14400000))
+        && (!('violations' in request.resource.data)
+            || (request.resource.data.violations is number
+                && request.resource.data.violations >= 0));
+    }
+
+    function canRevealAnswerKey(classId, assignmentId) {
+      return meActiveMember(classId)
+        && assignmentExists(classId, assignmentId)
+        && assignmentTargets(classId, assignmentId, myUid())
+        && ('revealPolicy' in assignmentData(classId, assignmentId))
+        && (
+          (
+            assignmentData(classId, assignmentId).revealPolicy == 'after_due'
+            && ('dueAt' in assignmentData(classId, assignmentId))
+            && request.time >= assignmentData(classId, assignmentId).dueAt
+          )
+          ||
+          (
+            assignmentData(classId, assignmentId).revealPolicy == 'after_grade'
+            && exists(/databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId)/submissions/$(myUid()))
+            && ('score' in get(/databases/$(database)/documents/classes/$(classId)/assignmentsV18/$(assignmentId)/submissions/$(myUid())).data)
+          )
+        );
+    }
+
+    // ============================================================
+    // 1) USERS / ACCOUNT PROFILE
+    // ============================================================
+    match /users/{uid} {
+      // A user can always read their own profile so the app can detect a locked account.
+      // Admin can inspect all profiles.
+      allow get: if signedIn() && (uid == myUid() || isAdmin());
+      allow list: if isAdmin();
+
+      // New Firebase Auth accounts may only bootstrap themselves as student/active.
+      allow create: if signedIn()
+        && uid == myUid()
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'student'
+        && request.resource.data.accountStatus == 'active'
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'role', 'accountStatus',
+          'emailVerified', 'schemaVersion', 'createdAt', 'lastLoginAt', 'updatedAt'
+        ]);
+
+      // Admin manages other users. A normal user can update only non-privileged fields.
+      allow update: if isAdmin()
+        || (
+          active()
+          && uid == myUid()
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'uid', 'role', 'accountStatus', 'createdAt', 'adminUpdatedAt', 'adminUpdatedBy'
+          ])
         );
 
-      allow delete: if false;
+      allow delete: if isAdmin();
 
+      // ---------- Learning snapshot ----------
       match /learning/{docId} {
-        allow read, create, update, delete: if activeOwnUser(uid);
+        allow read, create, update, delete: if active() && uid == myUid();
       }
 
-      match /memberships/{classId} {
-        allow read: if activeOwnUser(uid) || isAdmin();
-        allow create, update: if activeOwnUser(uid)
-          || isAdmin()
-          || (isClassOwner(classId)
-              && request.resource.data.classId == classId
-              && getAfter(/databases/$(database)/documents/classes/$(classId)/members/$(uid)).data.uid == uid);
-        allow delete: if activeOwnUser(uid) || isClassOwner(classId) || isAdmin();
+      // ---------- Teacher private content ----------
+      match /questionBank/{docId} {
+        allow read, create, update, delete: if active() && uid == myUid() && isTeacher();
       }
 
-      match /audit/{logId} {
-        allow read: if activeOwnUser(uid);
-        allow create: if activeOwnUser(uid)
-          && request.resource.data.actorUid == request.auth.uid
-          && request.resource.data.action is string;
-        allow update, delete: if false;
+      match /customExams/{docId} {
+        allow read, create, update, delete: if active() && uid == myUid() && isTeacher();
       }
 
-      match /questionBank/{questionId} {
-        allow read, create, update, delete: if activeOwnUser(uid) && isTeacher();
-      }
-
-      match /customExams/{examId} {
-        allow read, create, update, delete: if activeOwnUser(uid) && isTeacher();
-      }
-
-      // V26: recycle bin for teacher questions/custom exams. Each document is
-      // owned by the same user and participates in the teacher conflict hash.
-      match /recycleBinV26/{trashId} {
-        allow read, create, update, delete: if activeOwnUser(uid) && isTeacher();
+      match /recycleBinV26/{docId} {
+        allow read, create, update, delete: if active() && uid == myUid() && isTeacher();
       }
 
       match /syncMeta/{docId} {
-        allow read, create, update, delete: if activeOwnUser(uid);
+        allow read, create, update, delete: if active() && uid == myUid() && isTeacher();
+      }
+
+      // ---------- User ↔ class access mirror ----------
+      match /memberships/{classId} {
+        allow read: if isAdmin() || (active() && uid == myUid());
+
+        // User joins/refreshes only when the matching class member exists after this write.
+        // Class owner/admin may repair, transfer, suspend or restore memberships.
+        allow create, update: if isAdmin()
+          || classOwner(classId)
+          || (
+            active()
+            && uid == myUid()
+            && getAfter(memberPath(classId, uid)).data.uid == uid
+            && request.resource.data.classId == classId
+            && request.resource.data.status == getAfter(memberPath(classId, uid)).data.status
+            && request.resource.data.joinCode == getAfter(memberPath(classId, uid)).data.joinCode
+          );
+
+        allow delete: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
+      }
+
+      // ---------- Append-only personal audit ----------
+      match /audit/{auditId} {
+        allow read: if isAdmin() || (active() && uid == myUid());
+        allow create: if active()
+          && uid == myUid()
+          && request.resource.data.actorUid == uid;
+        allow update, delete: if false;
+      }
+
+      // Any unknown user subcollection is denied by default.
+      match /{document=**} {
+        allow read, write: if false;
       }
     }
 
-    /* ---------- V26 ADMIN AUDIT ---------- */
-    match /adminAudit/{logId} {
-      allow read: if isAdmin();
-      allow create: if isAdmin()
-        && request.resource.data.actorUid == request.auth.uid
-        && request.resource.data.action is string;
-      allow update, delete: if false;
-    }
-
-    /* ---------- JOIN CODES ---------- */
+    // ============================================================
+    // 2) CLASS JOIN CODES
+    // ============================================================
     match /joinCodes/{code} {
-      allow get: if currentAccountActive();
+      // Students may resolve a code they already know, but cannot list all codes.
+      allow get: if active();
       allow list: if isAdmin();
 
-      allow create: if (
-          isTeacher()
-          && request.resource.data.ownerId == request.auth.uid
-          && request.resource.data.classId is string
-          && request.resource.data.status != 'disabled'
-          && isClassOwnerAfter(request.resource.data.classId)
-        )
+      allow create: if isAdmin()
         || (
-          isAdmin()
+          isTeacher()
+          && request.resource.data.ownerId == myUid()
           && request.resource.data.classId is string
-          && exists(/databases/$(database)/documents/classes/$(request.resource.data.classId))
-          && request.resource.data.ownerId
-            == get(/databases/$(database)/documents/classes/$(request.resource.data.classId)).data.ownerId
-          && request.resource.data.status != 'disabled'
+          && getAfter(classPath(request.resource.data.classId)).data.ownerId == myUid()
+          && getAfter(classPath(request.resource.data.classId)).data.joinCode == code
         );
 
-      allow update: if (
-          isTeacher()
-          && resource.data.ownerId == request.auth.uid
-          && request.resource.data.ownerId == request.auth.uid
-          && request.resource.data.classId == resource.data.classId
-          && isClassOwnerAfter(request.resource.data.classId)
-        )
+      allow update: if isAdmin()
         || (
-          isAdmin()
-          && request.resource.data.classId == resource.data.classId
+          isTeacher()
+          && resource.data.ownerId == myUid()
           && request.resource.data.ownerId == resource.data.ownerId
-          && exists(/databases/$(database)/documents/classes/$(request.resource.data.classId))
-          && request.resource.data.ownerId
-            == get(/databases/$(database)/documents/classes/$(request.resource.data.classId)).data.ownerId
+          && request.resource.data.classId == resource.data.classId
         );
 
       allow delete: if isAdmin()
-        || (currentAccountActive()
-            && resource.data.ownerId == request.auth.uid);
+        || (
+          isTeacher()
+          && resource.data.ownerId == myUid()
+        );
     }
 
-    /* ---------- CLASSES ---------- */
+    // ============================================================
+    // 3) CLASSES
+    // ============================================================
     match /classes/{classId} {
+      // Student may get only a class they actively belong to.
+      // Teacher list queries are constrained by ownerId == current UID.
+      allow get: if isAdmin() || classOwner(classId) || meActiveMember(classId);
+      allow list: if isAdmin()
+        || (isTeacher() && resource.data.ownerId == myUid());
+
       allow create: if isTeacher()
-        && request.resource.data.ownerId == request.auth.uid;
+        && request.resource.data.ownerId == myUid()
+        && request.resource.data.status == 'active'
+        && (!('accessStatus' in request.resource.data)
+            || request.resource.data.accessStatus == 'active');
 
-      allow read: if isAdmin()
-        || (currentAccountActive()
-            && (resource.data.ownerId == request.auth.uid
-                || isClassMember(classId)));
-
-      allow update: if (
-          isClassOwner(classId)
-          && request.resource.data.ownerId == resource.data.ownerId
-        )
+      // Class owner cannot transfer ownership or override an admin access lock.
+      allow update: if isAdmin()
         || (
-          isAdmin()
-          && request.resource.data.ownerId == resource.data.ownerId
+          classOwner(classId)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'ownerId', 'accessStatus'
+          ])
         );
-      allow delete: if isClassOwner(classId);
 
-      match /members/{memberUid} {
-        allow read: if isAdmin()
-          || isClassOwner(classId)
-          || (isActiveClass(classId) && activeOwnUser(memberUid));
+      // UI only permanently purges a class after it is in Trash.
+      allow delete: if isAdmin()
+        || (classOwner(classId) && resource.data.status == 'trashed');
 
+      // ---------- Class members ----------
+      match /members/{uid} {
+        allow get: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
+        allow list: if isAdmin() || classOwner(classId);
+
+        // Self-join is CREATE only. A suspended learner cannot re-join to unlock themselves.
         allow create: if isAdmin()
-          || (isClassOwner(classId)
-              && request.resource.data.uid == memberUid
-              && request.resource.data.classId == classId
-              && request.resource.data.role == 'student')
-          || (isActiveClass(classId)
-              && activeOwnUser(memberUid)
-              && request.resource.data.uid == request.auth.uid
-              && request.resource.data.classId == classId
-              && request.resource.data.role == 'student'
-              && (!('status' in request.resource.data)
-                  || request.resource.data.status == 'active')
-              && validJoinCode(classId, request.resource.data.joinCode));
-
-        allow update: if isAdmin()
-          || isClassOwner(classId)
+          || classOwner(classId)
           || (
-              isActiveClass(classId)
-              && activeOwnUser(memberUid)
-              && request.resource.data.uid == resource.data.uid
-              && request.resource.data.classId == resource.data.classId
-              && request.resource.data.role == resource.data.role
-              && (
-                (!('status' in resource.data)
-                  && (!('status' in request.resource.data)
-                      || request.resource.data.status == 'active'))
-                || (('status' in resource.data)
-                    && ('status' in request.resource.data)
-                    && request.resource.data.status == resource.data.status)
-              )
-            );
+            active()
+            && uid == myUid()
+            && request.resource.data.uid == uid
+            && request.resource.data.classId == classId
+            && request.resource.data.role == 'student'
+            && request.resource.data.status == 'active'
+            && request.resource.data.joinCode is string
+            && exists(/databases/$(database)/documents/joinCodes/$(request.resource.data.joinCode))
+            && get(/databases/$(database)/documents/joinCodes/$(request.resource.data.joinCode)).data.classId == classId
+            && get(/databases/$(database)/documents/joinCodes/$(request.resource.data.joinCode)).data.status == 'active'
+            && classUsable(classId)
+          );
 
-        allow delete: if isAdmin()
-          || isClassOwner(classId)
-          || (isActiveClass(classId) && activeOwnUser(memberUid));
+        allow update: if isAdmin() || classOwner(classId);
+        allow delete: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
       }
 
-      /* ---------- V27 TEACHER OPERATIONS ---------- */
-      match /rosterV27/{rosterId} {
-        allow read, create, update, delete: if isAdmin() || isClassOwner(classId);
+      // ---------- Student self-reported learning progress ----------
+      match /progress/{uid} {
+        allow read: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
+        allow create, update: if isAdmin()
+          || classOwner(classId)
+          || (active() && uid == myUid() && meActiveMember(classId));
+        allow delete: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
       }
 
-      match /groupsV27/{groupId} {
-        allow read, create, update, delete: if isAdmin() || isClassOwner(classId);
-      }
-
-      match /transfersV27/{transferId} {
-        allow read, create, update, delete: if isAdmin() || isClassOwner(classId);
-      }
-
-      match /progress/{studentUid} {
-        allow read: if isClassOwner(classId)
-          || (isActiveClass(classId) && activeOwnUser(studentUid) && isClassMember(classId));
-        allow create, update: if isActiveClass(classId)
-          && ownUser(studentUid)
-          && isClassMember(classId);
-        allow delete: if isClassOwner(classId)
-          || (isActiveClass(classId) && activeOwnUser(studentUid));
-      }
-
-      /* ---------- V17 LEGACY ----------
-         Chỉ chủ lớp đọc/ghi để V19 tự chuyển dữ liệu cũ.
-      */
+      // ---------- Legacy assignments: teacher/admin migration only ----------
       match /assignments/{assignmentId} {
-        allow read, create, update, delete: if isClassOwner(classId);
+        allow read, create, update, delete: if isAdmin() || classOwner(classId);
 
-        match /submissions/{studentUid} {
-          allow read, create, update, delete: if isClassOwner(classId);
+        match /submissions/{uid} {
+          allow read, create, update, delete: if isAdmin() || classOwner(classId);
         }
       }
 
-      /* ---------- SECURE PUBLIC ASSIGNMENTS ----------
-         V19 tiếp tục dùng assignmentsV18 để không phá dữ liệu V18.
-         Document công khai không chứa answer/explanation.
-      */
+      // ---------- Secure public assignment shell ----------
       match /assignmentsV18/{assignmentId} {
         allow read: if isAdmin()
-          || isClassOwner(classId)
-          || (isActiveClass(classId)
-              && isClassMember(classId)
-              && (!(resource.data.opensAt is timestamp) || request.time >= resource.data.opensAt)
-              && (
-                !('targetMode' in resource.data)
-                || resource.data.targetMode == 'all'
-                || (resource.data.targetUids is list && request.auth.uid in resource.data.targetUids)
-              ));
-        // A trashed assignment must have no readable student target. This invariant
-        // lets student list queries remain Low-Reads compatible without requiring a
-        // new compound index on status + target fields.
-        allow create, update: if isClassOwner(classId)
-          && (
-            !('status' in request.resource.data)
-            || request.resource.data.status != 'trashed'
-            || (request.resource.data.targetMode == 'disabled'
-                && request.resource.data.targetUids is list
-                && request.resource.data.targetUids.size() == 0)
-          );
-        allow delete: if isClassOwner(classId);
+          || classOwner(classId)
+          || (meActiveMember(classId) && assignmentMapTargets(resource.data, myUid()));
+        allow create, update, delete: if isAdmin() || classOwner(classId);
 
-        match /submissions/{studentUid} {
-          allow read: if isClassOwner(classId)
-            || (isActiveClass(classId) && activeOwnUser(studentUid));
+        // Full answers submitted by the student; score fields are teacher-only.
+        match /submissions/{uid} {
+          allow read: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
 
-          /* V19 bắt buộc submission và submissionIndexV19 được tạo
-             trong cùng một batch. Học sinh vẫn chỉ gửi answers thô. */
-          allow create: if isActiveClass(classId)
-            && ownUser(studentUid)
-            && isClassMember(classId)
-            && assignmentTargetsMe(classId, assignmentId)
-            && beforeAssignmentDeadline(classId, assignmentId)
-            && request.resource.data.keys().hasAll([
-              'uid', 'classId', 'assignmentId', 'attemptId', 'answers',
-              'answered', 'total', 'durationMs', 'violations', 'status',
-              'secureSchemaVersion', 'submittedAt'
-            ])
-            && request.resource.data.keys().hasOnly([
-              'uid', 'name', 'email', 'classId', 'assignmentId',
-              'assignmentTitle', 'attemptId', 'answers', 'answered', 'total',
-              'durationMs', 'violations', 'status', 'secureSchemaVersion',
-              'submittedAt', 'attemptNumber', 'variantIndex', 'variantCode'
-            ])
-            && request.resource.data.uid == request.auth.uid
-            && request.resource.data.classId == classId
-            && request.resource.data.assignmentId == assignmentId
-            && request.resource.data.attemptId is string
-            && request.resource.data.answers is list
-            && request.resource.data.answers.size() == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.total == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.answered is int
-            && request.resource.data.answered >= 0
-            && request.resource.data.answered <= request.resource.data.total
-            && request.resource.data.durationMs is int
-            && request.resource.data.durationMs >= 0
-            && request.resource.data.violations is int
-            && request.resource.data.violations >= 0
-            && (
-              (!('attemptNumber' in request.resource.data)
-                && !existingIndexExists(classId, assignmentId, studentUid))
-              || (request.resource.data.attemptNumber is int
-                && attemptWithinLimit(classId, assignmentId, request.resource.data.attemptNumber)
-                && (
-                  (!existingIndexExists(classId, assignmentId, studentUid)
-                    && request.resource.data.attemptNumber == 1)
-                  || (existingIndexExists(classId, assignmentId, studentUid)
-                    && existingIndex(classId, assignmentId, studentUid).status == 'retry'
-                    && existingIndex(classId, assignmentId, studentUid).attemptNumber is int
-                    && request.resource.data.attemptNumber
-                      == existingIndex(classId, assignmentId, studentUid).attemptNumber + 1)
-                ))
+          allow create: if active()
+            && uid == myUid()
+            && validStudentSubmission(classId, assignmentId, uid);
+
+          // Multiple attempts may overwrite the current ungraded submission.
+          // Once teacher grading adds score, the student cannot overwrite it.
+          allow update: if (
+              active()
+              && uid == myUid()
+              && !('score' in resource.data)
+              && validStudentSubmission(classId, assignmentId, uid)
             )
-            && request.resource.data.status == 'submitted'
-            && request.resource.data.secureSchemaVersion == 18
-            && request.resource.data.submittedAt == request.time
-            && pairedIndexAfter(classId, assignmentId, studentUid).uid == request.auth.uid
-            && pairedIndexAfter(classId, assignmentId, studentUid).assignmentId == assignmentId
-            && pairedIndexAfter(classId, assignmentId, studentUid).attemptId == request.resource.data.attemptId
-            && pairedIndexAfter(classId, assignmentId, studentUid).status == 'submitted';
+            || isAdmin()
+            || classOwner(classId);
 
-          allow update: if isClassOwner(classId)
-            || (isActiveClass(classId)
-                && activeOwnUser(studentUid)
-                && isClassMember(classId)
-                && assignmentTargetsMe(classId, assignmentId)
-                && beforeAssignmentDeadline(classId, assignmentId)
-                && resource.data.status == 'submitted'
-                && !('score' in resource.data)
-                && request.resource.data.keys().hasAll([
-                  'uid', 'classId', 'assignmentId', 'attemptId', 'attemptNumber', 'answers',
-                  'answered', 'total', 'durationMs', 'violations', 'status',
-                  'secureSchemaVersion', 'submittedAt'
-                ])
-                && request.resource.data.keys().hasOnly([
-                  'uid', 'name', 'email', 'classId', 'assignmentId',
-                  'assignmentTitle', 'attemptId', 'attemptNumber', 'answers', 'answered',
-                  'total', 'durationMs', 'violations', 'status', 'secureSchemaVersion',
-                  'submittedAt', 'variantIndex', 'variantCode'
-                ])
-                && request.resource.data.uid == request.auth.uid
-                && request.resource.data.classId == classId
-                && request.resource.data.assignmentId == assignmentId
-                && (
-                  (('attemptNumber' in resource.data)
-                    && request.resource.data.attemptNumber == resource.data.attemptNumber + 1)
-                  || (!('attemptNumber' in resource.data)
-                    && request.resource.data.attemptNumber == 2)
-                )
-                && attemptWithinLimit(classId, assignmentId, request.resource.data.attemptNumber)
-                && request.resource.data.answers is list
-                && request.resource.data.answers.size() == secureAssignment(classId, assignmentId).questionCount
-                && request.resource.data.total == secureAssignment(classId, assignmentId).questionCount
-                && request.resource.data.status == 'submitted'
-                && request.resource.data.secureSchemaVersion == 18
-                && request.resource.data.submittedAt == request.time
-                && pairedIndexAfter(classId, assignmentId, studentUid).attemptId == request.resource.data.attemptId
-                && pairedIndexAfter(classId, assignmentId, studentUid).attemptNumber == request.resource.data.attemptNumber);
-
-          allow delete: if isClassOwner(classId);
+          allow delete: if isAdmin() || classOwner(classId);
         }
 
-        match /attemptHistoryV27/{attemptDocId} {
-          allow read: if isClassOwner(classId)
-            || (isActiveClass(classId)
-                && currentAccountActive()
-                && resource.data.uid == request.auth.uid
-                && isClassMember(classId));
+        // Immutable history row created by the student for each attempt.
+        match /attemptHistoryV27/{historyId} {
+          allow read: if isAdmin()
+            || classOwner(classId)
+            || (active() && resource.data.uid == myUid());
 
-          allow create: if isActiveClass(classId)
-            && currentAccountActive()
-            && request.resource.data.uid == request.auth.uid
-            && isClassMember(classId)
-            && assignmentTargetsMe(classId, assignmentId)
-            && beforeAssignmentDeadline(classId, assignmentId)
+          allow create: if active()
+            && request.resource.data.uid == myUid()
             && request.resource.data.classId == classId
             && request.resource.data.assignmentId == assignmentId
-            && request.resource.data.attemptId is string
-            && request.resource.data.attemptNumber is int
-            && request.resource.data.attemptNumber >= 1
-            && attemptWithinLimit(classId, assignmentId, request.resource.data.attemptNumber)
-            && request.resource.data.keys().hasAll([
-              'uid', 'classId', 'assignmentId', 'attemptId', 'attemptNumber',
-              'answers', 'answered', 'total', 'durationMs', 'violations', 'status',
-              'secureSchemaVersion', 'submittedAt', 'historySchemaVersion', 'archivedAt'
-            ])
-            && request.resource.data.keys().hasOnly([
-              'uid', 'name', 'email', 'classId', 'assignmentId', 'assignmentTitle',
-              'attemptId', 'attemptNumber', 'answers', 'answered', 'total',
-              'durationMs', 'violations', 'status', 'secureSchemaVersion',
-              'submittedAt', 'historySchemaVersion', 'archivedAt', 'variantIndex', 'variantCode'
-            ])
-            && request.resource.data.answers is list
-            && request.resource.data.answers.size() == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.total == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.answered is int
-            && request.resource.data.answered >= 0
-            && request.resource.data.answered <= request.resource.data.total
-            && request.resource.data.durationMs is int
-            && request.resource.data.durationMs >= 0
-            && request.resource.data.violations is int
-            && request.resource.data.violations >= 0
             && request.resource.data.status == 'submitted'
             && request.resource.data.secureSchemaVersion == 18
-            && request.resource.data.historySchemaVersion == 27
-            && request.resource.data.submittedAt == request.time;
+            && validStudentAttemptNumber(classId, assignmentId)
+            && assignmentAcceptsNow(classId, assignmentId, myUid())
+            && !('score' in request.resource.data)
+            && !('gradedBy' in request.resource.data);
 
           allow update: if false;
-          allow delete: if isClassOwner(classId);
+          allow delete: if isAdmin() || classOwner(classId);
         }
 
+        // Cloud autosave: only the student's own draft document.
+        match /draftsV30/{uid} {
+          allow read: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
 
-        /* ---------- V30 CLOUD DRAFT AUTOSAVE ----------
-           Học sinh chỉ đọc/ghi bản nháp của chính mình; không có score/answer key.
-           Giáo viên có thể đọc/xóa để hỗ trợ phục hồi khi cần.
-        */
-        match /draftsV30/{studentUid} {
-          allow read: if isClassOwner(classId)
-            || (activeOwnUser(studentUid)
-                && isClassMember(classId)
-                && assignmentTargetsMe(classId, assignmentId));
-
-          allow create, update: if activeOwnUser(studentUid)
-            && isClassMember(classId)
-            && assignmentTargetsMe(classId, assignmentId)
-            && beforeAssignmentDeadline(classId, assignmentId)
-            && request.resource.data.uid == request.auth.uid
+          allow create, update: if active()
+            && uid == myUid()
+            && assignmentAcceptsNow(classId, assignmentId, uid)
+            && request.resource.data.uid == uid
             && request.resource.data.classId == classId
             && request.resource.data.assignmentId == assignmentId
-            && request.resource.data.questionIds is list
-            && request.resource.data.answers is list
-            && request.resource.data.answers.size() == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.flags is list
-            && request.resource.data.flags.size() == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.questionIds.size() == secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.keys().hasAll([
-              'uid', 'classId', 'assignmentId', 'questionIds', 'answers', 'flags',
-              'current', 'startedAt', 'endAt', 'violations', 'variantIndex',
-              'variantCode', 'draftSchemaVersion', 'savedAtClient', 'updatedAt'
-            ])
-            && request.resource.data.keys().hasOnly([
-              'uid', 'classId', 'assignmentId', 'questionIds', 'answers', 'flags',
-              'current', 'startedAt', 'endAt', 'violations', 'variantIndex',
-              'variantCode', 'draftSchemaVersion', 'savedAtClient', 'updatedAt'
-            ])
-            && request.resource.data.current is int
-            && request.resource.data.current >= 0
-            && request.resource.data.current < secureAssignment(classId, assignmentId).questionCount
-            && request.resource.data.startedAt is int
-            && request.resource.data.endAt is int
-            && request.resource.data.violations is int
-            && request.resource.data.violations >= 0
-            && request.resource.data.variantIndex is int
-            && request.resource.data.variantIndex >= 0
-            && request.resource.data.variantIndex < 8
-            && request.resource.data.variantCode is string
-            && request.resource.data.draftSchemaVersion == 30
-            && request.resource.data.savedAtClient is int
-            && request.resource.data.updatedAt == request.time;
+            && request.resource.data.draftSchemaVersion == 30;
 
-          allow delete: if isClassOwner(classId) || activeOwnUser(studentUid);
+          allow delete: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
         }
       }
 
-      /* ---------- PRIVATE ANSWER KEYS ---------- */
+      // ---------- Secure answer key ----------
       match /answerKeysV18/{assignmentId} {
-        allow read: if isAdmin() || isClassOwner(classId) || answerRevealAllowed(classId, assignmentId);
-        allow create, update, delete: if isClassOwner(classId);
+        allow get: if isAdmin() || classOwner(classId) || canRevealAnswerKey(classId, assignmentId);
+        allow list: if isAdmin() || classOwner(classId);
+        allow create, update, delete: if isAdmin() || classOwner(classId);
       }
 
-      /* ---------- V19 LIGHT SUBMISSION INDEX ----------
-         Không lưu answers/questionResults. Dashboard chỉ đọc các index đang
-         chờ chấm; lịch sử chi tiết được tải theo nhu cầu.
-      */
+      // ---------- Lightweight submission state index ----------
       match /submissionIndexV19/{indexId} {
-        allow read: if isAdmin()
-          || isClassOwner(classId)
-          || (currentAccountActive()
-              && isActiveClass(classId)
-              && isClassMember(classId)
-              && resource.data.uid == request.auth.uid);
-
-        allow create: if currentAccountActive()
-          && isActiveClass(classId)
-          && request.resource.data.uid == request.auth.uid
-          && isClassMember(classId)
-          && assignmentTargetsMe(classId, request.resource.data.assignmentId)
-          && beforeAssignmentDeadline(classId, request.resource.data.assignmentId)
-          && indexId == request.resource.data.assignmentId + '__' + request.auth.uid
-          && request.resource.data.keys().hasAll([
-            'uid', 'classId', 'assignmentId', 'attemptId', 'answered', 'total',
-            'durationMs', 'violations', 'status', 'secureSchemaVersion',
-            'indexSchemaVersion', 'submittedAt'
-          ])
-          && request.resource.data.keys().hasOnly([
-            'uid', 'name', 'email', 'classId', 'assignmentId',
-            'assignmentTitle', 'attemptId', 'answered', 'total', 'durationMs',
-            'violations', 'status', 'secureSchemaVersion', 'indexSchemaVersion',
-            'submittedAt', 'attemptNumber', 'variantIndex', 'variantCode'
-          ])
-          && request.resource.data.classId == classId
-          && (!('attemptNumber' in request.resource.data)
-              || (request.resource.data.attemptNumber is int
-                  && request.resource.data.attemptNumber == 1
-                  && attemptWithinLimit(classId, request.resource.data.assignmentId, request.resource.data.attemptNumber)))
-          && request.resource.data.status == 'submitted'
-          && request.resource.data.secureSchemaVersion == 18
-          && request.resource.data.indexSchemaVersion == 19
-          && request.resource.data.submittedAt == request.time
-          && pairedSubmissionAfter(classId, request.resource.data.assignmentId, request.auth.uid).uid == request.auth.uid
-          && pairedSubmissionAfter(classId, request.resource.data.assignmentId, request.auth.uid).attemptId == request.resource.data.attemptId;
-
-        // Giáo viên chấm như V19. V27 cho học sinh cập nhật chỉ mục khi nộp lượt tiếp
-        // trước khi lượt hiện tại được chấm; điểm/aggregate vẫn chỉ do giáo viên ghi.
-        allow update: if isClassOwner(classId)
-          || (currentAccountActive()
-              && isActiveClass(classId)
-              && resource.data.uid == request.auth.uid
-              && request.resource.data.uid == request.auth.uid
-              && isClassMember(classId)
-              && (resource.data.status == 'submitted' || resource.data.status == 'retry')
-              && request.resource.data.status == 'submitted'
-              && request.resource.data.assignmentId == resource.data.assignmentId
-              && request.resource.data.classId == classId
-              && request.resource.data.keys().hasAll([
-                'uid', 'classId', 'assignmentId', 'attemptId', 'attemptNumber',
-                'answered', 'total', 'durationMs', 'violations', 'status',
-                'secureSchemaVersion', 'indexSchemaVersion', 'submittedAt'
-              ])
-              && request.resource.data.keys().hasOnly([
-                'uid', 'name', 'email', 'classId', 'assignmentId',
-                'assignmentTitle', 'attemptId', 'attemptNumber', 'answered', 'total',
-                'durationMs', 'violations', 'status', 'secureSchemaVersion',
-                'indexSchemaVersion', 'submittedAt', 'variantIndex', 'variantCode'
-              ])
-              && request.resource.data.attemptNumber is int
-              && (
-                (('attemptNumber' in resource.data)
-                  && request.resource.data.attemptNumber == resource.data.attemptNumber + 1)
-                || (!('attemptNumber' in resource.data)
-                  && request.resource.data.attemptNumber == 2)
-              )
-              && request.resource.data.secureSchemaVersion == 18
-              && request.resource.data.indexSchemaVersion == 19
-              && request.resource.data.submittedAt == request.time
-              && attemptWithinLimit(classId, resource.data.assignmentId, request.resource.data.attemptNumber)
-              && beforeAssignmentDeadline(classId, resource.data.assignmentId)
-              && pairedSubmissionAfter(classId, resource.data.assignmentId, request.auth.uid).attemptId == request.resource.data.attemptId
-              && pairedSubmissionAfter(classId, resource.data.assignmentId, request.auth.uid).attemptNumber == request.resource.data.attemptNumber);
-        allow delete: if isClassOwner(classId);
-      }
-
-      /* ---------- V33 EXPIRING PARENT REPORT SNAPSHOTS ----------
-         A parent link is a direct document GET using an unguessable report id.
-         Public clients cannot LIST reports. Snapshot fields are deliberately
-         sanitized: no UID, email, answers, responses or answer keys.
-      */
-      match /reportsV33/{reportId} {
         allow get: if isAdmin()
-          || isClassOwner(classId)
-          || (resource.data.schemaVersion == 33
-              && resource.data.public == true
-              && resource.data.status == 'active'
-              && resource.data.expiresAt is timestamp
-              && request.time < resource.data.expiresAt);
+          || classOwner(classId)
+          || (active() && resource.data.uid == myUid());
 
-        allow list: if isAdmin() || isClassOwner(classId);
+        // Student queries use where('uid','==',currentUid); Firestore can prove this rule.
+        allow list: if isAdmin()
+          || classOwner(classId)
+          || (active() && resource.data.uid == myUid());
 
-        allow create: if (isAdmin() || isClassOwner(classId))
-          && request.resource.data.schemaVersion == 33
-          && request.resource.data.reportType == 'parent'
-          && request.resource.data.public == true
-          && request.resource.data.status == 'active'
-          && request.resource.data.studentName is string
-          && request.resource.data.className is string
-          && request.resource.data.periodLabel is string
-          && request.resource.data.metrics is map
-          && request.resource.data.verifiedLevels is list
-          && request.resource.data.strengths is list
-          && request.resource.data.needsWork is list
-          && request.resource.data.recentScores is list
-          && request.resource.data.recommendations is list
-          && request.resource.data.teacherNote is string
-          && request.resource.data.teacherName is string
-          && request.resource.data.sourceNote is string
-          && request.resource.data.expiresAt is timestamp
-          && request.resource.data.expiresAt > request.time
-          && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')
-          && request.resource.data.createdAt == request.time
-          && request.resource.data.updatedAt == request.time
-          && request.resource.data.keys().hasOnly([
-            'schemaVersion', 'reportType', 'public', 'status',
-            'studentName', 'className', 'periodLabel', 'metrics',
-            'verifiedLevels', 'strengths', 'needsWork', 'recentScores',
-            'recommendations', 'teacherNote', 'teacherName', 'sourceNote',
-            'createdAt', 'updatedAt', 'expiresAt'
-          ]);
+        allow create: if isAdmin()
+          || classOwner(classId)
+          || (
+            active()
+            && request.resource.data.uid == myUid()
+            && request.resource.data.classId == classId
+            && request.resource.data.assignmentId is string
+            && assignmentAcceptsNow(classId, request.resource.data.assignmentId, myUid())
+            && request.resource.data.status == 'submitted'
+            && request.resource.data.indexSchemaVersion == 19
+            && !('score' in request.resource.data)
+            && !('gradedBy' in request.resource.data)
+            && !('gradedAt' in request.resource.data)
+          );
 
-        allow update: if (isAdmin() || isClassOwner(classId))
-          && request.resource.data.schemaVersion == 33
-          && request.resource.data.reportType == resource.data.reportType
-          && request.resource.data.public == resource.data.public
-          && request.resource.data.createdAt == resource.data.createdAt
-          && request.resource.data.expiresAt == resource.data.expiresAt
-          && request.resource.data.status in ['active', 'revoked']
-          && request.resource.data.updatedAt == request.time
-          && request.resource.data.keys().hasOnly([
-            'schemaVersion', 'reportType', 'public', 'status',
-            'studentName', 'className', 'periodLabel', 'metrics',
-            'verifiedLevels', 'strengths', 'needsWork', 'recentScores',
-            'recommendations', 'teacherNote', 'teacherName', 'sourceNote',
-            'createdAt', 'updatedAt', 'expiresAt'
-          ]);
+        allow update: if isAdmin()
+          || classOwner(classId)
+          || (
+            active()
+            && resource.data.uid == myUid()
+            && !('score' in resource.data)
+            && resource.data.status != 'graded'
+            && request.resource.data.uid == myUid()
+            && request.resource.data.classId == classId
+            && request.resource.data.assignmentId is string
+            && assignmentAcceptsNow(classId, request.resource.data.assignmentId, myUid())
+            && request.resource.data.status == 'submitted'
+            && request.resource.data.indexSchemaVersion == 19
+            && !('score' in request.resource.data)
+            && !('gradedBy' in request.resource.data)
+            && !('gradedAt' in request.resource.data)
+          );
 
-        allow delete: if isAdmin() || isClassOwner(classId);
+        allow delete: if isAdmin() || classOwner(classId);
       }
 
-      /* ---------- V19/V31 PER-STUDENT GRADED AGGREGATE ----------
-         V31 stores verified competency inside this teacher-only document so the
-         dashboard can stay Low Reads. Students cannot read or write this data.
-      */
-      match /studentStatsV19/{studentUid} {
-        allow read: if isAdmin() || isClassOwner(classId);
-        allow create, update, delete: if isClassOwner(classId);
+      // ---------- Verified aggregate written only by teacher/admin ----------
+      match /studentStatsV19/{uid} {
+        allow read: if isAdmin() || classOwner(classId) || (active() && uid == myUid());
+        allow create, update, delete: if isAdmin() || classOwner(classId);
+      }
+
+      // ---------- Teacher operations ----------
+      match /rosterV27/{docId} {
+        allow read, create, update, delete: if isAdmin() || classOwner(classId);
+      }
+
+      match /groupsV27/{docId} {
+        allow read, create, update, delete: if isAdmin() || classOwner(classId);
+      }
+
+      match /transfersV27/{docId} {
+        allow read, create, update, delete: if isAdmin() || classOwner(classId);
+      }
+
+      // ---------- Expiring parent report links ----------
+      match /reportsV33/{token} {
+        // Anyone possessing the unguessable token can open an ACTIVE, non-expired snapshot.
+        allow get: if isAdmin()
+          || classOwner(classId)
+          || (
+            ('public' in resource.data) && resource.data.public == true
+            && ('status' in resource.data) && resource.data.status == 'active'
+            && ('expiresAt' in resource.data) && request.time < resource.data.expiresAt
+          );
+
+        allow list: if isAdmin() || classOwner(classId);
+        allow create, update, delete: if isAdmin() || classOwner(classId);
+      }
+
+      // Any unknown class subcollection is denied by default.
+      match /{document=**} {
+        allow read, write: if false;
       }
     }
 
+    // ============================================================
+    // 4) ADMIN AUDIT — append only
+    // ============================================================
+    match /adminAudit/{auditId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.actorUid == myUid();
+      allow update, delete: if false;
+    }
+
+    // ============================================================
+    // 5) GLOBAL PUBLIC QUESTION BANK v40.11
+    // ============================================================
+    match /publicQuestionBankV4011/{docId} {
+      allow read: if active();
+
+      // Current v40.30 client lets teacher/admin publish approved shared-bank chunks.
+      // If only one canonical publisher is desired later, move this write to backend/admin.
+      allow create, update, delete: if isTeacher();
+    }
+
+    // ============================================================
+    // 6) GLOBAL HALL OF FAME v40.9
+    // ============================================================
+    match /honorPublicV409/{uid} {
+      allow read: if active();
+
+      // Only students publish their own sanitized summary document.
+      allow create, update: if isStudent()
+        && uid == myUid()
+        && request.resource.data.schemaVersion == 409;
+
+      allow delete: if isAdmin() || (active() && uid == myUid());
+    }
+
+    // ============================================================
+    // 7) ARENA v40.26
+    // Casual realtime competition. Client-side score verification is NOT
+    // sufficient for high-stakes/official exams; use trusted backend for that.
+    // ============================================================
+    match /arenaRooms/{roomId} {
+      function arenaRoomActive() {
+        return resource.data.status == 'active';
+      }
+
+      function arenaOwner() {
+        return active()
+          && ('ownerUid' in resource.data)
+          && resource.data.ownerUid == myUid();
+      }
+
+      function validArenaStatus(s) {
+        return s == 'waiting' || s == 'active' || s == 'finished';
+      }
+
+      allow get: if active();
+      allow list: if isAdmin();
+
+      allow create: if active()
+        && roomId.size() == 6
+        && request.resource.data.ownerUid == myUid()
+        && request.resource.data.code == roomId
+        && request.resource.data.schemaVersion == 4026
+        && request.resource.data.status == 'waiting';
+
+      allow update: if arenaOwner()
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.schemaVersion == resource.data.schemaVersion
+        && validArenaStatus(request.resource.data.status)
+        && (
+          request.resource.data.status == resource.data.status
+          || (resource.data.status == 'waiting' && request.resource.data.status == 'active')
+          || (resource.data.status == 'finished' && request.resource.data.status == 'active')
+          || (resource.data.status == 'active' && request.resource.data.status == 'finished')
+        );
+
+      allow delete: if arenaOwner() || isAdmin();
+
+      match /players/{uid} {
+        function self() {
+          return active() && myUid() == uid;
+        }
+
+        function parentRoom() {
+          return get(/databases/$(database)/documents/arenaRooms/$(roomId)).data;
+        }
+
+        function validScore() {
+          return !('score' in request.resource.data)
+            || (request.resource.data.score is number
+                && request.resource.data.score >= 0
+                && request.resource.data.score <= 10);
+        }
+
+        function validDuration() {
+          return !('durationMs' in request.resource.data)
+            || (request.resource.data.durationMs is number
+                && request.resource.data.durationMs >= 0
+                && request.resource.data.durationMs <= 14400000);
+        }
+
+        function scoreMatchesActiveRound() {
+          return parentRoom().status == 'active'
+            && ('roundId' in parentRoom())
+            && ('lastRound' in request.resource.data)
+            && request.resource.data.lastRound == parentRoom().roundId;
+        }
+
+        function scoringFieldsChanged() {
+          return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'score', 'durationMs', 'attemptId', 'lastRound', 'submittedAt'
+          ]);
+        }
+
+        allow read: if active();
+
+        allow create: if self()
+          && request.resource.data.uid == uid
+          && validScore()
+          && validDuration()
+          && (
+            !('score' in request.resource.data)
+            || scoreMatchesActiveRound()
+          );
+
+        allow update: if self()
+          && request.resource.data.uid == uid
+          && validScore()
+          && validDuration()
+          && (
+            !scoringFieldsChanged()
+            || scoreMatchesActiveRound()
+          );
+
+        allow delete: if self() || isAdmin();
+      }
+    }
+
+    // ============================================================
+    // 8) ADMIN COLLECTION-GROUP READS
+    // v40.30 System Health uses collectionGroup() for these IDs.
+    // Firestore Rules v2 requires explicit recursive-wildcard matches.
+    // ============================================================
+    match /{path=**}/members/{docId} {
+      allow read: if isAdmin();
+    }
+
+    match /{path=**}/memberships/{docId} {
+      allow read: if isAdmin();
+    }
+
+    match /{path=**}/assignmentsV18/{docId} {
+      allow read: if isAdmin();
+    }
+
+    match /{path=**}/answerKeysV18/{docId} {
+      allow read: if isAdmin();
+    }
+
+    match /{path=**}/submissionIndexV19/{docId} {
+      allow read: if isAdmin();
+    }
+
+    // ============================================================
+    // 9) DEFAULT DENY
+    // ============================================================
     match /{document=**} {
       allow read, write: if false;
     }

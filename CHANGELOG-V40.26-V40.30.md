@@ -24,3 +24,12 @@
 - Runtime health checks, local error buffer, last-known-good marker.
 - Admin diagnostics card/export.
 - Safe Mode and release checksum manifest.
+
+
+## v40.30.1 — Unified Profile Sync Fix
+- Avatar no longer hard-codes Level 1 / Tân binh after the student has earned EXP.
+- `gamificationV379` is the single display source for Level and Rank across Avatar, dashboard, shop/profile surfaces and Hall of Fame.
+- Avatar compatibility payloads mirror the current learning Level/Rank instead of resetting them to starter values.
+- Hall of Fame explicitly re-syncs after EXP/reward events.
+- Dashboard removes duplicated Level/Rank from the lower EXP strip; the strip now focuses on EXP progress and gold.
+- PWA cache revision bumped so GitHub Pages clients receive the fix immediately.
