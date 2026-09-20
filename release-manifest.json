@@ -1,20 +1,20 @@
 {
   "product": "Math12 Hub",
-  "version": "40.33.0",
-  "build": "student-learning-flow",
-  "generatedAt": "2026-09-20T03:44:04Z",
-  "predecessor": "40.32.0",
+  "version": "40.34.0",
+  "build": "ux-consistency-teacher-workflow",
+  "generatedAt": "2026-09-20T04:54:04.299062Z",
+  "predecessor": "40.33.0",
   "safeModeQuery": "?safe=1",
   "criticalAssets": [
     {
       "path": "index.html",
-      "bytes": 85175,
-      "sha256": "6b10d1c7c231436fa0aed62769281fe1bb604ba3e8f7f826a9819336efc66e03"
+      "bytes": 85325,
+      "sha256": "47c47942a297571ac649ef521dcde61834ffa37d0fe231dddf034d395335de83"
     },
     {
       "path": "sw.js",
-      "bytes": 2816,
-      "sha256": "6e04c33e7bd6036a1ee6b00e865e8579c8d78596236f5569873fa1320be8be5d"
+      "bytes": 2906,
+      "sha256": "872ad10925825514619653a2791554110fb0101b406f570202d79eb529a8f4af"
     },
     {
       "path": "manifest.webmanifest",
@@ -27,9 +27,29 @@
       "sha256": "fd070665b1d30061db08f241e0fb7f4676324bb4a12953ce48d00f4e6bb3cfdc"
     },
     {
+      "path": "assets/js/ux-consistency-v40.34.0.js",
+      "bytes": 14320,
+      "sha256": "e9379cccd7f1abd4b271b97d4f603fde7a2355aee054f79b5b3e7b57a06ce3ba"
+    },
+    {
+      "path": "assets/css/ux-consistency-v40.34.0.css",
+      "bytes": 8204,
+      "sha256": "63f844e543480c0a11eeb61acd8b29de38dcb6a992befaa8d721eb78c75d2a1b"
+    },
+    {
       "path": "assets/js/math12hub-v40.20.0.bundle.js",
-      "bytes": 3313916,
-      "sha256": "3934989c870572c8527234ad9eec629c74f2569a85d136f58f3b62de968a7e1d"
+      "bytes": 3317210,
+      "sha256": "43cb5ded6dca2091fa4cb9bd1c68e4d5937b3be51145814d2b5c3a57b5c3d285"
+    },
+    {
+      "path": "assets/js/ai-teacher-v32.js",
+      "bytes": 213703,
+      "sha256": "2d936b6c0d5023bbeaa34b47de92d04cbcdc8747f5ceec7f4bdaf8e295a2e62b"
+    },
+    {
+      "path": "assets/js/reports-v33.js",
+      "bytes": 32785,
+      "sha256": "e392a14043d216db770de2a80508f8eb6f81b5df336b7a4592539a679895a56a"
     },
     {
       "path": "assets/js/security-core-v40.26.0.js",
@@ -102,9 +122,12 @@
       "sha256": "1b7d00967c45eafb4addd5a3273b89102fe254e5a56c8e569e0683a69ea9a0f2"
     }
   ],
-  "notes": [
-    "Student learning flow",
-    "No new background Firestore reads",
-    "Secure assignment answers remain protected"
-  ]
+  "qualityGates": {
+    "javascriptSyntax": "PASS",
+    "htmlDuplicateIds": "PASS",
+    "assetReferences": "PASS",
+    "nativeAppDialogs": "0 alert / 0 confirm / 0 prompt",
+    "serviceWorker": "v40.34.0",
+    "firestoreRulesChanged": false
+  }
 }
