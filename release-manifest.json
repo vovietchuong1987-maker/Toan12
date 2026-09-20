@@ -1,0 +1,75 @@
+{
+  "product": "Math12 Hub",
+  "version": "40.30.0",
+  "build": "production-quality-gate",
+  "generatedAt": "2026-09-20T03:00:00Z",
+  "predecessor": "40.29.0",
+  "safeModeQuery": "?safe=1",
+  "criticalAssets": [
+    {
+      "path": "index.html",
+      "bytes": 84745,
+      "sha256": "9bcedbb1eaed0519a896e40e11aa006d782889b85784fac61765434601f237c4"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 2556,
+      "sha256": "878644bf91b5255350139e147f852d3a97a1358b7a7354c988c21a605444900c"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "bytes": 810,
+      "sha256": "f7c787b5d500d2893a2db50a80c63dd724e7a4a5ec995a2ee2b2fe2b4db18a58"
+    },
+    {
+      "path": "assets/js/math12hub-v40.20.0.bundle.js",
+      "bytes": 3311741,
+      "sha256": "8f9e04d182b4a0655acb50ca5a8f545e02ecafdd9f18b3d79de2a1e2a0205dc1"
+    },
+    {
+      "path": "assets/js/security-core-v40.26.0.js",
+      "bytes": 3705,
+      "sha256": "33ea05c133c8c3f1f72f787a51218dfed7c33ac52b5ca15147b90d09b5f23dd6"
+    },
+    {
+      "path": "assets/js/sync-delta-v40.27.0.js",
+      "bytes": 5391,
+      "sha256": "66741df09024aafab97b0ecc2beb17ef49f7cc4c48b062f7272e581104c33db5"
+    },
+    {
+      "path": "assets/js/performance-v40.28.0.js",
+      "bytes": 2570,
+      "sha256": "0fd7de6b646bb381f7003e56d922a5b209138a973668b4d3bb65a391f6f925f2"
+    },
+    {
+      "path": "assets/js/ux-pro-v40.29.0.js",
+      "bytes": 4456,
+      "sha256": "46987925744fefcd671fcc1354a3e87528df7ac3c9ff542a57d772d9e6a0bf51"
+    },
+    {
+      "path": "assets/js/arena-integration-v40.26.0.js",
+      "bytes": 12788,
+      "sha256": "a9e4441c7ce17124128f829a6f408d37dd458c9918da620b85d35f118d4c7a7d"
+    },
+    {
+      "path": "assets/js/quality-gate-v40.30.0.js",
+      "bytes": 6821,
+      "sha256": "b26d178a8f5854de26c0b5c582eade9e425a6770a8cf6aa35a527bd6cef94739"
+    },
+    {
+      "path": "assets/css/math12hub-v40.20.0.bundle.css",
+      "bytes": 374545,
+      "sha256": "d7ffc04d99ef6d909ea666e54e946821e26566a6f1be6a83e3902df9780f46e4"
+    },
+    {
+      "path": "assets/css/ux-pro-v40.29.0.css",
+      "bytes": 1796,
+      "sha256": "b53c7a154ae7b15e01c935003635709b5723710fd45e3e0f0f6d246b194f71a3"
+    },
+    {
+      "path": "assets/css/quality-gate-v40.30.0.css",
+      "bytes": 1233,
+      "sha256": "50d070862a4649c73fba26beccb2c54d656c3a696dbabebdbf39692119347a01"
+    }
+  ]
+}

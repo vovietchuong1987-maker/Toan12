@@ -1,15 +1,30 @@
-// Merge this snippet INSIDE your existing service cloud.firestore { match /databases/{database}/documents { ... } }
-// Review alongside your current rules before publishing.
+// Merge INSIDE: service cloud.firestore { match /databases/{database}/documents { ... } }
+// Arena casual/realtime: client vẫn tự gửi điểm; thi chính thức nên xác thực bằng backend/Cloud Function.
 
 match /arenaRooms/{roomId} {
-  allow read, create: if request.auth != null;
-  allow update, delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+  allow read: if request.auth != null;
+  allow create: if request.auth != null
+    && request.resource.data.ownerUid == request.auth.uid
+    && request.resource.data.code == roomId;
+  allow update: if request.auth != null
+    && resource.data.ownerUid == request.auth.uid
+    && request.resource.data.ownerUid == resource.data.ownerUid
+    && request.resource.data.code == resource.data.code;
+  allow delete: if request.auth != null
+    && resource.data.ownerUid == request.auth.uid;
 
   match /players/{uid} {
     allow read: if request.auth != null;
-    allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+    allow create, update: if request.auth != null
+      && request.auth.uid == uid
+      && request.resource.data.uid == uid
+      && (!('score' in request.resource.data)
+          || (request.resource.data.score is number
+              && request.resource.data.score >= 0
+              && request.resource.data.score <= 10))
+      && (!('durationMs' in request.resource.data)
+          || (request.resource.data.durationMs is number
+              && request.resource.data.durationMs >= 0));
+    allow delete: if request.auth != null && request.auth.uid == uid;
   }
 }
-
-// Note: v40.25 scores are client-reported from a completed Math12 Hub attempt.
-// For high-stakes/official competition, validate submissions with a trusted backend/Cloud Function.

@@ -1,0 +1,23 @@
+/* Math12 Hub v40.29.0 — UX Pro */
+:root{--m12-focus:2px solid currentColor}
+.m12-skip-link{position:fixed;left:12px;top:10px;z-index:99999;padding:10px 14px;border-radius:10px;background:#fff;color:#111;box-shadow:0 6px 24px rgba(0,0,0,.18);transform:translateY(-160%);transition:transform .18s ease}
+.m12-skip-link:focus{transform:translateY(0)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:var(--m12-focus);outline-offset:3px}
+button,.btn,input,select,textarea{font:inherit}
+button,.btn{touch-action:manipulation}
+.modal-backdrop.show .modal{max-height:min(92vh,900px);display:flex;flex-direction:column}
+.modal-backdrop.show .modal-body{overflow:auto;overscroll-behavior:contain}
+.modal .close{min-width:40px;min-height:40px}
+[data-current-page="true"]{position:relative}
+[data-current-page="true"] .nav-label{font-weight:800}
+.m12-ux-offline{position:fixed;right:14px;bottom:14px;z-index:9000;padding:8px 11px;border-radius:999px;background:rgba(25,31,45,.92);color:#fff;font-size:12px;box-shadow:0 5px 18px rgba(0,0,0,.16)}
+html[data-performance-mode="data-saver"] *,html[data-performance-mode="light"] *{scroll-behavior:auto!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media (max-width:900px){
+  input,select,textarea{font-size:16px}
+  .btn,button{min-height:42px}
+  .modal-backdrop{padding:8px}
+  .modal-backdrop.show .modal{width:min(100%,720px);max-height:95dvh;border-radius:16px}
+  .modal-body{padding-left:14px!important;padding-right:14px!important}
+  .content{padding-left:12px!important;padding-right:12px!important}
+}

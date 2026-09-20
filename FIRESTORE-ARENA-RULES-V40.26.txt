@@ -1,0 +1,53 @@
+// Math12 Hub v40.26 — Arena rules hardening
+// Merge INSIDE: service cloud.firestore { match /databases/{database}/documents { ... } }
+// This blocks cross-user writes and invalid room transitions. For official/high-stakes scoring,
+// server-side verification (Cloud Functions / trusted backend) is still required.
+
+match /arenaRooms/{roomId} {
+  function signedIn() { return request.auth != null; }
+  function owner() { return signedIn() && resource.data.ownerUid == request.auth.uid; }
+  function validStatus(s) { return s == 'waiting' || s == 'active' || s == 'finished'; }
+
+  allow read: if signedIn();
+  allow create: if signedIn()
+    && request.resource.data.ownerUid == request.auth.uid
+    && request.resource.data.code == roomId
+    && request.resource.data.schemaVersion == 4026
+    && request.resource.data.status == 'waiting';
+
+  allow update: if owner()
+    && request.resource.data.ownerUid == resource.data.ownerUid
+    && request.resource.data.code == resource.data.code
+    && request.resource.data.schemaVersion == resource.data.schemaVersion
+    && validStatus(request.resource.data.status)
+    && (
+      request.resource.data.status == resource.data.status
+      || (resource.data.status == 'waiting' && request.resource.data.status == 'active')
+      || (resource.data.status == 'finished' && request.resource.data.status == 'active')
+      || (resource.data.status == 'active' && request.resource.data.status == 'finished')
+    );
+
+  allow delete: if owner();
+
+  match /players/{uid} {
+    function self() { return request.auth != null && request.auth.uid == uid; }
+    function validScore() {
+      return !('score' in request.resource.data)
+        || (request.resource.data.score is number
+          && request.resource.data.score >= 0
+          && request.resource.data.score <= 10);
+    }
+    function validDuration() {
+      return !('durationMs' in request.resource.data)
+        || (request.resource.data.durationMs is number
+          && request.resource.data.durationMs >= 0
+          && request.resource.data.durationMs <= 14400000);
+    }
+    allow read: if request.auth != null;
+    allow create, update: if self()
+      && request.resource.data.uid == uid
+      && validScore()
+      && validDuration();
+    allow delete: if self();
+  }
+}

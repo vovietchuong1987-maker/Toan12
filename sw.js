@@ -1,5 +1,4 @@
-/* Math12 Hub v40.20.0 Character Platform Core — GitHub Lite */
-const CACHE_REV='20260920-v40.25.0-arena-integration';
+const CACHE_REV='20260920-v40.30.0';
 const SHELL=`math12hub-${CACHE_REV}-shell`;
 const RUNTIME=`math12hub-${CACHE_REV}-runtime`;
 const CORE=[
@@ -17,31 +16,21 @@ const CORE=[
   "./assets/css/shop-collections-v40.23.0.css",
   "./assets/js/gamification-economy-v40.24.0.js",
   "./assets/css/gamification-economy-v40.24.0.css",
-  "./assets/js/arena-integration-v40.25.0.js",
+  "./assets/js/security-core-v40.26.0.js",
+  "./assets/js/sync-delta-v40.27.0.js",
+  "./assets/js/performance-v40.28.0.js",
+  "./assets/js/ux-pro-v40.29.0.js",
+  "./assets/css/ux-pro-v40.29.0.css",
+  "./assets/js/quality-gate-v40.30.0.js",
+  "./assets/css/quality-gate-v40.30.0.css",
+  "./release-manifest.json",
+  "./assets/js/arena-integration-v40.26.0.js",
   "./assets/css/arena-integration-v40.25.0.css",
   "./assets/js/mathjax-config.js",
   "./assets/vendor/mathjax.js",
-  "./assets/js/ai-teacher-v32.js",
-  "./assets/js/reports-v33.js",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/data/avatar-asset-manifest-v40.20.0.json",
-  "./assets/img/avatar-signature-female.png",
-  "./assets/img/avatar-signature-male.png",
-  "./assets/img/avatar-mask-female-hair.png",
-  "./assets/img/avatar-mask-female-hair-highlight.png",
-  "./assets/img/avatar-mask-female-top.png",
-  "./assets/img/avatar-mask-female-accent.png",
-  "./assets/img/avatar-mask-female-bottom.png",
-  "./assets/img/avatar-mask-female-shoes.png",
-  "./assets/img/avatar-mask-female-foreground.png",
-  "./assets/img/avatar-mask-male-hair.png",
-  "./assets/img/avatar-mask-male-hair-highlight.png",
-  "./assets/img/avatar-mask-male-top.png",
-  "./assets/img/avatar-mask-male-accent.png",
-  "./assets/img/avatar-mask-male-bottom.png",
-  "./assets/img/avatar-mask-male-shoes.png",
-  "./assets/img/avatar-premium-concept.webp"
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('math12hub-')&&![SHELL,RUNTIME].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
