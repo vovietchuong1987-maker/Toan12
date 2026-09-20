@@ -1,0 +1,84 @@
+{
+  "build": "40.20.0-character-platform-core",
+  "schema": 4020,
+  "architecture": {
+    "public_api": "M12CharacterPlatform",
+    "runtime": "assets/js/character-runtime-v40.20.0.js",
+    "platform": "assets/js/character-platform-v40.20.0.js",
+    "renderer": "M12CharacterAssetRenderer",
+    "ui": "assets/js/avatar-shop-pro-v40.20.0.js",
+    "qa": "assets/js/avatar-qa-v40.20.0.js",
+    "legacy_renderers_loaded": false,
+    "room_enabled": false,
+    "room_cloud_data_preserved": "roomV390"
+  },
+  "adapters": {
+    "appearance": "AvatarEngine schema 600",
+    "economy": "v379Economy",
+    "wardrobe": "v385Wardrobe",
+    "shop": "v386MegaShop",
+    "achievements": "v388Achievements"
+  },
+  "canonical_assets": [
+    {
+      "path": "assets/img/avatar-signature-female.png",
+      "bytes": 1140319
+    },
+    {
+      "path": "assets/img/avatar-signature-male.png",
+      "bytes": 1265701
+    },
+    {
+      "path": "assets/img/avatar-mask-female-hair.png",
+      "bytes": 10148
+    },
+    {
+      "path": "assets/img/avatar-mask-female-hair-highlight.png",
+      "bytes": 28658
+    },
+    {
+      "path": "assets/img/avatar-mask-female-top.png",
+      "bytes": 5758
+    },
+    {
+      "path": "assets/img/avatar-mask-female-accent.png",
+      "bytes": 3344
+    },
+    {
+      "path": "assets/img/avatar-mask-female-bottom.png",
+      "bytes": 6341
+    },
+    {
+      "path": "assets/img/avatar-mask-female-shoes.png",
+      "bytes": 3610
+    },
+    {
+      "path": "assets/img/avatar-mask-female-foreground.png",
+      "bytes": 10065
+    },
+    {
+      "path": "assets/img/avatar-mask-male-hair.png",
+      "bytes": 7187
+    },
+    {
+      "path": "assets/img/avatar-mask-male-hair-highlight.png",
+      "bytes": 14447
+    },
+    {
+      "path": "assets/img/avatar-mask-male-top.png",
+      "bytes": 5301
+    },
+    {
+      "path": "assets/img/avatar-mask-male-accent.png",
+      "bytes": 3263
+    },
+    {
+      "path": "assets/img/avatar-mask-male-bottom.png",
+      "bytes": 6502
+    },
+    {
+      "path": "assets/img/avatar-mask-male-shoes.png",
+      "bytes": 3613
+    }
+  ]
+}

@@ -1,6 +1,5 @@
-MATH12 HUB v40.19.7 — GITHUB LITE
-
-Gói này đã gộp JS/CSS để giảm số file xuống dưới 100.
-Cách dùng: giải nén rồi tải TOÀN BỘ nội dung bên trong thư mục lên root repository GitHub Pages, ghi đè file cũ.
-Sau khi deploy: Ctrl+F5.
-Không tải file ZIP trực tiếp lên repo để chạy Pages; phải giải nén trước.
+Math12 Hub v40.20.0 Character Platform Core — GitHub Lite
+1. Giải nén ZIP.
+2. Upload toàn bộ file/thư mục bên trong vào repository GitHub Pages.
+3. Không upload nguyên ZIP để chạy website.
+4. Sau khi deploy, Ctrl+F5 một lần để bỏ cache cũ.
